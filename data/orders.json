@@ -1,0 +1,59 @@
+[
+  {
+    "id": "ord_mrixvm6w8pyl",
+    "items": [
+      {
+        "id": "k1",
+        "name": "Hustlify & TeleStore",
+        "price": 3889,
+        "qty": 1
+      }
+    ],
+    "itemsTotal": 3889,
+    "discountPercent": 0,
+    "promoCode": null,
+    "total": 3889,
+    "contact": "+79785007674",
+    "status": "pending",
+    "payment": null,
+    "createdAt": "2026-07-13T08:07:06.776Z"
+  },
+  {
+    "id": "ord_mrj018ufqoc7",
+    "items": [
+      {
+        "id": "c10",
+        "name": "Telegram Mini App",
+        "price": 8990,
+        "qty": 1
+      }
+    ],
+    "itemsTotal": 8990,
+    "discountPercent": 0,
+    "promoCode": null,
+    "total": 8990,
+    "contact": "+79785007674",
+    "status": "pending",
+    "payment": null,
+    "createdAt": "2026-07-13T09:07:28.647Z"
+  },
+  {
+    "id": "ord_mrj05b2o1ivi",
+    "items": [
+      {
+        "id": "c2",
+        "name": "Fragment",
+        "price": 250,
+        "qty": 1
+      }
+    ],
+    "itemsTotal": 250,
+    "discountPercent": 0,
+    "promoCode": null,
+    "total": 250,
+    "contact": "+79785007674",
+    "status": "pending",
+    "payment": null,
+    "createdAt": "2026-07-13T09:10:38.160Z"
+  }
+]

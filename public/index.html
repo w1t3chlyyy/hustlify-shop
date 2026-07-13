@@ -1,0 +1,1929 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hustlify — От голой идеи до монетизации</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#08090a;
+  --bg-soft:#0f1012;
+  --card:#141517;
+  --card-hi:#1b1d20;
+  --line:rgba(255,255,255,.08);
+  --white:#f5f5f4;
+  --gray:#8b8d92;
+  --gray-dim:#5c5e63;
+  --chrome-1:#e8e9ec;
+  --chrome-2:#8a8d96;
+  --blue:#d7d8db;
+  --green:#f5f5f4;
+  --purple:#77787c;
+  --accent:#ffffff;
+  --radius-lg:28px;
+  --radius-md:18px;
+  --radius-sm:12px;
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg);
+  color:var(--white);
+  font-family:'Inter',sans-serif;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,.display{font-family:'Unbounded',sans-serif;}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;}
+img{max-width:100%;display:block;}
+::selection{background:var(--white);color:var(--bg);}
+.wrap{max-width:1280px;margin:0 auto;padding:0 32px;}
+@media(max-width:640px){.wrap{padding:0 18px;}}
+
+/* scrollbar */
+::-webkit-scrollbar{width:10px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:#2a2b2e;border-radius:10px;}
+
+/* ---------- background ambient ---------- */
+.ambient{
+  position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background:
+    radial-gradient(ellipse 600px 400px at 15% 0%, rgba(255,255,255,.08), transparent 60%),
+    radial-gradient(ellipse 700px 500px at 85% 10%, rgba(255,255,255,.06), transparent 60%),
+    #08090a;
+}
+.noise{
+  position:fixed;inset:0;z-index:-1;opacity:.035;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ---------- header ---------- */
+header{
+  position:sticky;top:0;z-index:200;
+  padding:18px 0;
+  background:rgba(8,9,10,.65);
+  backdrop-filter:blur(16px) saturate(140%);
+  border-bottom:1px solid var(--line);
+}
+header .wrap{display:flex;align-items:center;justify-content:space-between;gap:24px;}
+.nav-left{display:flex;align-items:center;gap:34px;}
+.nav-left a{font-size:14.5px;color:var(--gray);transition:color .25s var(--ease);position:relative;}
+.nav-left a:hover{color:var(--white);}
+.logo{
+  display:flex;align-items:center;gap:0;
+  width:44px;height:44px;
+  perspective:400px;
+}
+.logo-mark{
+  width:44px;height:44px;border-radius:50%;
+  border:1.5px solid rgba(255,255,255,.5);
+  display:flex;align-items:center;justify-content:center;gap:3px;
+  transform-style:preserve-3d;
+  animation:logoSpin 8s ease-in-out infinite;
+}
+.logo-mark span{width:3px;height:18px;background:var(--white);border-radius:2px;}
+@keyframes logoSpin{
+  0%,100%{transform:rotateY(0deg);}
+  50%{transform:rotateY(14deg) rotateX(4deg);}
+}
+.nav-right{display:flex;align-items:center;gap:22px;}
+.icon-btn{
+  width:40px;height:40px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--white);position:relative;
+  transition:transform .3s var(--ease), background .3s;
+}
+.icon-btn:hover{background:rgba(255,255,255,.06);transform:translateY(-2px);}
+.icon-btn svg{width:19px;height:19px;}
+.badge{
+  position:absolute;top:-2px;right:-2px;
+  background:var(--white);color:var(--bg);
+  font-size:10px;font-weight:700;
+  width:16px;height:16px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .25s var(--ease);
+}
+.badge.pop{animation:pop .35s var(--ease);}
+@keyframes pop{0%{transform:scale(1);}50%{transform:scale(1.5);}100%{transform:scale(1);}}
+.btn-contact{
+  border:1px solid rgba(255,255,255,.55);
+  padding:12px 24px;border-radius:100px;font-size:14px;font-weight:500;
+  transition:all .3s var(--ease);
+  white-space:nowrap;
+}
+.btn-contact:hover{background:var(--white);color:var(--bg);}
+@media(max-width:860px){.nav-left a{display:none;}}
+
+/* ---------- hero ---------- */
+.hero{
+  position:relative;
+  padding:100px 0 60px;
+  display:flex;align-items:center;justify-content:center;
+  min-height:78vh;
+  perspective:1400px;
+  overflow:hidden;
+}
+.hero-bg-canvas{
+  position:absolute;inset:0;z-index:0;
+  width:100%;height:100%;
+  display:block;
+  mask-image:radial-gradient(ellipse 70% 80% at 50% 40%, #000 40%, transparent 92%);
+  -webkit-mask-image:radial-gradient(ellipse 70% 80% at 50% 40%, #000 40%, transparent 92%);
+}
+.hero-glow{
+  position:absolute;z-index:1;pointer-events:none;border-radius:50%;
+  filter:blur(80px);opacity:.55;
+  animation:glowDrift 14s ease-in-out infinite;
+}
+.hg1{width:420px;height:420px;background:radial-gradient(circle,#ffffff,transparent 70%);top:6%;left:8%;animation-delay:0s;opacity:.18;}
+.hg2{width:380px;height:380px;background:radial-gradient(circle,#cfcfcf,transparent 70%);bottom:2%;right:6%;animation-delay:3s;opacity:.18;}
+.hg3{width:300px;height:300px;background:radial-gradient(circle,#999999,transparent 70%);top:38%;right:26%;animation-delay:6s;opacity:.18;}
+@keyframes glowDrift{
+  0%,100%{transform:translate3d(0,0,0) scale(1);}
+  33%{transform:translate3d(30px,-24px,0) scale(1.12);}
+  66%{transform:translate3d(-24px,18px,0) scale(.94);}
+}
+.hero-ring-wrap{
+  position:absolute;top:50%;left:50%;
+  width:780px;height:780px;
+  transform:translate(-50%,-52%);
+  transform-style:preserve-3d;
+  pointer-events:none;
+}
+.hero-ring-wrap{z-index:2;}
+.ring{
+  position:absolute;inset:0;border-radius:50%;
+  border:1px solid rgba(255,255,255,.14);
+  transform-style:preserve-3d;
+}
+.ring.r1{animation:ringSpin1 40s linear infinite;}
+.ring.r2{inset:60px;border-color:rgba(255,255,255,.09);animation:ringSpin2 55s linear infinite;}
+.ring.r3{inset:120px;border-color:rgba(255,255,255,.05);animation:ringSpin1 70s linear infinite reverse;}
+@keyframes ringSpin1{0%{transform:rotateX(72deg) rotateZ(0deg);}100%{transform:rotateX(72deg) rotateZ(360deg);}}
+@keyframes ringSpin2{0%{transform:rotateX(68deg) rotateZ(0deg);}100%{transform:rotateX(68deg) rotateZ(-360deg);}}
+
+.hero-content{
+  position:relative;z-index:5;
+  text-align:center;max-width:760px;margin:0 auto;
+}
+.hero-badge-row,.hero h1,.hero .sub,.hero-ctas{
+  animation:heroItemIn .9s var(--ease) both;
+}
+.hero-badge-row{animation-delay:.05s;}
+.hero h1{animation-delay:.22s;}
+.hero .sub{animation-delay:.4s;}
+.hero-ctas{animation-delay:.55s;}
+.hero-content{perspective:1000px;}
+@keyframes heroItemIn{
+  0%{opacity:0;transform:translateY(46px) scale(.9) rotateX(-20deg);}
+  65%{opacity:1;transform:translateY(-8px) scale(1.015) rotateX(4deg);}
+  100%{opacity:1;transform:translateY(0) scale(1) rotateX(0);}
+}
+.hero-badge-row{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:26px;}
+.mini-mark{
+  width:52px;height:52px;border-radius:50%;
+  border:1.5px solid rgba(255,255,255,.5);
+  display:flex;align-items:center;justify-content:center;gap:4px;
+}
+.mini-mark span{width:3.5px;height:20px;background:var(--white);border-radius:2px;}
+.brand-pill{
+  border:1px solid rgba(255,255,255,.4);
+  padding:13px 26px;border-radius:100px;
+  font-family:'Unbounded';font-weight:600;font-size:15px;letter-spacing:.5px;
+}
+.hero h1{
+  font-size:clamp(34px,5.4vw,60px);
+  line-height:1.1;font-weight:800;
+  margin-bottom:18px;
+}
+.hero h1 em{font-style:italic;font-weight:600;color:var(--white);}
+.hero h1 u{text-decoration-thickness:3px;text-underline-offset:8px;}
+.hero .sub{color:var(--gray);font-size:16px;margin-bottom:34px;}
+.hero-ctas{display:flex;gap:14px;justify-content:center;}
+.btn{
+  padding:15px 34px;border-radius:100px;font-size:14.5px;font-weight:600;
+  transition:all .3s var(--ease);display:inline-flex;align-items:center;gap:8px;
+}
+.btn-white{background:var(--white);color:var(--bg);}
+.btn-white:hover{transform:translateY(-3px) scale(1.02);box-shadow:0 16px 40px rgba(255,255,255,.15);}
+.btn-outline{border:1px solid rgba(255,255,255,.4);}
+.btn-outline:hover{background:rgba(255,255,255,.08);transform:translateY(-3px);}
+
+/* floating feature chips */
+.float-chip{
+  position:absolute;z-index:6;
+  background:rgba(20,21,23,.85);
+  border:1px solid var(--line);
+  backdrop-filter:blur(10px);
+  padding:13px 20px;border-radius:100px;
+  display:flex;align-items:center;gap:12px;
+  font-size:13.5px;font-weight:500;
+  white-space:nowrap;
+  animation:floatY 6s ease-in-out infinite, chipIn .8s var(--ease) both;
+  box-shadow:0 20px 40px rgba(0,0,0,.4);
+  opacity:0;
+}
+@keyframes chipIn{from{opacity:0;translate:0 18px;scale:.9;}to{opacity:1;translate:0 0;scale:1;}}
+.float-chip .chip-ic{
+  width:30px;height:30px;border-radius:8px;
+  background:rgba(255,255,255,.08);
+  display:flex;align-items:center;justify-content:center;
+}
+.float-chip svg{width:15px;height:15px;}
+.fc1{top:33%;right:calc(50% + 400px);left:auto;animation-delay:0s,.7s;}
+.fc2{top:45%;right:calc(50% + 400px);left:auto;animation-delay:1.2s,.85s;}
+.fc3{top:33%;left:calc(50% + 400px);right:auto;animation-delay:.6s,1s;}
+.fc4{top:45%;left:calc(50% + 400px);right:auto;animation-delay:1.8s,1.15s;}
+@keyframes floatY{0%,100%{transform:translateY(0) rotateZ(0);}50%{transform:translateY(-14px) rotateZ(-1deg);}}
+@media(max-width:980px){.float-chip{display:none;}.hero-ring-wrap{width:560px;height:560px;}}
+
+/* ---------- section heading ---------- */
+.section{padding:90px 0;}
+.section-head{text-align:center;max-width:640px;margin:0 auto 54px;}
+.eyebrow{
+  font-size:12px;text-transform:uppercase;letter-spacing:2.5px;color:var(--gray-dim);
+  font-weight:600;margin-bottom:14px;
+}
+.section-head h2{font-size:clamp(26px,3.6vw,42px);font-weight:800;margin-bottom:14px;line-height:1.15;}
+.section-head p{color:var(--gray);font-size:15.5px;line-height:1.6;}
+
+/* ---------- stats / projects ---------- */
+.stat-row{
+  display:flex;justify-content:center;gap:60px;margin-bottom:56px;flex-wrap:wrap;
+}
+.stat-item{text-align:center;}
+.stat-item .num{font-family:'Unbounded';font-size:34px;font-weight:800;}
+.stat-item .lbl{color:var(--gray);font-size:13px;margin-top:4px;}
+
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;}
+@media(max-width:900px){.grid-3{grid-template-columns:1fr;}}
+.tilt-card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:var(--radius-lg);
+  padding:32px 28px;
+  transform-style:preserve-3d;
+  transition:transform .18s ease-out, border-color .3s, box-shadow .3s;
+  will-change:transform;
+}
+.tilt-card:hover{border-color:rgba(255,255,255,.18);box-shadow:0 30px 60px -20px rgba(0,0,0,.7);}
+.proj-top{display:flex;align-items:center;gap:14px;margin-bottom:18px;}
+.proj-icon{
+  width:52px;height:52px;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Unbounded';font-weight:700;font-size:17px;
+  transform:translateZ(28px);
+}
+.proj-icon.i1{background:linear-gradient(135deg,#e6e6e8,#a6a7ab);color:#111;}
+.proj-icon.i2{background:linear-gradient(135deg,#b7b8bc,#78797d);color:#111;}
+.proj-icon.i3{background:linear-gradient(135deg,#87888c,#3f4043);color:#f5f5f4;}
+.tilt-card h3{font-size:19px;font-weight:700;line-height:1.25;transform:translateZ(20px);}
+.tilt-card .desc{color:var(--gray);font-size:14px;line-height:1.6;margin:16px 0 22px;transform:translateZ(14px);min-height:80px;}
+.tilt-card .desc b{color:var(--white);font-weight:600;}
+.proj-actions{display:flex;gap:10px;transform:translateZ(24px);}
+.pbtn{flex:1;padding:13px;border-radius:100px;font-size:13.5px;font-weight:600;text-align:center;transition:transform .25s var(--ease),filter .25s;}
+.pbtn:hover{transform:translateY(-2px);filter:brightness(1.15);}
+.pbtn.b1{background:var(--blue);color:#111;}
+.pbtn.b2{background:#a9aaae;color:#0a0a0a;}
+.pbtn.b3{background:var(--purple);color:#f5f5f4;}
+.tg-btn{
+  width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.08);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  transition:transform .25s var(--ease), background .25s;
+}
+.tg-btn:hover{transform:translateY(-2px) rotate(-8deg);background:rgba(255,255,255,.14);}
+.tg-btn svg{width:18px;height:18px;}
+
+/* ---------- news carousel ---------- */
+.news-wrap{
+  position:relative;
+  padding: 0 60px; /* Отступы для кнопок */
+}
+
+.news-track{
+  display:flex;
+  gap:22px;
+  overflow-x:auto;
+  scroll-snap-type:x mandatory;
+  padding:8px 4px 24px;
+  scrollbar-width:none;
+}
+.news-track::-webkit-scrollbar{display:none;}
+.news-card{
+  min-width:340px;
+  scroll-snap-align:start;
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:var(--radius-lg);
+  padding:26px;
+  transition:transform .3s var(--ease),border-color .3s;
+}
+.news-card:hover{
+  transform:translateY(-6px);
+  border-color:rgba(255,255,255,.2);
+}
+.news-tag{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  background:rgba(255,255,255,.06);
+  border-radius:100px;
+  padding:9px 9px 9px 16px;
+  font-size:12px;
+  margin-bottom:22px;
+  color:var(--gray);
+}
+.news-tag .go{
+  width:26px;
+  height:26px;
+  border-radius:50%;
+  background:rgba(255,255,255,.1);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.news-tag svg{width:12px;height:12px;}
+.news-card h3{
+  font-family:'Unbounded';
+  font-size:22px;
+  font-weight:800;
+  letter-spacing:.5px;
+  line-height:1.05;
+  margin-bottom:4px;
+}
+.news-card .stamp{
+  color:var(--gray-dim);
+  font-size:12px;
+  margin-bottom:20px;
+}
+.news-card .headline{
+  font-weight:700;
+  font-size:15.5px;
+  margin-bottom:8px;
+}
+.news-card .body-txt{
+  color:var(--gray);
+  font-size:13.5px;
+  line-height:1.6;
+}
+
+/* Кнопки навигации по краям */
+.news-nav{
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  width:44px;
+  height:44px;
+  border-radius:50%;
+  background:var(--white);
+  color:var(--bg);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:all .3s var(--ease);
+  z-index:10;
+  box-shadow:0 4px 20px rgba(0,0,0,0.4);
+  border:1px solid rgba(255,255,255,0.1);
+  cursor:pointer;
+}
+.news-nav:hover{
+  transform:translateY(-50%) scale(1.1);
+  box-shadow:0 6px 30px rgba(0,0,0,0.6);
+}
+.news-nav.next{
+  right:10px;
+}
+.news-nav.prev{
+  left:10px;
+}
+/* У стрелки влево зеркалим иконку */
+.news-nav.prev svg{
+  transform:scaleX(-1);
+}
+.news-nav svg{
+  width:18px;
+  height:18px;
+}
+
+/* ---------- product grids (cases/catalog) ---------- */
+.pgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
+@media(max-width:980px){.pgrid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:560px){.pgrid{grid-template-columns:1fr;}}
+.product{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--radius-lg);
+  overflow:hidden;position:relative;
+  transition:transform .3s var(--ease), border-color .3s, box-shadow .3s;
+}
+.product:hover{transform:translateY(-8px);border-color:rgba(255,255,255,.2);box-shadow:0 30px 60px -24px rgba(0,0,0,.8);}
+.product-media{
+  position:relative;aspect-ratio:1/0.82;
+  display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 50% 40%, #232427, #101113 75%);
+  perspective:600px;
+}
+.product-media .obj{
+  width:64%;height:64%;
+  filter:drop-shadow(0 18px 24px rgba(0,0,0,.6));
+  animation:hover3d 5s ease-in-out infinite;
+  transform-style:preserve-3d;
+}
+/* если у товара/кейса есть настоящее фото — растягиваем его на всё поле карточки,
+   без чёрных полей вокруг и без плавающей 3D-анимации, рассчитанной на эмодзи-иконку */
+.product-media .obj.has-photo{
+  width:100%;height:100%;
+  filter:none;animation:none;transform-style:flat;
+}
+@keyframes hover3d{0%,100%{transform:rotateY(-8deg) rotateX(4deg) translateY(0);}50%{transform:rotateY(8deg) rotateX(-2deg) translateY(-6px);}}
+.tag-hit{
+  position:absolute;top:14px;left:14px;
+  background:linear-gradient(135deg,#f5f5f4,#c2c3c6);color:#0a0a0a;
+  padding:6px 12px;border-radius:100px;font-size:11px;font-weight:700;
+  display:flex;align-items:center;gap:5px;z-index:2;
+}
+.wish{
+  position:absolute;top:14px;right:14px;z-index:2;
+  width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.35);
+  backdrop-filter:blur(6px);
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .25s var(--ease), background .25s;
+}
+.wish:hover{transform:scale(1.12);}
+.wish svg{width:16px;height:16px;transition:all .2s;}
+.wish.active svg{fill:#f5f5f4;stroke:#f5f5f4;}
+.wish.pop{animation:pop .35s var(--ease);}
+.product-info{padding:18px 20px 22px;}
+.product-info h4{font-size:15px;font-weight:700;margin-bottom:6px;}
+.product-info .cat-sub{color:var(--gray);font-size:12.5px;margin-bottom:14px;line-height:1.5;min-height:32px;}
+.price-row{display:flex;align-items:baseline;gap:8px;margin-bottom:14px;}
+.price-row .now{font-family:'Unbounded';font-weight:700;font-size:16px;}
+.price-row .old{color:var(--gray-dim);text-decoration:line-through;font-size:13px;}
+.add-btn{
+  width:100%;padding:12px;border-radius:100px;background:rgba(255,255,255,.06);
+  border:1px solid var(--line);
+  font-size:13.5px;font-weight:600;text-align:center;
+  transition:all .28s var(--ease);
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.add-btn:hover{background:var(--white);color:var(--bg);}
+.add-btn.added{background:var(--white);color:var(--bg);border-color:transparent;}
+
+/* ---------- catalog filters ---------- */
+.filter-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:44px;}
+.filter-chip{
+  padding:11px 22px;border-radius:100px;font-size:13.5px;font-weight:500;color:var(--gray);
+  border:1px solid var(--line);transition:all .28s var(--ease);
+}
+.filter-chip:hover{color:var(--white);border-color:rgba(255,255,255,.3);}
+.filter-chip.active{background:var(--white);color:var(--bg);border-color:transparent;}
+
+/* ---------- roulette ---------- */
+.roulette-section{padding:90px 0;}
+.roulette-card{
+  max-width:640px;margin:0 auto;
+  background:var(--card);border:1px solid var(--line);border-radius:var(--radius-lg);
+  padding:52px 40px;text-align:center;
+  position:relative;overflow:hidden;
+}
+.roulette-card::before{
+  content:'';position:absolute;inset:-2px;
+  background:conic-gradient(from 0deg, transparent, rgba(255,255,255,.4), transparent 30%);
+  animation:rotateGlow 6s linear infinite;
+  opacity:.5;
+}
+@keyframes rotateGlow{to{transform:rotate(360deg);}}
+.roulette-card > *{position:relative;z-index:2;}
+.roulette-card h2{font-size:32px;font-weight:800;margin-bottom:8px;}
+.roulette-card .sub{color:var(--gray);margin-bottom:36px;font-size:14.5px;}
+.wheel-outer{
+  position:relative;margin:0 auto 30px;max-width:480px;
+}
+.wheel-pointer{
+  position:absolute;top:-8px;left:50%;transform:translateX(-50%);
+  width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;
+  border-top:12px solid var(--white);z-index:5;
+}
+.wheel-mask{
+  overflow:hidden;border-radius:16px;background:var(--bg-soft);border:1px solid var(--line);
+}
+.wheel-track{
+  display:flex;transition:transform 3.6s cubic-bezier(.12,.7,.1,1);
+}
+.wheel-seg{
+  min-width:120px;padding:34px 0;text-align:center;
+  font-family:'Unbounded';font-weight:800;font-size:26px;
+  color:var(--gray-dim);border-right:1px solid var(--line);
+  transition:color .3s;
+}
+.wheel-seg.win{color:var(--white);}
+.spin-btn{
+  margin-bottom:26px;
+}
+.spin-btn:disabled{opacity:.5;cursor:default;}
+.promo-box{
+  display:flex;align-items:center;gap:10px;
+  background:var(--bg-soft);border:1px solid var(--line);
+  border-radius:100px;padding:8px 8px 8px 26px;margin-bottom:20px;
+}
+.promo-box input{
+  flex:1;background:none;border:none;color:var(--white);font-family:'Unbounded';
+  font-weight:600;font-size:16px;letter-spacing:1px;outline:none;
+}
+.promo-box button{
+  background:var(--white);color:var(--bg);padding:13px 26px;border-radius:100px;
+  font-size:13.5px;font-weight:600;transition:all .25s var(--ease);white-space:nowrap;
+}
+.promo-box button:hover{transform:scale(1.03);}
+.promo-box button.copied{background:var(--white);color:var(--bg);}
+.timer-box{
+  background:var(--bg-soft);border:1px solid var(--line);border-radius:100px;
+  padding:14px;font-family:'Unbounded';font-weight:700;font-size:17px;letter-spacing:2px;
+}
+
+/* ---------- team ---------- */
+.team-card{
+  display:grid;grid-template-columns:1fr 1.15fr;gap:0;
+  max-width:1020px;margin:0 auto;
+  border-radius:var(--radius-lg);overflow:hidden;
+  border:1px solid var(--line);
+}
+@media(max-width:760px){.team-card{grid-template-columns:1fr;}}
+.team-photo{
+  aspect-ratio:1/1;
+  background:
+    radial-gradient(circle at 30% 20%, #3a3b3f, #0a0a0b 70%);
+  position:relative;overflow:hidden;
+}
+.team-photo .glyph{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:'Unbounded';font-size:120px;font-weight:800;color:rgba(255,255,255,.06);
+}
+.team-info{
+  background:var(--white);color:var(--bg);
+  padding:44px 40px;display:flex;flex-direction:column;justify-content:center;
+}
+.team-info h3{font-size:30px;font-weight:800;}
+.team-info .role{display:flex;align-items:center;gap:8px;color:#666;font-size:13.5px;margin:8px 0 22px;}
+.team-info .role .dot{width:8px;height:8px;border-radius:50%;border:1.5px solid #666;}
+.divider{width:44px;height:2px;background:#111;margin-bottom:22px;}
+.team-info .quote{font-weight:700;font-size:17px;line-height:1.4;margin-bottom:16px;}
+.team-info .bio{color:#4a4a4a;font-size:14px;line-height:1.65;margin-bottom:28px;}
+.btn-dark{background:var(--bg);color:var(--white);padding:14px 30px;border-radius:100px;font-size:14px;font-weight:600;display:inline-flex;align-self:flex-start;transition:transform .25s var(--ease);}
+.btn-dark:hover{transform:translateY(-2px);}
+
+/* ---------- process ---------- */
+.process-list{max-width:720px;margin:0 auto;}
+.pstep{display:flex;gap:26px;padding:30px 0;border-bottom:1px solid var(--line);opacity:0;transform:translateX(-24px);transition:opacity .7s var(--ease), transform .7s var(--ease);}
+.pstep.show{opacity:1;transform:translateX(0);}
+.pstep:last-child{border-bottom:none;}
+.pnum{
+  width:44px;height:44px;border-radius:50%;background:var(--white);color:var(--bg);
+  display:flex;align-items:center;justify-content:center;font-weight:800;font-family:'Unbounded';
+  flex-shrink:0;font-size:15px;
+}
+.pstep h3{font-size:21px;font-weight:700;margin-bottom:8px;}
+.pstep p{color:var(--gray);font-size:14.5px;line-height:1.6;}
+
+/* ---------- reviews ---------- */
+.rev-track{display:flex;gap:22px;overflow-x:auto;padding:8px 4px 20px;scroll-snap-type:x mandatory;scrollbar-width:none;}
+.rev-track::-webkit-scrollbar{display:none;}
+.rev-card{
+  min-width:400px;scroll-snap-align:start;
+  background:var(--card);border:1px solid var(--line);border-radius:var(--radius-lg);
+  padding:30px;transition:transform .3s var(--ease);
+}
+.rev-card:hover{transform:translateY(-6px);}
+.rev-top{display:flex;align-items:center;gap:14px;margin-bottom:20px;}
+.rev-avatar{width:52px;height:52px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:'Unbounded';font-weight:700;font-size:16px;}
+.rev-avatar.a1{background:linear-gradient(135deg,#d0d1d4,#6a6b6e);color:#111;}
+.rev-avatar.a2{background:linear-gradient(135deg,#9c9da1,#45464a);color:#f5f5f4;}
+.rev-avatar.a3{background:linear-gradient(135deg,#eaeaec,#96979b);color:#111;}
+.rev-top h4{font-size:15.5px;font-weight:700;}
+.rev-top .proj{color:var(--gray-dim);font-size:12.5px;}
+.rev-card p{color:var(--gray);font-size:14px;line-height:1.65;}
+
+/* ---------- footer ---------- */
+footer{border-top:1px solid var(--line);padding:50px 0 34px;}
+footer .wrap{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px;}
+footer .fbrand{display:flex;align-items:center;gap:12px;font-family:'Unbounded';font-weight:700;font-size:16px;}
+footer .fcopy{color:var(--gray-dim);font-size:13px;}
+footer .flinks{display:flex;gap:26px;}
+footer .flinks a{color:var(--gray);font-size:13.5px;transition:color .25s;}
+footer .flinks a:hover{color:var(--white);}
+
+/* ---------- modals / drawer ---------- */
+.overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);
+  z-index:900;opacity:0;pointer-events:none;transition:opacity .35s var(--ease);
+}
+.overlay.open{opacity:1;pointer-events:auto;}
+.drawer{
+  position:fixed;top:0;right:0;bottom:0;width:400px;max-width:92vw;
+  background:var(--bg-soft);border-left:1px solid var(--line);
+  z-index:950;transform:translateX(100%);transition:transform .4s var(--ease);
+  display:flex;flex-direction:column;
+}
+.drawer.open{transform:translateX(0);}
+.drawer-head{display:flex;align-items:center;justify-content:space-between;padding:24px 26px;border-bottom:1px solid var(--line);}
+.drawer-head h3{font-size:18px;font-weight:700;}
+.close-x{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.06);transition:transform .25s var(--ease),background .25s;}
+.close-x:hover{background:rgba(255,255,255,.12);transform:rotate(90deg);}
+.close-x svg{width:15px;height:15px;}
+.drawer-body{flex:1;overflow-y:auto;padding:20px 26px;}
+.cart-item{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--line);}
+.cart-item .ci-img{width:56px;height:56px;border-radius:12px;background:var(--card);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px;}
+.cart-item .ci-info{flex:1;}
+.cart-item h5{font-size:14px;font-weight:600;margin-bottom:4px;}
+.cart-item .ci-price{color:var(--gray);font-size:13px;}
+.ci-remove{color:var(--gray-dim);font-size:12px;transition:color .2s;}
+.ci-remove:hover{color:var(--white);text-decoration:underline;}
+.empty-state{text-align:center;color:var(--gray-dim);padding:60px 20px;font-size:14px;}
+.drawer-foot{padding:22px 26px;border-top:1px solid var(--line);}
+.total-row{display:flex;justify-content:space-between;margin-bottom:16px;font-size:15px;font-weight:600;}
+.checkout-btn{width:100%;padding:15px;border-radius:100px;background:var(--white);color:var(--bg);font-weight:600;font-size:14.5px;transition:transform .25s var(--ease);}
+.checkout-btn:hover{transform:translateY(-2px);}
+
+/* search modal */
+.search-modal{
+  position:fixed;top:100px;left:50%;transform:translate(-50%,-16px);
+  width:600px;max-width:92vw;z-index:960;
+  background:var(--card);border:1px solid var(--line);border-radius:var(--radius-lg);
+  opacity:0;pointer-events:none;transition:all .35s var(--ease);
+  box-shadow:0 40px 80px rgba(0,0,0,.6);
+}
+.search-modal.open{opacity:1;pointer-events:auto;transform:translate(-50%,0);}
+.search-input-row{display:flex;align-items:center;gap:14px;padding:20px 24px;border-bottom:1px solid var(--line);}
+.search-input-row svg{width:18px;height:18px;color:var(--gray);flex-shrink:0;}
+.search-input-row input{flex:1;background:none;border:none;outline:none;color:var(--white);font-size:16px;}
+.search-input-row input::placeholder{color:var(--gray-dim);}
+.search-results{max-height:400px;overflow-y:auto;padding:10px;}
+.sr-item{display:flex;align-items:center;gap:14px;padding:12px;border-radius:12px;transition:background .2s;}
+.sr-item:hover{background:rgba(255,255,255,.05);}
+.sr-item .sr-ic{width:40px;height:40px;border-radius:10px;background:var(--bg-soft);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.sr-item .sr-name{font-size:14px;font-weight:600;}
+.sr-item .sr-price{color:var(--gray);font-size:12.5px;}
+.sr-empty{text-align:center;color:var(--gray-dim);padding:40px 20px;font-size:13.5px;}
+
+/* toast */
+.toast{
+  position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--white);color:var(--bg);padding:14px 26px;border-radius:100px;
+  font-size:13.5px;font-weight:600;z-index:1000;opacity:0;pointer-events:none;
+  transition:all .35s var(--ease);display:flex;align-items:center;gap:10px;
+  box-shadow:0 20px 40px rgba(0,0,0,.4);
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ---------- ЧБ-режим: интерфейс сайта чёрно-белый, а загруженные фото — цветные ----------
+   Фильтр на html/body красил в серый вообще всё, включая настоящие фото — а вернуть
+   цвет потомку через filter:grayscale(0) на <img> не получится: фильтр родителя
+   растеризует весь вложенный контент целиком, и дочерний filter это не отменяет.
+   Поэтому ч/б навешивается точечно — только на эмодзи-заглушки иконок (когда фото ещё
+   нет) и служебные элементы. Если у товара/кейса есть загруженное фото (<img>),
+   контейнер с :has(img) исключается из фильтра, и картинка остаётся в естественном цвете. */
+.obj:not(:has(img)),
+.ci-img:not(:has(img)),
+.sr-ic:not(:has(img)){filter:grayscale(1) contrast(1.05);}
+.dobj,.tag-hit,.toast{filter:grayscale(1) contrast(1.05);}
+
+/* ---------- динамичные 3D-появления (вместо скучного fade+translateY) ---------- */
+.reveal{opacity:0;transform:translateY(40px) scale(.95) rotateX(-8deg);transform-origin:top center;transition:opacity .9s var(--ease), transform .9s var(--ease);}
+.reveal.show{opacity:1;transform:translateY(0) scale(1) rotateX(0);}
+
+.reveal-3d{opacity:0;transform:perspective(1000px) translateY(70px) rotateX(-32deg) scale(.92);transform-origin:bottom center;transition:opacity .85s var(--ease), transform .85s cubic-bezier(.2,.8,.2,1.1);}
+.reveal-3d.show{opacity:1;transform:perspective(1000px) translateY(0) rotateX(0) scale(1);}
+
+.reveal-pop{opacity:0;transform:translateY(46px) scale(.82) rotateZ(-2deg);transition:opacity .6s var(--ease), transform .65s cubic-bezier(.34,1.56,.64,1);}
+.reveal-pop.show{opacity:1;transform:translateY(0) scale(1) rotateZ(0);}
+
+.reveal-slide-l{opacity:0;transform:perspective(900px) translateX(-70px) rotateY(24deg);transition:opacity .8s var(--ease), transform .8s var(--ease);}
+.reveal-slide-l.show{opacity:1;transform:perspective(900px) translateX(0) rotateY(0);}
+
+.reveal-slide-r{opacity:0;transform:perspective(900px) translateX(70px) rotateY(-24deg);transition:opacity .8s var(--ease), transform .8s var(--ease);}
+.reveal-slide-r.show{opacity:1;transform:perspective(900px) translateX(0) rotateY(0);}
+
+@keyframes spinBtnPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,.25);}50%{box-shadow:0 0 0 14px rgba(255,255,255,0);}}
+.spin-btn:not(:disabled){animation:spinBtnPulse 2.2s ease-in-out infinite;}
+
+.tilt-card,.product{cursor:pointer;}
+
+/* ---------- попапы товара / проекта (переиспользуют стиль search-modal) ---------- */
+.detail-media{
+  aspect-ratio:1/0.7;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 50% 40%,#232427,#101113 75%);
+  font-size:84px;overflow:hidden;
+}
+.detail-media img{width:100%;height:100%;object-fit:cover;}
+.detail-media .dobj{animation:hover3d 5s ease-in-out infinite;transform-style:preserve-3d;}
+.detail-body{padding:24px 26px 28px;}
+.detail-eyebrow{font-size:11.5px;text-transform:uppercase;letter-spacing:2px;color:var(--gray-dim);font-weight:600;margin-bottom:10px;}
+.detail-desc{color:var(--gray);font-size:14.5px;line-height:1.75;margin-bottom:20px;}
+.detail-price{display:flex;align-items:baseline;gap:10px;margin-bottom:20px;}
+.detail-price .now{font-family:'Unbounded';font-weight:800;font-size:22px;}
+.detail-price .old{color:var(--gray-dim);text-decoration:line-through;font-size:14px;}
+.detail-cta{width:100%;justify-content:center;}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;}
+}
+
+</style>
+</head>
+<body>
+
+<div class="ambient"></div>
+<div class="noise"></div>
+
+<!-- HEADER -->
+<header>
+  <div class="wrap">
+    <div class="nav-left">
+      <a href="#reviews">Отзывы</a>
+      <a href="#catalog">Каталог</a>
+      <a href="#about">О нас</a>
+    </div>
+    <div class="logo"><img src="images/logo.png" alt="Hustlify" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>
+    <div class="nav-right">
+      <button class="icon-btn" id="searchBtn" aria-label="Поиск">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      </button>
+      <button class="icon-btn" id="wishBtn" aria-label="Избранное">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+        <span class="badge" id="wishCount">0</span>
+      </button>
+      <button class="icon-btn" id="cartBtn" aria-label="Корзина">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1.5"/><circle cx="19" cy="21" r="1.5"/><path d="M2.5 3h2l2.4 12.4a2 2 0 0 0 2 1.6h8.6a2 2 0 0 0 2-1.6L21 7.5H6"/></svg>
+        <span class="badge" id="cartCount">0</span>
+      </button>
+      <a href="#contact" class="btn-contact">Контакты</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <canvas class="hero-bg-canvas" id="heroCanvas"></canvas>
+  <div class="hero-glow hg1"></div>
+  <div class="hero-glow hg2"></div>
+  <div class="hero-glow hg3"></div>
+  <div class="hero-ring-wrap" id="ringWrap">
+    <div class="ring r1"></div>
+    <div class="ring r2"></div>
+    <div class="ring r3"></div>
+  </div>
+
+  <div class="float-chip fc1"><span class="chip-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.2 6.8H21l-5.6 4.1 2.1 6.8L12 15.6l-5.5 4.1 2.1-6.8L3 8.8h6.8z"/></svg></span>Самые вкусные цены</div>
+  <div class="float-chip fc2"><span class="chip-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg></span>Чистейшая репутация</div>
+  <div class="float-chip fc3"><span class="chip-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M12 20V4M20 20v-7"/></svg></span>Лучшее продюссирование</div>
+  <div class="float-chip fc4"><span class="chip-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1.3"/><circle cx="18" cy="21" r="1.3"/><path d="M1 3h3l2.3 11.4a2 2 0 0 0 2 1.6h8.2a2 2 0 0 0 2-1.6L20 7H5"/></svg></span>Огромный каталог товаров</div>
+
+<div class="hero-content">
+  <div class="hero-badge-row">
+    <img src="images/logo.png" alt="Hustlify" style="width:52px;height:52px;object-fit:cover;border-radius:50%;border:1.5px solid rgba(255,255,255,0.5);">
+    <div class="brand-pill">HUSTLIFY</div>
+  </div>
+  <h1>От <em>голой</em> идеи до монетизации за<br><u>2 недели</u></h1>
+  <p class="sub">Место успешных решений</p>
+  <div class="hero-ctas">
+    <a href="#catalog" class="btn btn-white">Каталог</a>
+    <a href="#cases" class="btn btn-outline">Кейсы</a>
+  </div>
+</div>
+</section>
+
+<!-- PROJECTS -->
+<section class="section" id="about">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <h2>За нашими плечами — 2 года работы и<br>500+ завершённых проектов</h2>
+      <p>Мы не экспериментируем над клиентами, а применяем готовые работающие связки</p>
+    </div>
+    <div class="grid-3" id="projectsGrid">
+      
+      <!-- Vieto Store -->
+      <article class="tilt-card" data-project="vieto">
+        <div class="proj-top">
+          <div class="proj-icon i1" style="overflow:hidden;padding:0;border-radius:14px;background:transparent;">
+            <img src="images/projects/vieto.png" alt="Vieto Store" style="width:100%;height:100%;object-fit:cover;border-radius:14px;">
+          </div>
+          <h3>Vieto<br>Store</h3>
+        </div>
+        <p class="desc">Магазин цифровых продуктов. От верификаций до накрутки в любые соц-сети. <b>Автовыдача 24/7</b></p>
+        <div class="proj-actions">
+          <button class="pbtn b1" onclick="openProjectModal('vieto')" style="background:var(--white);color:var(--bg);">Подробнее</button>
+          <a href="#" class="tg-btn" data-tg data-nomodal><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 3.3 2.8 11c-1.3.5-1.3 1.2-.2 1.5l4.9 1.5 1.9 5.8c.2.6.4.8.8.8.4 0 .6-.2.9-.5l2.2-2.1 4.6 3.4c.8.5 1.4.2 1.6-.7l3-14c.3-1.1-.4-1.6-1.6-1.4Z"/></svg></a>
+        </div>
+      </article>
+      
+      <!-- Flux Studio -->
+      <article class="tilt-card" data-project="flux">
+        <div class="proj-top">
+          <div class="proj-icon i2" style="overflow:hidden;padding:0;border-radius:14px;background:transparent;">
+            <img src="images/projects/flux.jpg" alt="Flux Studio" style="width:100%;height:100%;object-fit:cover;border-radius:14px;">
+          </div>
+          <h3>Flux<br>Studio</h3>
+        </div>
+        <p class="desc">Студия дизайна. Упаковка бизнеса под ключ с 0. <b>Зацепи клиента стилем!</b></p>
+        <div class="proj-actions">
+          <button class="pbtn b2" onclick="openProjectModal('flux')" style="background:var(--white);color:var(--bg);">Подробнее</button>
+          <a href="#" class="tg-btn" data-tg data-nomodal><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 3.3 2.8 11c-1.3.5-1.3 1.2-.2 1.5l4.9 1.5 1.9 5.8c.2.6.4.8.8.8.4 0 .6-.2.9-.5l2.2-2.1 4.6 3.4c.8.5 1.4.2 1.6-.7l3-14c.3-1.1-.4-1.6-1.6-1.4Z"/></svg></a>
+        </div>
+      </article>
+      
+      <!-- Cursor Market -->
+      <article class="tilt-card" data-project="cursor">
+        <div class="proj-top">
+          <div class="proj-icon i3" style="overflow:hidden;padding:0;border-radius:14px;background:transparent;">
+            <img src="images/projects/cursor.png" alt="Cursor Market" style="width:100%;height:100%;object-fit:cover;border-radius:14px;">
+          </div>
+          <h3>Cursor<br>Market</h3>
+        </div>
+        <p class="desc">Витрина, которая поможет вашему оформлению. Премиум/NFT/Звёзды. <b>Стань привлекательнее в Telegram</b></p>
+        <div class="proj-actions">
+          <button class="pbtn b3" onclick="openProjectModal('cursor')" style="background:var(--white);color:var(--bg);">Подробнее</button>
+          <a href="#" class="tg-btn" data-tg data-nomodal><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 3.3 2.8 11c-1.3.5-1.3 1.2-.2 1.5l4.9 1.5 1.9 5.8c.2.6.4.8.8.8.4 0 .6-.2.9-.5l2.2-2.1 4.6 3.4c.8.5 1.4.2 1.6-.7l3-14c.3-1.1-.4-1.6-1.6-1.4Z"/></svg></a>
+        </div>
+      </article>
+      
+    </div>
+  </div>
+</section>
+
+<!-- NEWS -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <h2>Новостной поток</h2>
+      <p>Будьте в курсе всего хастла</p>
+    </div>
+    <div class="news-wrap reveal">
+      <div class="news-track" id="newsTrack"></div>
+      <button class="news-nav prev" id="newsPrev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 6l6 6-6 6"/></svg></button>
+      <button class="news-nav next" id="newsNext"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 6l6 6-6 6"/></svg></button>
+    </div>
+  </div>
+</section>
+
+<!-- CASES -->
+<section class="section" id="cases">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <h2>Кейсы проекта Hustlify</h2>
+      <p>По самой вкусной цене</p>
+    </div>
+    <div class="pgrid reveal" id="casesGrid"></div>
+  </div>
+</section>
+
+<!-- CATALOG -->
+<section class="section" id="catalog">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <h2>Каталог сервиса</h2>
+      <p>Листай. Выбирай. Покупай</p>
+    </div>
+    <div class="filter-row reveal" id="filterRow"></div>
+    <div class="pgrid reveal" id="catalogGrid"></div>
+  </div>
+</section>
+
+<!-- ROULETTE -->
+<section class="roulette-section">
+  <div class="wrap">
+    <div class="roulette-card reveal">
+      <h2>Испытай удачу</h2>
+      <p class="sub">Добро пожаловать в рулетку скидок</p>
+
+      <div class="wheel-outer">
+        <div class="wheel-pointer"></div>
+        <div class="wheel-mask">
+          <div class="wheel-track" id="wheelTrack"></div>
+        </div>
+      </div>
+
+      <button class="btn btn-white spin-btn" id="spinBtn">Крутить рулетку</button>
+
+      <div class="promo-box">
+        <input type="text" id="promoCode" value="——————" readonly>
+        <button id="activateBtn">Активировать</button>
+      </div>
+      <div class="timer-box" id="timerBox">19:47:43</div>
+    </div>
+  </div>
+</section>
+
+<!-- TEAM -->
+<section class="section">
+  <div class="wrap">
+    <div class="team-card reveal">
+      <div class="team-photo" style="background:transparent;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+        <img src="images/team/егора.png" alt="Абрамов Егор" style="width:100%;height:100%;object-fit:cover;">
+      </div>
+      <div class="team-info">
+        <h3>Абрамов Егор</h3>
+        <div class="role"><span class="dot"></span>CEO Hustlify</div>
+        <div class="divider"></div>
+        <p class="quote">Я создаю экосистемы, где дизайн встречает код, а хардкор — стиль.</p>
+        <p class="bio">Владелец сети Hustlify — это не просто бренд, это образ мысли. Геймдев, который видит игровой процесс через призму UI/UX. Дизайнер, который мыслит механиками. Предприниматель, объединяющий всё это в единую сеть: от логотипа до последнего коммита в билд.</p>
+        <a href="#contact" class="btn-dark">Написать</a>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- PROCESS -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <h2>Процесс работы</h2>
+      <p>Как мы создаем для вас шедевр, избегая миллион правок</p>
+    </div>
+    <div class="process-list" id="processList">
+      <div class="pstep"><div class="pnum">1</div><div><h3>Анализ конкурентов</h3><p>Смотрим, что работает у других — берём лучшее, добавляем своё</p></div></div>
+      <div class="pstep"><div class="pnum">2</div><div><h3>Стратегия</h3><p>Чёткий план: что делаем, зачем и какой результат ждать</p></div></div>
+      <div class="pstep"><div class="pnum">3</div><div><h3>Реализация</h3><p>Делаем дизайн, настраиваем рекламу или SMM — без воды и лишних правок</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- REVIEWS -->
+<section class="section" id="reviews">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <h2>Отзывы наших клиентов</h2>
+      <p>Каждый кто нас выбирает — выбирает гарантию 100% успеха</p>
+    </div>
+    <div class="rev-track reveal">
+      <article class="rev-card">
+        <div class="rev-top"><div class="rev-avatar a1">D</div><div><h4>Demirov</h4><div class="proj">Flux Studio</div></div></div>
+        <p>Hustlify превосходно дизайнят. Без скама сделали мне аватарку и пару баннеров для проектов. Управились за 2 дня, все прекрасно 🤙</p>
+      </article>
+      <article class="rev-card">
+        <div class="rev-top"><div class="rev-avatar a2">S</div><div><h4>stuff | верифай</h4><div class="proj">Vieto Store</div></div></div>
+        <p>Огромный человеческий респект, оформил аккаунт под ворк. Также в избранном. Не мало кружков, голосовых в архиве. Очень много полезных инструкций и советов.</p>
+      </article>
+      <article class="rev-card">
+        <div class="rev-top"><div class="rev-avatar a3">N</div><div><h4>Nikitos</h4><div class="proj">Cursor Market</div></div></div>
+        <p>Заказывал премиум оформление для канала — забрали в работу сразу, сделали быстро и по делу. Буду обращаться ещё, ребята знают что делают.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<footer id="contact">
+  <div class="wrap">
+    <div class="fbrand"><img src="images/logo.png" alt="Hustlify" style="width:34px;height:34px;object-fit:cover;border-radius:50%;">
+    <div class="flinks">
+      <a href="#" data-tg>Telegram</a>
+      <a href="#reviews">Отзывы</a>
+      <a href="#catalog">Каталог</a>
+    </div>
+    <div class="fcopy">© 2026 Hustlify. Место успешных решений.</div>
+  </div>
+</footer>
+
+<!-- SEARCH MODAL -->
+<div class="overlay" id="overlay"></div>
+<div class="search-modal" id="searchModal">
+  <div class="search-input-row">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+    <input type="text" id="searchInput" placeholder="Найти услугу или товар...">
+  </div>
+  <div class="search-results" id="searchResults"></div>
+</div>
+
+<!-- CART DRAWER -->
+<div class="drawer" id="cartDrawer">
+  <div class="drawer-head"><h3>Корзина</h3><button class="close-x" id="cartClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="drawer-body" id="cartBody"></div>
+  <div class="drawer-foot">
+    <div class="total-row"><span>Итого</span><span id="cartTotal">0 ₽</span></div>
+    <button class="checkout-btn" id="checkoutBtn">Оформить заказ</button>
+  </div>
+</div>
+
+<!-- WISHLIST DRAWER -->
+<div class="drawer" id="wishDrawer">
+  <div class="drawer-head"><h3>Избранное</h3><button class="close-x" id="wishClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="drawer-body" id="wishBody"></div>
+</div>
+
+<!-- CHECKOUT DETAILS MODAL -->
+<div class="search-modal" id="checkoutModal" style="top:50%;transform:translate(-50%,calc(-50% - 16px));">
+  <div class="search-input-row" style="justify-content:space-between;">
+    <h3 style="font-size:17px;">Оформление заказа</h3>
+    <button class="close-x" id="checkoutClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div>
+  <div style="padding:22px 24px 26px;display:flex;flex-direction:column;gap:14px;">
+    <div>
+      <label style="display:block;font-size:12.5px;color:var(--gray);margin-bottom:7px;">Как с вами связаться (Telegram, телефон)</label>
+      <input type="text" id="checkoutContact" placeholder="@username или +7..." style="width:100%;padding:13px 16px;border-radius:12px;background:var(--bg-soft);border:1px solid var(--line);color:var(--white);font-size:14.5px;outline:none;">
+    </div>
+    <div>
+      <label style="display:block;font-size:12.5px;color:var(--gray);margin-bottom:7px;">Промокод (необязательно)</label>
+      <input type="text" id="checkoutPromo" placeholder="Например R7QK9M2XPLTN" style="width:100%;padding:13px 16px;border-radius:12px;background:var(--bg-soft);border:1px solid var(--line);color:var(--white);font-size:14.5px;outline:none;text-transform:uppercase;">
+    </div>
+    <div id="checkoutErr" style="color:var(--white);font-weight:600;font-size:12.5px;min-height:16px;"></div>
+    <button class="btn btn-white" id="checkoutContinueBtn" style="justify-content:center;">Продолжить к оплате</button>
+  </div>
+</div>
+
+<!-- PAYMENT METHOD MODAL -->
+<div class="search-modal" id="payModal" style="top:50%;transform:translate(-50%,calc(-50% - 16px));">
+  <div class="search-input-row" style="justify-content:space-between;">
+    <h3 style="font-size:17px;">Выберите способ оплаты</h3>
+    <button class="close-x" id="payClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div>
+  <div style="padding:22px 24px 26px;display:flex;flex-direction:column;gap:12px;">
+    <div id="payDiscountLine" style="color:var(--white);font-weight:600;font-size:12.5px;display:none;"></div>
+    <div style="color:var(--gray);font-size:13.5px;margin-bottom:6px;">К оплате: <b id="payTotal" style="color:var(--white);"></b></div>
+    <button class="btn btn-white" id="payCryptoBot" style="justify-content:center;"><span style="filter:grayscale(1);">💎</span> Оплатить через CryptoBot</button>
+    <button class="btn btn-outline" id="payYooKassa" style="justify-content:center;"><span style="filter:grayscale(1);">💳</span> Оплатить через ЮKassa</button>
+    <div id="payHint" style="color:var(--gray-dim);font-size:12px;margin-top:4px;"></div>
+  </div>
+</div>
+
+<!-- PRODUCT / CASE DETAIL MODAL -->
+<div class="search-modal" id="productModal" style="top:50%;transform:translate(-50%,calc(-50% - 16px));max-width:480px;">
+  <div class="search-input-row" style="justify-content:space-between;">
+    <h3 id="pmName" style="font-size:18px;"></h3>
+    <button class="close-x" id="productModalClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div>
+  <div class="detail-media" id="pmMedia"></div>
+  <div class="detail-body">
+    <div class="detail-eyebrow" id="pmCat"></div>
+    <p class="detail-desc" id="pmDesc"></p>
+    <div class="detail-price" id="pmPrice"></div>
+    <button class="btn btn-white detail-cta" id="pmAddBtn">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+      В корзину
+    </button>
+  </div>
+</div>
+
+<!-- PROJECT DETAIL MODAL -->
+<div class="search-modal" id="projectModal" style="top:50%;transform:translate(-50%,calc(-50% - 16px));max-width:480px;">
+  <div class="search-input-row" style="justify-content:space-between;">
+    <h3 id="prName" style="font-size:18px;"></h3>
+    <button class="close-x" id="projectModalClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div>
+  <div class="detail-media" id="prMedia"></div>
+  <div class="detail-body">
+    <div class="detail-eyebrow" id="prTag">Наш проект</div>
+    <p class="detail-desc" id="prDesc"></p>
+    <a href="#" target="_blank" rel="noopener" class="btn btn-white detail-cta" id="prMoreBtn">
+      Подробнее в Telegram
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M21.9 3.3 2.8 11c-1.3.5-1.3 1.2-.2 1.5l4.9 1.5 1.9 5.8c.2.6.4.8.8.8.4 0 .6-.2.9-.5l2.2-2.1 4.6 3.4c.8.5 1.4.2 1.6-.7l3-14c.3-1.1-.4-1.6-1.6-1.4Z"/></svg>
+    </a>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= DATA (загружается с сервера) ================= */
+// Товары теперь хранятся в data/products.json на сервере и редактируются
+// через админку (/admin.html). Здесь мы просто запрашиваем их по API.
+let ALL_PRODUCTS = [];
+let catalogData = [];
+let casesData = [];
+let CATEGORIES = ['Все'];
+
+async function loadProducts(){
+  try{
+    const res = await fetch('/api/products');
+    ALL_PRODUCTS = await res.json();
+  }catch(e){
+    console.error('Не удалось загрузить товары с сервера', e);
+    ALL_PRODUCTS = [];
+  }
+  catalogData = ALL_PRODUCTS.filter(p=>p.section==='catalog');
+  casesData = ALL_PRODUCTS.filter(p=>p.section==='case');
+  CATEGORIES = ['Все', ...new Set(catalogData.map(p=>p.cat))];
+  renderAll();
+}
+
+let cart = [];
+let wishlist = [];
+let activeFilter = 'Все';
+
+/* ================= RENDER ================= */
+
+function thumbHtml(p){ return p.img ? `<img src="${p.img}" alt="${p.name}" style="width:100%;height:100%;object-fit:contain;border-radius:10px;">` : (p.icon||'📦'); }
+function money(n){ return n.toLocaleString('ru-RU') + ' ₽'; }
+
+function productCard(p, isCase){
+  const inWish = wishlist.includes(p.id);
+  return `
+  <div class="product" data-id="${p.id}">
+    <div class="product-media">
+      ${isCase && p.hit ? '<div class="tag-hit">🔥 Хит продаж</div>' : ''}
+      <button class="wish ${inWish?'active':''}" data-wish="${p.id}" aria-label="В избранное">
+        <svg viewBox="0 0 24 24" fill="${inWish?'#f5f5f4':'none'}" stroke="${inWish?'#f5f5f4':'currentColor'}" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+      </button>
+      <div class="obj${p.img?' has-photo':''}" style="font-size:64px;display:flex;align-items:center;justify-content:center;">${p.img ? `<img src="${p.img}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;">` : (p.icon||'📦')}</div>
+    </div>
+    <div class="product-info">
+      <h4>${p.name}</h4>
+      <div class="cat-sub">${p.desc}</div>
+      <div class="price-row"><span class="now">${money(p.price)}</span><span class="old">${money(p.old)}</span></div>
+      <button class="add-btn" data-add="${p.id}">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+        В корзину
+      </button>
+    </div>
+  </div>`;
+}
+
+function renderCases(){
+  document.getElementById('casesGrid').innerHTML = casesData.map(p=>productCard(p,true)).join('');
+}
+
+function renderFilters(){
+  document.getElementById('filterRow').innerHTML = CATEGORIES.map(c=>
+    `<button class="filter-chip ${c===activeFilter?'active':''}" data-filter="${c}">${c}</button>`
+  ).join('');
+}
+
+function renderCatalog(){
+  const items = activeFilter==='Все' ? catalogData : catalogData.filter(p=>p.cat===activeFilter);
+  document.getElementById('catalogGrid').innerHTML = items.map(p=>productCard(p,false)).join('');
+}
+
+function renderAll(){ renderCases(); renderFilters(); renderCatalog(); bindProductEvents(); }
+
+function bindProductEvents(){
+  document.querySelectorAll('[data-wish]').forEach(btn=>{
+    btn.onclick = (e)=>{
+      e.stopPropagation();
+      const id = btn.dataset.wish;
+      toggleWish(id);
+      btn.classList.add('pop');
+      setTimeout(()=>btn.classList.remove('pop'),350);
+    };
+  });
+  document.querySelectorAll('[data-add]').forEach(btn=>{
+    btn.onclick = (e)=>{
+      e.stopPropagation();
+      addToCart(btn.dataset.add);
+      btn.classList.add('added');
+      const orig = btn.innerHTML;
+      btn.innerHTML = '✓ Добавлено';
+      setTimeout(()=>{btn.classList.remove('added'); btn.innerHTML = orig;}, 1400);
+    };
+  });
+  document.querySelectorAll('.product[data-id]').forEach(card=>{
+    card.onclick = ()=> openProductModal(card.dataset.id);
+  });
+  bindTilt('.product');
+  observeReveal('.pgrid .product', 'reveal-pop');
+}
+
+/* ================= ПОПАП ТОВАРА / КЕЙСА ================= */
+const productModal = document.getElementById('productModal');
+function openProductModal(id){
+  const p = ALL_PRODUCTS.find(x=>x.id===id);
+  if(!p) return;
+  document.getElementById('pmName').textContent = p.name;
+  document.getElementById('pmCat').textContent = p.cat || (p.section==='case' ? 'Кейс Hustlify' : 'Товар');
+  document.getElementById('pmMedia').innerHTML = p.img
+    ? `<img src="${p.img}" alt="${p.name}">`
+    : `<div class="dobj">${p.icon||'📦'}</div>`;
+  document.getElementById('pmDesc').textContent = `${p.desc}. Подробности по срокам и условиям уточняйте у менеджера после оформления заказа — мы свяжемся с вами по указанному контакту.`;
+  document.getElementById('pmPrice').innerHTML = `<span class="now">${money(p.price)}</span><span class="old">${money(p.old)}</span>`;
+  const addBtn = document.getElementById('pmAddBtn');
+  addBtn.onclick = ()=>{
+    addToCart(p.id);
+    closeAll();
+  };
+  closeAll();
+  openDrawer(productModal);
+}
+document.getElementById('productModalClose').onclick = closeAll;
+
+/* ================= WISHLIST ================= */
+function toggleWish(id){
+  const idx = wishlist.indexOf(id);
+  const p = ALL_PRODUCTS.find(x=>x.id===id);
+  if(idx>-1){ wishlist.splice(idx,1); showToast(`Удалено из избранного: ${p.name}`); }
+  else { wishlist.push(id); showToast(`Добавлено в избранное: ${p.name}`); }
+  updateBadges();
+  renderCases(); renderCatalog(); bindProductEvents();
+  renderWishDrawer();
+}
+function renderWishDrawer(){
+  const body = document.getElementById('wishBody');
+  if(wishlist.length===0){ body.innerHTML = '<div class="empty-state">Пока пусто. Добавляйте товары нажатием на ♥</div>'; return; }
+  body.innerHTML = wishlist.map(id=>{
+    const p = ALL_PRODUCTS.find(x=>x.id===id);
+    return `<div class="cart-item"><div class="ci-img">${thumbHtml(p)}</div><div class="ci-info"><h5>${p.name}</h5><div class="ci-price">${money(p.price)}</div></div><button class="ci-remove" data-unwish="${id}">Убрать</button></div>`;
+  }).join('');
+  body.querySelectorAll('[data-unwish]').forEach(b=> b.onclick = ()=> toggleWish(b.dataset.unwish));
+}
+
+/* ================= CART ================= */
+function addToCart(id){
+  const existing = cart.find(c=>c.id===id);
+  if(existing){ existing.qty++; } else { cart.push({id, qty:1}); }
+  updateBadges();
+  renderCartDrawer();
+  const p = ALL_PRODUCTS.find(x=>x.id===id);
+  showToast(`В корзину: ${p.name}`);
+}
+function removeFromCart(id){
+  cart = cart.filter(c=>c.id!==id);
+  updateBadges(); renderCartDrawer();
+}
+function renderCartDrawer(){
+  const body = document.getElementById('cartBody');
+  if(cart.length===0){ body.innerHTML = '<div class="empty-state">Корзина пуста. Загляните в каталог!</div>'; }
+  else{
+    body.innerHTML = cart.map(c=>{
+      const p = ALL_PRODUCTS.find(x=>x.id===c.id);
+      return `<div class="cart-item"><div class="ci-img">${thumbHtml(p)}</div><div class="ci-info"><h5>${p.name} ${c.qty>1? '× '+c.qty:''}</h5><div class="ci-price">${money(p.price*c.qty)}</div></div><button class="ci-remove" data-uncart="${c.id}">Убрать</button></div>`;
+    }).join('');
+    body.querySelectorAll('[data-uncart]').forEach(b=> b.onclick = ()=> removeFromCart(b.dataset.uncart));
+  }
+  const total = cart.reduce((s,c)=>{ const p=ALL_PRODUCTS.find(x=>x.id===c.id); return s + p.price*c.qty; },0);
+  document.getElementById('cartTotal').textContent = money(total);
+}
+
+function updateBadges(){
+  const wc = document.getElementById('wishCount');
+  const cc = document.getElementById('cartCount');
+  wc.textContent = wishlist.length;
+  cc.textContent = cart.reduce((s,c)=>s+c.qty,0);
+  [wc,cc].forEach(el=>{ el.classList.add('pop'); setTimeout(()=>el.classList.remove('pop'),350); });
+}
+
+/* ================= DRAWERS / MODAL ================= */
+const overlay = document.getElementById('overlay');
+const cartDrawer = document.getElementById('cartDrawer');
+const wishDrawer = document.getElementById('wishDrawer');
+const searchModal = document.getElementById('searchModal');
+
+function openDrawer(el){ overlay.classList.add('open'); el.classList.add('open'); }
+function closeAll(){
+  overlay.classList.remove('open'); cartDrawer.classList.remove('open'); wishDrawer.classList.remove('open'); searchModal.classList.remove('open');
+  document.getElementById('payModal').classList.remove('open');
+  document.getElementById('checkoutModal').classList.remove('open');
+  document.getElementById('productModal').classList.remove('open');
+  document.getElementById('projectModal').classList.remove('open');
+}
+
+document.getElementById('cartBtn').onclick = ()=>{ renderCartDrawer(); openDrawer(cartDrawer); };
+document.getElementById('cartClose').onclick = closeAll;
+document.getElementById('wishBtn').onclick = ()=>{ renderWishDrawer(); openDrawer(wishDrawer); };
+document.getElementById('wishClose').onclick = closeAll;
+document.getElementById('searchBtn').onclick = ()=>{ openDrawer(searchModal); document.getElementById('searchInput').focus(); renderSearch(''); };
+overlay.onclick = closeAll;
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeAll(); });
+
+const payModal = document.getElementById('payModal');
+const checkoutModal = document.getElementById('checkoutModal');
+let currentOrder = null;
+let lastPromoCode = ''; // заполняется рулеткой, чтобы подставить в поле заказа
+
+document.getElementById('checkoutBtn').onclick = ()=>{
+  if(cart.length===0){ showToast('Корзина пуста'); return; }
+  document.getElementById('checkoutErr').textContent = '';
+  document.getElementById('checkoutPromo').value = lastPromoCode;
+  closeAll();
+  openDrawer(checkoutModal);
+};
+document.getElementById('checkoutClose').onclick = closeAll;
+
+document.getElementById('checkoutContinueBtn').onclick = async ()=>{
+  const contact = document.getElementById('checkoutContact').value.trim();
+  const promoCode = document.getElementById('checkoutPromo').value.trim();
+  const err = document.getElementById('checkoutErr');
+  err.textContent = '';
+  try{
+    const res = await fetch('/api/orders', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ items: cart.map(c=>({id:c.id, qty:c.qty})), contact, promoCode })
+    });
+    const order = await res.json();
+    if(!res.ok){ err.textContent = order.error || 'Не удалось создать заказ'; return; }
+    currentOrder = order;
+    document.getElementById('payTotal').textContent = money(order.total);
+    const discountLine = document.getElementById('payDiscountLine');
+    if(order.discountPercent > 0){
+      discountLine.style.display = 'block';
+      discountLine.textContent = `🎟 Промокод ${order.promoCode} применён: -${order.discountPercent}% (было ${money(order.itemsTotal)})`;
+    } else {
+      discountLine.style.display = 'none';
+    }
+    document.getElementById('payHint').textContent = '';
+    closeAll();
+    openDrawer(payModal);
+  }catch(e){
+    err.textContent = 'Сервер недоступен. Запустите backend (node server.js)';
+  }
+};
+document.getElementById('payClose').onclick = closeAll;
+
+async function startPayment(provider){
+  if(!currentOrder) return;
+  const hint = document.getElementById('payHint');
+  hint.textContent = 'Создаём платёж...';
+  try{
+    const res = await fetch(`/api/payments/${provider}/create`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ orderId: currentOrder.id })
+    });
+    const data = await res.json();
+    if(!res.ok){ hint.textContent = data.error || 'Платёжная система не настроена на сервере (проверьте .env)'; return; }
+    cart = []; updateBadges(); renderCartDrawer();
+    window.location.href = data.payUrl;
+  }catch(e){
+    hint.textContent = 'Не удалось связаться с сервером оплаты';
+  }
+}
+document.getElementById('payCryptoBot').onclick = ()=> startPayment('cryptobot');
+document.getElementById('payYooKassa').onclick = ()=> startPayment('yookassa');
+
+/* SEARCH */
+function renderSearch(q){
+  const results = document.getElementById('searchResults');
+  q = q.trim().toLowerCase();
+  const matches = q ? ALL_PRODUCTS.filter(p=> p.name.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q) || (p.cat||'').toLowerCase().includes(q)) : [];
+  if(!q){ results.innerHTML = '<div class="sr-empty">Начните вводить название товара или услуги</div>'; return; }
+  if(matches.length===0){ results.innerHTML = '<div class="sr-empty">Ничего не найдено 🤔</div>'; return; }
+  results.innerHTML = matches.map(p=>`
+    <div class="sr-item" data-goto="${p.id}">
+      <div class="sr-ic">${thumbHtml(p)}</div>
+      <div style="flex:1"><div class="sr-name">${p.name}</div><div class="sr-price">${money(p.price)}</div></div>
+    </div>`).join('');
+  results.querySelectorAll('[data-goto]').forEach(el=>{
+    el.onclick = ()=>{ addToCart(el.dataset.goto); closeAll(); };
+  });
+}
+document.getElementById('searchInput').addEventListener('input', e=> renderSearch(e.target.value));
+
+/* FILTERS */
+document.getElementById('filterRow').addEventListener('click', e=>{
+  const btn = e.target.closest('[data-filter]');
+  if(!btn) return;
+  activeFilter = btn.dataset.filter;
+  renderFilters(); renderCatalog(); bindProductEvents();
+});
+
+/* ================= NEWS (загружается с сервера) ================= */
+async function loadNews(){
+  const track = document.getElementById('newsTrack');
+  try{
+    const res = await fetch('/api/news');
+    const news = await res.json();
+    if(news.length===0){ track.innerHTML = ''; return; }
+    track.innerHTML = news.map(n => `
+      <article class="news-card">
+        <div class="news-tag">${n.tag||'#HustlifyNews'} <span class="go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></span></div>
+        <h3>${n.title}</h3>
+        <div class="stamp">${n.stamp||''}</div>
+        <div class="headline">${n.headline||''}</div>
+        <p class="body-txt">${n.body||''}</p>
+      </article>`).join('');
+    observeReveal('.news-card', 'reveal-pop');
+  }catch(e){
+    console.error('Не удалось загрузить новости', e);
+  }
+}
+
+/* ================= NEWS CAROUSEL ================= */
+const newsTrack = document.getElementById('newsTrack');
+document.getElementById('newsNext').onclick = ()=> newsTrack.scrollBy({left:362, behavior:'smooth'});
+document.getElementById('newsPrev').onclick = ()=> newsTrack.scrollBy({left:-362, behavior:'smooth'});
+
+/* ================= TOAST ================= */
+let toastTimer;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> t.classList.remove('show'), 2400);
+}
+
+/* ================= ROULETTE ================= */
+const wheelValues = [5,10,15,25,5,10,15,25,5,10,15,25,5,10,15,25,5,10,15,25];
+const wheelTrack = document.getElementById('wheelTrack');
+const SEG_W = 120;
+function buildWheel(){
+  wheelTrack.innerHTML = wheelValues.map(v=>`<div class="wheel-seg">${v}%</div>`).join('');
+}
+buildWheel();
+wheelTrack.style.transform = `translateX(-${SEG_W*2}px)`;
+
+let spinning = false;
+document.getElementById('spinBtn').addEventListener('click', async ()=>{
+  if(spinning) return;
+  if(getSpinRemainingMs() > 0){ showToast('Рулетка доступна раз в 24 часа. Загляните позже 👀'); return; }
+  spinning = true;
+  const btn = document.getElementById('spinBtn');
+  btn.disabled = true;
+  btn.textContent = 'Крутим...';
+
+  let discount, code;
+  try{
+    const res = await fetch('/api/promo/generate', { method:'POST' });
+    const data = await res.json();
+    if(!res.ok){
+      // сервер может отказать и по дневному лимиту (если localStorage сброшен) —
+      // синхронизируем счётчик на клиенте с ответом сервера
+      if(data.remainingMs){ setSpinLock(Date.now() - (SPIN_COOLDOWN_MS - data.remainingMs)); }
+      showToast(data.error || 'Не удалось получить промокод');
+      spinning = false; refreshSpinLock();
+      return;
+    }
+    discount = data.discount; code = data.code;
+  }catch(e){
+    showToast('Сервер недоступен — рулетка работает только с запущенным backend');
+    spinning = false; refreshSpinLock();
+    return;
+  }
+
+  // находим позицию в ленте с таким же числом, чтобы колесо красиво остановилось на нём
+  const candidates = wheelValues.map((v,i)=>i).filter(i => wheelValues[i]===discount && i>=10 && i<=17);
+  const winnerIndex = candidates.length ? candidates[Math.floor(Math.random()*candidates.length)] : 12;
+  const offset = SEG_W*winnerIndex + SEG_W/2 - 240; // center in ~480px mask
+  wheelTrack.style.transition = 'transform 3.6s cubic-bezier(.12,.7,.1,1)';
+  wheelTrack.style.transform = `translateX(-${offset}px)`;
+
+  setTimeout(()=>{
+    document.querySelectorAll('.wheel-seg').forEach((s,i)=> s.classList.toggle('win', i===winnerIndex));
+    document.getElementById('promoCode').value = code;
+    lastPromoCode = code;
+    showToast(`🎉 Ваша скидка: ${discount}%! Промокод ${code} действует 24 часа`);
+    spinning = false;
+    setSpinLock(Date.now()); // фиксируем момент прокрута — следующий доступен через 24ч
+    refreshSpinLock();
+  }, 3700);
+});
+
+/* ---- ограничение: 1 прокрут рулетки в 24 часа ----
+   Хранится в localStorage браузера (у сайта нет аккаунтов пользователей),
+   плюс дополнительно подстраховано на сервере по IP в /api/promo/generate. */
+const SPIN_KEY = 'hs_last_spin_ts';
+const SPIN_COOLDOWN_MS = 24 * 60 * 60 * 1000;
+function getSpinRemainingMs(){
+  const last = parseInt(localStorage.getItem(SPIN_KEY) || '0', 10);
+  const remain = SPIN_COOLDOWN_MS - (Date.now() - last);
+  return remain > 0 ? remain : 0;
+}
+function setSpinLock(ts){
+  try{ localStorage.setItem(SPIN_KEY, String(ts)); }catch(e){ /* localStorage недоступен — ограничение останется только серверным */ }
+}
+function msToHMS(ms){
+  const total = Math.max(0, Math.ceil(ms/1000));
+  const h = Math.floor(total/3600), m = Math.floor((total%3600)/60), s = total%60;
+  return `${pad(h)}:${pad(m)}:${pad(s)}`;
+}
+let spinLockInterval = null;
+function refreshSpinLock(){
+  const btn = document.getElementById('spinBtn');
+  const timerBox = document.getElementById('timerBox');
+  const remain = getSpinRemainingMs();
+  if(remain > 0){
+    btn.disabled = true;
+    btn.textContent = 'Уже крутили сегодня';
+    timerBox.textContent = 'Следующий прокрут через ' + msToHMS(remain);
+    if(!spinLockInterval) spinLockInterval = setInterval(refreshSpinLock, 1000);
+  } else {
+    btn.disabled = false;
+    btn.textContent = 'Крутить рулетку';
+    timerBox.textContent = 'Один прокрут доступен раз в 24 часа';
+    if(spinLockInterval){ clearInterval(spinLockInterval); spinLockInterval = null; }
+  }
+}
+
+document.getElementById('activateBtn').addEventListener('click', ()=>{
+  const input = document.getElementById('promoCode');
+  if(input.value === '——————'){ showToast('Сначала крутните рулетку!'); return; }
+  navigator.clipboard?.writeText(input.value).catch(()=>{});
+  const btn = document.getElementById('activateBtn');
+  btn.classList.add('copied');
+  const orig = btn.textContent;
+  btn.textContent = 'Скопировано ✓';
+  showToast('Промокод скопирован — вставьте его при оформлении заказа');
+  setTimeout(()=>{ btn.classList.remove('copied'); btn.textContent = orig; }, 1800);
+});
+
+/* блок рулетки: показываем актуальный статус лимита сразу при загрузке страницы */
+function pad(n){ return String(n).padStart(2,'0'); }
+refreshSpinLock();
+
+/* ================= TILT 3D CARDS ================= */
+function bindTilt(selector){
+  document.querySelectorAll(selector).forEach(card=>{
+    card.addEventListener('mousemove', e=>{
+      const r = card.getBoundingClientRect();
+      const x = (e.clientX - r.left)/r.width - 0.5;
+      const y = (e.clientY - r.top)/r.height - 0.5;
+      card.style.transform = `perspective(900px) rotateY(${x*10}deg) rotateX(${-y*10}deg) translateY(-4px)`;
+    });
+    card.addEventListener('mouseleave', ()=>{ card.style.transform = 'perspective(900px) rotateY(0) rotateX(0) translateY(0)'; });
+  });
+}
+bindTilt('.tilt-card');
+
+/* ================= ПОПАП ПРОЕКТА (2й блок «О нас») ================= */
+// TODO: замените на реальную ссылку на Telegram-канал/бота Hustlify
+const TELEGRAM_LINK = 'https://t.me/HustlifyBot';
+
+const projectDetails = {
+  vieto: {
+    icon: '👛',
+    img: 'images/projects/vieto.png', // ДОБАВЛЯЕМ ИЗОБРАЖЕНИЕ
+    title: 'Vieto Store',
+    desc: 'Магазин цифровых продуктов: верификации криптокошельков, бирж и Telegram-сервисов, накрутка активности в соцсетях. Работает в формате автовыдачи 24/7 — заказ обрабатывается без ожидания менеджера в рабочее время.'
+  },
+  flux: {
+    icon: '🎨',
+    img: 'images/projects/flux.jpg', // ДОБАВЛЯЕМ ИЗОБРАЖЕНИЕ
+    title: 'Flux Studio',
+    desc: 'Студия визуального оформления: аватарки, баннеры, полная упаковка бренда с нуля. Помогаем каналу или проекту выглядеть узнаваемо и профессионально с первого касания.'
+  },
+  cursor: {
+    icon: '🖋️',
+    img: 'images/projects/cursor.png', // ДОБАВЛЯЕМ ИЗОБРАЖЕНИЕ
+    title: 'Cursor Market',
+    desc: 'Витрина премиум-атрибутики Telegram: юзернеймы, NFT, подарки и звёзды. Помогаем собрать заметный, статусный профиль.'
+  }
+};
+
+const projectModal = document.getElementById('projectModal');
+function openProjectModal(key){
+  const d = projectDetails[key];
+  if(!d) return;
+  document.getElementById('prName').textContent = d.title;
+  
+  // Показываем изображение, если оно есть, иначе иконку
+  document.getElementById('prMedia').innerHTML = d.img 
+    ? `<img src="${d.img}" alt="${d.title}" style="width:100%;height:100%;object-fit:contain;border-radius:16px;">`
+    : `<div class="dobj">${d.icon}</div>`;
+  
+  document.getElementById('prDesc').textContent = d.desc;
+  document.getElementById('prMoreBtn').href = TELEGRAM_LINK;
+  closeAll();
+  openDrawer(projectModal);
+}
+document.getElementById('projectModalClose').onclick = closeAll;
+document.querySelectorAll('.tilt-card[data-project]').forEach(card=>{
+  card.addEventListener('click', (e)=>{
+    if(e.target.closest('[data-nomodal]')) return;
+    openProjectModal(card.dataset.project);
+  });
+});
+
+
+/* ================= HERO BACKGROUND: Ferrofluid (настоящий WebGL-шейдер, ч/б) =================
+   Переписано с исходного React-компонента (ogl) на чистый WebGL, без сборки и npm-пакетов —
+   логика фрагментного шейдера сохранена как в оригинале. */
+(function(){
+  const canvas = document.getElementById('heroCanvas');
+  const heroEl = document.querySelector('.hero');
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const gl = canvas.getContext('webgl', { alpha: true, antialias: true, premultipliedAlpha: false });
+  if(!gl){ console.warn('WebGL недоступен, фон Ferrofluid не запущен'); return; }
+
+  // ---- параметры (пропсы компонента, палитра — строго белая/ч-б) ----
+  const COLORS            = ['#ffffff', '#ffffff', '#ffffff'];
+  const SPEED              = 0.5;
+  const SCALE               = 1.6;
+  const TURBULENCE          = 1;
+  const FLUIDITY            = 0.1;
+  const RIM_WIDTH           = 0.2;
+  const SHARPNESS           = 2.5;
+  const SHIMMER             = 1.5;
+  const GLOW                = 2;
+  const FLOW_DIRECTION      = 'down';
+  const OPACITY             = 1;
+  const MOUSE_INTERACTION   = true;
+  const MOUSE_STRENGTH      = 1;
+  const MOUSE_RADIUS        = 0.35;
+  const MOUSE_DAMPENING     = 0.15;
+
+  const vertexSrc = `
+attribute vec2 position;
+attribute vec2 uv;
+varying vec2 vUv;
+void main() {
+  vUv = uv;
+  gl_Position = vec4(position, 0.0, 1.0);
+}
+`;
+
+  const fragmentSrc = `
+precision highp float;
+
+uniform vec3  iResolution;
+uniform vec2  iMouse;
+uniform float iTime;
+
+uniform vec3  uColor0;
+uniform vec3  uColor1;
+uniform vec3  uColor2;
+uniform vec3  uColor3;
+uniform vec3  uColor4;
+uniform vec3  uColor5;
+uniform vec3  uColor6;
+uniform vec3  uColor7;
+uniform int   uColorCount;
+
+uniform vec2  uFlow;
+uniform float uSpeed;
+uniform float uScale;
+uniform float uTurbulence;
+uniform float uFluidity;
+uniform float uRimWidth;
+uniform float uSharpness;
+uniform float uShimmer;
+uniform float uGlow;
+uniform float uOpacity;
+uniform float uMouseEnabled;
+uniform float uMouseStrength;
+uniform float uMouseRadius;
+
+varying vec2 vUv;
+
+#define PI 3.14159265
+
+vec3 palette(float h) {
+  int count = uColorCount;
+  if (count < 1) count = 1;
+  int idx = int(floor(clamp(h, 0.0, 0.999999) * float(count)));
+  if (idx <= 0) return uColor0;
+  if (idx == 1) return uColor1;
+  if (idx == 2) return uColor2;
+  if (idx == 3) return uColor3;
+  if (idx == 4) return uColor4;
+  if (idx == 5) return uColor5;
+  if (idx == 6) return uColor6;
+  return uColor7;
+}
+
+float hash(vec3 p3) {
+  p3 = fract(p3 * 0.1031);
+  p3 += dot(p3, p3.zyx + 33.33);
+  return fract((p3.x + p3.y) * p3.z);
+}
+
+float smin(float a, float b, float k) {
+  float r = exp2(-a / k) + exp2(-b / k);
+  return -k * log2(r);
+}
+
+float sinlerp(float a, float b, float w) {
+  return mix(a, b, (sin(w * PI - PI / 2.0) + 1.0) / 2.0);
+}
+
+float vn(vec2 p, float s, float seed) {
+  vec2 cellp = floor(p / s);
+  vec2 relp = mod(p, s);
+  float g1 = hash(vec3(cellp, seed));
+  float g2 = hash(vec3(cellp.x + 1.0, cellp.y, seed));
+  float g3 = hash(vec3(cellp.x + 1.0, cellp.y + 1.0, seed));
+  float g4 = hash(vec3(cellp.x, cellp.y + 1.0, seed));
+  float bx = sinlerp(g1, g2, relp.x / s);
+  float tx = sinlerp(g4, g3, relp.x / s);
+  return sinlerp(bx, tx, relp.y / s);
+}
+
+float dbn(vec2 p, float s, float seed) {
+  float o = s / 2.0;
+  float n0 = vn(p, s, seed);
+  float n1 = vn(p + vec2(o, o), s, seed + 0.1);
+  float n2 = vn(p + vec2(-o, o), s, seed + 0.2);
+  float n3 = vn(p + vec2(o, -o), s, seed + 0.3);
+  float n4 = vn(p + vec2(-o, -o), s, seed + 0.4);
+  return (2.0 * n0 + 1.5 * n1 + 1.25 * n2 + 1.125 * n3 + n4) / 7.0;
+}
+
+void mainImage(out vec4 fragColor, in vec2 fragCoord) {
+  float ref = 700.0 / max(uScale, 0.05);
+  vec2 p = fragCoord / iResolution.y * ref;
+
+  float spd = 200.0 * uSpeed;
+  float t = iTime;
+
+  vec2 dir = uFlow;
+  vec2 perp = vec2(-dir.y, dir.x);
+
+  float distort1 = vn(p + perp * (t * spd), 60.0, 10.0) * 50.0 * uTurbulence;
+  float distort2 = vn(p - perp * (t * spd), 120.0, 15.0) * 100.0 * uTurbulence;
+
+  float peaks = dbn(p + distort1 + dir * (t * spd * 0.5), 40.0, 1.0);
+  float peaks2 = dbn(p + distort2 - dir * (t * spd * 0.5), 40.0, 0.0);
+
+  float mapeaks = smin(peaks, peaks2, max(uFluidity, 0.001));
+
+  float mGlow = 0.0;
+  if (uMouseEnabled > 0.5) {
+    vec2 mp = iMouse / iResolution.y * ref;
+    float md = length(p - mp) / ref;
+    float rr = max(uMouseRadius, 0.02);
+    mGlow = exp(-md * md / (rr * rr)) * uMouseStrength;
+  }
+
+  float band = (uRimWidth - abs((mapeaks - 0.4) * 2.0)) * 5.0;
+  float ltn = clamp(band - vn(p + dir * (t * spd * 0.5), 60.0, 12.0) * uShimmer, 0.0, 1.0);
+  ltn = pow(ltn, uSharpness) * uGlow;
+  ltn *= clamp(1.0 - mGlow, 0.0, 1.0);
+
+  float h = clamp(0.5 + (peaks - peaks2) * 0.8, 0.0, 1.0);
+  vec3 col = palette(h);
+
+  vec3 outc = col * ltn;
+  float a = clamp(max(outc.r, max(outc.g, outc.b)), 0.0, 1.0);
+  fragColor = vec4(outc, a * uOpacity);
+}
+
+void main() {
+  vec4 color;
+  mainImage(color, vUv * iResolution.xy);
+  gl_FragColor = color;
+}
+`;
+
+  function compile(type, src){
+    const sh = gl.createShader(type);
+    gl.shaderSource(sh, src);
+    gl.compileShader(sh);
+    if(!gl.getShaderParameter(sh, gl.COMPILE_STATUS)){
+      console.error(gl.getShaderInfoLog(sh));
+    }
+    return sh;
+  }
+  const program = gl.createProgram();
+  gl.attachShader(program, compile(gl.VERTEX_SHADER, vertexSrc));
+  gl.attachShader(program, compile(gl.FRAGMENT_SHADER, fragmentSrc));
+  gl.linkProgram(program);
+  if(!gl.getProgramParameter(program, gl.LINK_STATUS)){
+    console.error(gl.getProgramInfoLog(program));
+    return;
+  }
+  gl.useProgram(program);
+
+  // полноэкранный треугольник (тот же трюк, что и Triangle из ogl)
+  const posBuf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 3,-1, -1,3]), gl.STATIC_DRAW);
+  const posLoc = gl.getAttribLocation(program, 'position');
+  gl.enableVertexAttribArray(posLoc);
+  gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
+
+  const uvBuf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, uvBuf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0,0, 2,0, 0,2]), gl.STATIC_DRAW);
+  const uvLoc = gl.getAttribLocation(program, 'uv');
+  gl.enableVertexAttribArray(uvLoc);
+  gl.vertexAttribPointer(uvLoc, 2, gl.FLOAT, false, 0, 0);
+
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+  gl.clearColor(0,0,0,0);
+
+  function hexToRGB(hex){
+    const c = hex.replace('#','').padEnd(6,'0');
+    return [parseInt(c.slice(0,2),16)/255, parseInt(c.slice(2,4),16)/255, parseInt(c.slice(4,6),16)/255];
+  }
+  const MAX_COLORS = 8;
+  const colorArr = [];
+  for(let i=0;i<MAX_COLORS;i++) colorArr.push(hexToRGB(COLORS[Math.min(i, COLORS.length-1)]));
+
+  function flowVec(d){
+    switch(d){
+      case 'up': return [0,1];
+      case 'down': return [0,-1];
+      case 'left': return [-1,0];
+      case 'right': return [1,0];
+      default: return [0,-1];
+    }
+  }
+
+  const U = {};
+  ['iResolution','iMouse','iTime','uColor0','uColor1','uColor2','uColor3','uColor4','uColor5','uColor6','uColor7',
+   'uColorCount','uFlow','uSpeed','uScale','uTurbulence','uFluidity','uRimWidth','uSharpness','uShimmer','uGlow',
+   'uOpacity','uMouseEnabled','uMouseStrength','uMouseRadius'].forEach(name=>{ U[name] = gl.getUniformLocation(program, name); });
+
+  for(let i=0;i<MAX_COLORS;i++) gl.uniform3fv(U['uColor'+i], colorArr[i]);
+  gl.uniform1i(U.uColorCount, COLORS.length);
+  gl.uniform2fv(U.uFlow, flowVec(FLOW_DIRECTION));
+  gl.uniform1f(U.uSpeed, SPEED);
+  gl.uniform1f(U.uScale, SCALE);
+  gl.uniform1f(U.uTurbulence, TURBULENCE);
+  gl.uniform1f(U.uFluidity, FLUIDITY);
+  gl.uniform1f(U.uRimWidth, RIM_WIDTH);
+  gl.uniform1f(U.uSharpness, SHARPNESS);
+  gl.uniform1f(U.uShimmer, SHIMMER);
+  gl.uniform1f(U.uGlow, GLOW);
+  gl.uniform1f(U.uOpacity, OPACITY);
+  gl.uniform1f(U.uMouseEnabled, MOUSE_INTERACTION ? 1 : 0);
+  gl.uniform1f(U.uMouseStrength, MOUSE_STRENGTH);
+  gl.uniform1f(U.uMouseRadius, MOUSE_RADIUS);
+
+  let DPR = 1, W = 0, H = 0;
+  function resize(){
+    const r = heroEl.getBoundingClientRect();
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = Math.max(1, Math.round(r.width * DPR));
+    H = Math.max(1, Math.round(r.height * DPR));
+    canvas.width = W; canvas.height = H;
+    canvas.style.width = r.width + 'px';
+    canvas.style.height = r.height + 'px';
+    gl.viewport(0,0,W,H);
+    gl.uniform3f(U.iResolution, W, H, 1);
+  }
+
+  let mouseTarget = [0,0], mouseCur = [0,0], lastT = 0;
+  function onPointerMove(e){
+    const r = canvas.getBoundingClientRect();
+    const x = (e.clientX - r.left) * DPR;
+    const y = (r.height - (e.clientY - r.top)) * DPR;
+    mouseTarget = [x,y];
+  }
+  if(MOUSE_INTERACTION) canvas.addEventListener('pointermove', onPointerMove);
+
+  function loop(t){
+    requestAnimationFrame(loop);
+    gl.uniform1f(U.iTime, t*0.001);
+
+    if(!lastT) lastT = t;
+    const dt = (t - lastT)/1000;
+    lastT = t;
+    const tau = Math.max(1e-4, MOUSE_DAMPENING);
+    const factor = Math.min(1, 1 - Math.exp(-dt/tau));
+    mouseCur[0] += (mouseTarget[0]-mouseCur[0]) * factor;
+    mouseCur[1] += (mouseTarget[1]-mouseCur[1]) * factor;
+    gl.uniform2f(U.iMouse, mouseCur[0], mouseCur[1]);
+
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+  }
+
+  window.addEventListener('resize', resize);
+  resize();
+  if(!reduced){ requestAnimationFrame(loop); } else { gl.clear(gl.COLOR_BUFFER_BIT); gl.drawArrays(gl.TRIANGLES,0,3); }
+})();
+
+
+
+/* ================= PARALLAX HERO RINGS ================= */
+const ringWrap = document.getElementById('ringWrap');
+document.querySelector('.hero').addEventListener('mousemove', e=>{
+  const r = document.querySelector('.hero').getBoundingClientRect();
+  const x = (e.clientX - r.left)/r.width - 0.5;
+  const y = (e.clientY - r.top)/r.height - 0.5;
+  ringWrap.style.transform = `translate(-50%,-52%) rotateX(${y*10}deg) rotateY(${x*10}deg)`;
+});
+
+/* ================= REVEAL ON SCROLL ================= */
+const io = new IntersectionObserver((entries)=>{
+  entries.forEach(en=>{ if(en.isIntersecting){ en.target.classList.add('show'); io.unobserve(en.target); } });
+},{threshold:.15});
+document.querySelectorAll('.reveal').forEach(el=> io.observe(el));
+
+/* переиспользуемый хелпер для карточек, которые рендерятся динамически
+   (товары, кейсы, новости) — навешивает нужный класс анимации и делает
+   лёгкий каскадный delay, чтобы появление было живым, а не всё разом */
+function observeReveal(selector, cls){
+  document.querySelectorAll(selector).forEach((el,i)=>{
+    if(!el.classList.contains(cls)) el.classList.add(cls);
+    el.classList.remove('show');
+    el.style.transitionDelay = (i % 8) * 70 + 'ms';
+    io.observe(el);
+  });
+}
+observeReveal('.tilt-card[data-project]', 'reveal-3d');
+observeReveal('.rev-card', 'reveal-pop');
+
+const stepIo = new IntersectionObserver((entries)=>{
+  entries.forEach((en,i)=>{
+    if(en.isIntersecting){
+      setTimeout(()=> en.target.classList.add('show'), [...document.querySelectorAll('.pstep')].indexOf(en.target)*150);
+      stepIo.unobserve(en.target);
+    }
+  });
+},{threshold:.3});
+document.querySelectorAll('.pstep').forEach(el=> stepIo.observe(el));
+
+/* Telegram button placeholders */
+document.querySelectorAll('[data-tg]').forEach(el=>{
+  el.addEventListener('click', e=>{ e.preventDefault(); showToast('Открываем Telegram...'); });
+});
+
+/* ================= INIT ================= */
+loadProducts(); // fetches products from /api/products, then calls renderAll() itself
+loadNews();
+updateBadges();
+renderCartDrawer();
+renderWishDrawer();
+</script>
+</body>
+</html>

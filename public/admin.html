@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Админка — Hustlify</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#08090a;--card:#141517;--card-hi:#1b1d20;--line:rgba(255,255,255,.08);
+  --white:#f5f5f4;--gray:#8b8d92;--gray-dim:#5c5e63;--green:#22c58b;--red:#ff4d6a;--blue:#3d8bff;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--white);font-family:'Inter',sans-serif;min-height:100vh;}
+h1,h2,.display{font-family:'Unbounded',sans-serif;}
+button,input,select,textarea{font-family:inherit;}
+a{color:inherit;}
+
+/* ---- login ---- */
+#loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+.login-card{width:100%;max-width:380px;background:var(--card);border:1px solid var(--line);border-radius:24px;padding:40px 34px;}
+.login-card .mark{width:48px;height:48px;border:1.5px solid rgba(255,255,255,.5);border-radius:13px;display:flex;align-items:center;justify-content:center;gap:4px;margin:0 auto 22px;}
+.login-card .mark span{width:3.5px;height:18px;background:#fff;border-radius:2px;}
+.login-card h1{font-size:20px;text-align:center;margin-bottom:6px;}
+.login-card p{color:var(--gray);font-size:13.5px;text-align:center;margin-bottom:28px;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:12.5px;color:var(--gray);margin-bottom:7px;}
+.field input{width:100%;padding:13px 16px;border-radius:12px;background:var(--bg);border:1px solid var(--line);color:var(--white);font-size:14.5px;outline:none;transition:border-color .2s;}
+.field input:focus{border-color:rgba(255,255,255,.35);}
+.login-btn{width:100%;padding:14px;border-radius:100px;background:var(--white);color:var(--bg);font-weight:600;font-size:14.5px;border:none;cursor:pointer;margin-top:8px;transition:transform .2s;}
+.login-btn:hover{transform:translateY(-2px);}
+.login-err{color:var(--red);font-size:13px;text-align:center;margin-top:14px;min-height:18px;}
+
+/* ---- dashboard ---- */
+#dash{display:none;}
+header{position:sticky;top:0;z-index:10;background:rgba(8,9,10,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding:18px 0;}
+.wrap{max-width:1140px;margin:0 auto;padding:0 28px;}
+header .wrap{display:flex;align-items:center;justify-content:space-between;}
+.brand{display:flex;align-items:center;gap:12px;font-family:'Unbounded';font-weight:700;font-size:15px;}
+.brand .mark{width:32px;height:32px;border:1.5px solid rgba(255,255,255,.5);border-radius:9px;display:flex;align-items:center;justify-content:center;gap:3px;}
+.brand .mark span{width:3px;height:13px;background:#fff;border-radius:2px;}
+.logout-btn{border:1px solid var(--line);padding:10px 20px;border-radius:100px;font-size:13px;background:none;color:var(--white);cursor:pointer;transition:all .2s;}
+.logout-btn:hover{background:rgba(255,255,255,.06);}
+
+.tabs{display:flex;gap:8px;margin:28px 0;}
+.tab{padding:11px 20px;border-radius:100px;font-size:13.5px;font-weight:500;color:var(--gray);border:1px solid var(--line);cursor:pointer;background:none;transition:all .2s;}
+.tab.active{background:var(--white);color:var(--bg);border-color:transparent;}
+
+.panel{display:none;padding-bottom:60px;}
+.panel.active{display:block;}
+
+.toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:12px;flex-wrap:wrap;}
+.add-btn{background:var(--white);color:var(--bg);padding:12px 22px;border-radius:100px;font-size:13.5px;font-weight:600;border:none;cursor:pointer;transition:transform .2s;}
+.add-btn:hover{transform:translateY(-2px);}
+
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;}
+th,td{text-align:left;padding:14px 16px;font-size:13.5px;border-bottom:1px solid var(--line);}
+th{color:var(--gray);font-weight:500;font-size:12px;text-transform:uppercase;letter-spacing:.5px;}
+tr:last-child td{border-bottom:none;}
+td.num{font-family:'Unbounded';font-weight:600;}
+.thumb{width:36px;height:36px;border-radius:8px;background:var(--card-hi);display:flex;align-items:center;justify-content:center;font-size:16px;overflow:hidden;}
+.thumb img{width:100%;height:100%;object-fit:contain;}
+.row-actions{display:flex;gap:8px;}
+.icon-btn-sm{width:32px;height:32px;border-radius:8px;background:var(--card-hi);border:none;color:var(--white);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s;}
+.icon-btn-sm:hover{background:rgba(255,255,255,.14);}
+.icon-btn-sm.danger:hover{background:rgba(255,77,106,.2);color:var(--red);}
+.pill{padding:4px 10px;border-radius:100px;font-size:11.5px;font-weight:600;}
+.pill.pending{background:rgba(255,255,255,.08);color:var(--gray);}
+.pill.paid{background:rgba(34,197,139,.15);color:var(--green);}
+.pill.canceled{background:rgba(255,77,106,.15);color:var(--red);}
+.empty{padding:60px 20px;text-align:center;color:var(--gray-dim);font-size:14px;}
+
+/* modal for add/edit product */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:90;opacity:0;pointer-events:none;transition:opacity .3s;}
+.overlay.open{opacity:1;pointer-events:auto;}
+.modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-46%);width:520px;max-width:92vw;background:var(--card);border:1px solid var(--line);border-radius:22px;z-index:100;opacity:0;pointer-events:none;transition:all .3s;max-height:88vh;overflow-y:auto;}
+.modal.open{opacity:1;pointer-events:auto;transform:translate(-50%,-50%);}
+.modal-head{display:flex;justify-content:space-between;align-items:center;padding:22px 26px;border-bottom:1px solid var(--line);}
+.modal-head h3{font-size:17px;}
+.modal-body{padding:22px 26px;}
+.modal-foot{padding:20px 26px;border-top:1px solid var(--line);display:flex;gap:10px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.save-btn{flex:1;padding:13px;border-radius:100px;background:var(--white);color:var(--bg);font-weight:600;font-size:14px;border:none;cursor:pointer;}
+.cancel-btn{flex:1;padding:13px;border-radius:100px;background:none;border:1px solid var(--line);color:var(--white);font-size:14px;cursor:pointer;}
+.hint{font-size:12px;color:var(--gray-dim);margin-top:16px;line-height:1.6;padding:14px;background:var(--card-hi);border-radius:12px;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="mark"><span></span><span></span><span></span></div>
+    <h1>Админ-панель Hustlify</h1>
+    <p>Доступ только для владельца магазина</p>
+    <div class="field"><label>Логин</label><input type="text" id="loginUser" autocomplete="username"></div>
+    <div class="field"><label>Пароль</label><input type="password" id="loginPass" autocomplete="current-password"></div>
+    <button class="login-btn" id="loginSubmit">Войти</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dash">
+  <header>
+    <div class="wrap">
+      <div class="brand"><div class="mark"><span></span><span></span><span></span></div>Hustlify Admin</div>
+      <button class="logout-btn" id="logoutBtn">Выйти</button>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="tabs" id="mainTabs">
+      <button class="tab active" data-tab="products">Товары и кейсы</button>
+      <button class="tab" data-tab="news">Новости</button>
+      <button class="tab" data-tab="orders">Заказы</button>
+    </div>
+
+    <div class="panel active" id="panel-products">
+      <div class="toolbar">
+        <div style="color:var(--gray);font-size:13.5px;" id="productCount"></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <div class="tabs" style="margin:0;" id="sectionFilter">
+            <button class="tab active" data-sf="all">Все</button>
+            <button class="tab" data-sf="catalog">Каталог</button>
+            <button class="tab" data-sf="case">Кейсы</button>
+          </div>
+          <button class="add-btn" id="addProductBtn">+ Добавить товар</button>
+        </div>
+      </div>
+      <table>
+        <thead><tr><th></th><th>Название</th><th>Раздел</th><th>Категория</th><th>Цена</th><th></th></tr></thead>
+        <tbody id="productsTbody"></tbody>
+      </table>
+    </div>
+
+    <div class="panel" id="panel-news">
+      <div class="toolbar">
+        <div style="color:var(--gray);font-size:13.5px;" id="newsCount"></div>
+        <button class="add-btn" id="addNewsBtn">+ Добавить новость</button>
+      </div>
+      <table>
+        <thead><tr><th>Заголовок</th><th>Подзаголовок</th><th>Дата</th><th></th></tr></thead>
+        <tbody id="newsTbody"></tbody>
+      </table>
+    </div>
+
+    <div class="panel" id="panel-orders">
+      <div class="toolbar">
+        <div style="color:var(--gray);font-size:13.5px;" id="orderCount"></div>
+        <button class="add-btn" id="refreshOrdersBtn" style="background:none;border:1px solid var(--line);color:var(--white);">Обновить</button>
+      </div>
+      <table>
+        <thead><tr><th>ID заказа</th><th>Товары</th><th>Контакт</th><th>Сумма</th><th>Промокод</th><th>Оплата</th><th>Статус</th><th>Дата</th><th></th></tr></thead>
+        <tbody id="ordersTbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- PRODUCT MODAL -->
+<div class="overlay" id="overlay"></div>
+<div class="modal" id="productModal">
+  <div class="modal-head"><h3 id="modalTitle">Новый товар</h3></div>
+  <div class="modal-body">
+    <div class="grid2">
+      <div class="field"><label>Название</label><input id="f_name"></div>
+      <div class="field"><label>Раздел</label>
+        <select id="f_section" style="width:100%;padding:13px 16px;border-radius:12px;background:var(--bg);border:1px solid var(--line);color:var(--white);">
+          <option value="catalog">Каталог</option>
+          <option value="case">Кейс</option>
+        </select>
+      </div>
+      <div class="field"><label>Категория</label><input id="f_cat" placeholder="Дизайн, Верификации..."></div>
+      <div class="field"><label>Иконка (emoji)</label><input id="f_icon" placeholder="🎨"></div>
+      <div class="field"><label>Цена, ₽</label><input id="f_price" type="number"></div>
+      <div class="field"><label>Старая цена, ₽</label><input id="f_old" type="number"></div>
+    </div>
+    <div class="field"><label>Ссылка на фото (необязательно)</label><input id="f_img" placeholder="/images/product.png или https://..."></div>
+    <div class="field"><label>Описание</label><input id="f_desc"></div>
+    <div class="hint">Фото можно положить в папку <b>public/images/</b> проекта и указать путь вида <code>/images/имя-файла.png</code>. Если поле пустое — используется emoji-иконка.</div>
+  </div>
+  <div class="modal-foot">
+    <button class="cancel-btn" id="cancelModal">Отмена</button>
+    <button class="save-btn" id="saveProduct">Сохранить</button>
+  </div>
+</div>
+
+<!-- NEWS MODAL -->
+<div class="modal" id="newsModal">
+  <div class="modal-head"><h3 id="newsModalTitle">Новая новость</h3></div>
+  <div class="modal-body">
+    <div class="grid2">
+      <div class="field"><label>Метка (тег)</label><input id="nf_tag" placeholder="#HustlifyNews"></div>
+      <div class="field"><label>Подпись под заголовком</label><input id="nf_stamp" placeholder="Новая коллаборация"></div>
+    </div>
+    <div class="field"><label>Заголовок (крупный, capslock-стиль)</label><input id="nf_title" placeholder="ЗОЛОТАЯ РАЗДАЧА"></div>
+    <div class="field"><label>Подзаголовок в теле карточки</label><input id="nf_headline" placeholder="Золотая раздача"></div>
+    <div class="field"><label>Текст новости</label><textarea id="nf_body" rows="4" style="width:100%;padding:13px 16px;border-radius:12px;background:var(--bg);border:1px solid var(--line);color:var(--white);font-size:14px;outline:none;resize:vertical;font-family:inherit;"></textarea></div>
+  </div>
+  <div class="modal-foot">
+    <button class="cancel-btn" id="cancelNewsModal">Отмена</button>
+    <button class="save-btn" id="saveNews">Сохранить</button>
+  </div>
+</div>
+
+<script>
+let editingId = null;
+let products = [];
+
+/* ---------------- AUTH ---------------- */
+async function checkAuth(){
+  const res = await fetch('/api/admin/me');
+  if(res.ok){ showDash(); } else { showLogin(); }
+}
+function showLogin(){ document.getElementById('loginScreen').style.display='flex'; document.getElementById('dash').style.display='none'; }
+function showDash(){ document.getElementById('loginScreen').style.display='none'; document.getElementById('dash').style.display='block'; loadProducts(); loadNews(); loadOrders(); }
+
+document.getElementById('loginSubmit').onclick = async ()=>{
+  const login = document.getElementById('loginUser').value;
+  const password = document.getElementById('loginPass').value;
+  const err = document.getElementById('loginErr');
+  err.textContent = '';
+  try{
+    const res = await fetch('/api/admin/login', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({login, password})
+    });
+    const data = await res.json();
+    if(!res.ok){ err.textContent = data.error || 'Ошибка входа'; return; }
+    showDash();
+  }catch(e){ err.textContent = 'Сервер недоступен'; }
+};
+document.getElementById('logoutBtn').onclick = async ()=>{
+  await fetch('/api/admin/logout', {method:'POST'});
+  showLogin();
+};
+
+/* ---------------- TABS ---------------- */
+document.querySelectorAll('#mainTabs .tab').forEach(t=>{
+  t.onclick = ()=>{
+    document.querySelectorAll('#mainTabs .tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('panel-'+t.dataset.tab).classList.add('active');
+  };
+});
+
+/* ---------------- PRODUCTS SECTION FILTER (Каталог / Кейсы) ---------------- */
+let sectionFilterValue = 'all';
+document.querySelectorAll('#sectionFilter .tab').forEach(t=>{
+  t.onclick = ()=>{
+    document.querySelectorAll('#sectionFilter .tab').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    sectionFilterValue = t.dataset.sf;
+    renderProductsTable();
+  };
+});
+
+/* ---------------- PRODUCTS ---------------- */
+function money(n){ return Number(n).toLocaleString('ru-RU') + ' ₽'; }
+
+async function loadProducts(){
+  const res = await fetch('/api/admin/products');
+  products = await res.json();
+  renderProductsTable();
+}
+
+function renderProductsTable(){
+  const filtered = sectionFilterValue==='all' ? products : products.filter(p=>p.section===sectionFilterValue);
+  document.getElementById('productCount').textContent = filtered.length + ' из ' + products.length + ' товаров';
+  const tbody = document.getElementById('productsTbody');
+  if(filtered.length===0){ tbody.innerHTML = '<tr><td colspan="6"><div class="empty">Ничего нет в этом разделе</div></td></tr>'; return; }
+  tbody.innerHTML = filtered.map(p=>`
+    <tr>
+      <td><div class="thumb">${p.img?`<img src="${p.img}">`:(p.icon||'📦')}</div></td>
+      <td>${p.name}</td>
+      <td>${p.section==='case'?'Кейс':'Каталог'}</td>
+      <td>${p.cat||'—'}</td>
+      <td class="num">${money(p.price)}</td>
+      <td>
+        <div class="row-actions">
+          <button class="icon-btn-sm" data-edit="${p.id}" title="Изменить">✎</button>
+          <button class="icon-btn-sm danger" data-del="${p.id}" title="Удалить">✕</button>
+        </div>
+      </td>
+    </tr>`).join('');
+  tbody.querySelectorAll('[data-edit]').forEach(b=> b.onclick = ()=> openModal(b.dataset.edit));
+  tbody.querySelectorAll('[data-del]').forEach(b=> b.onclick = ()=> deleteProduct(b.dataset.del));
+}
+
+const overlay = document.getElementById('overlay');
+const productModal = document.getElementById('productModal');
+function openModal(id){
+  editingId = id || null;
+  const p = id ? products.find(x=>x.id===id) : null;
+  document.getElementById('modalTitle').textContent = id ? 'Редактировать товар' : 'Новый товар';
+  document.getElementById('f_name').value = p?.name || '';
+  document.getElementById('f_section').value = p?.section || 'catalog';
+  document.getElementById('f_cat').value = p?.cat || '';
+  document.getElementById('f_icon').value = p?.icon || '';
+  document.getElementById('f_price').value = p?.price || '';
+  document.getElementById('f_old').value = p?.old || '';
+  document.getElementById('f_img').value = p?.img || '';
+  document.getElementById('f_desc').value = p?.desc || '';
+  overlay.classList.add('open'); productModal.classList.add('open');
+}
+function closeModal(){ overlay.classList.remove('open'); productModal.classList.remove('open'); }
+document.getElementById('addProductBtn').onclick = ()=> openModal(null);
+document.getElementById('cancelModal').onclick = closeModal;
+overlay.onclick = closeModal;
+
+document.getElementById('saveProduct').onclick = async ()=>{
+  const body = {
+    name: document.getElementById('f_name').value.trim(),
+    section: document.getElementById('f_section').value,
+    cat: document.getElementById('f_cat').value.trim(),
+    icon: document.getElementById('f_icon').value.trim(),
+    price: Number(document.getElementById('f_price').value) || 0,
+    old: Number(document.getElementById('f_old').value) || 0,
+    img: document.getElementById('f_img').value.trim(),
+    desc: document.getElementById('f_desc').value.trim(),
+    hit: false
+  };
+  if(!body.name || !body.price){ alert('Укажите название и цену'); return; }
+  const url = editingId ? `/api/admin/products/${editingId}` : '/api/admin/products';
+  const method = editingId ? 'PUT' : 'POST';
+  await fetch(url, { method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  closeModal();
+  loadProducts();
+};
+
+async function deleteProduct(id){
+  if(!confirm('Удалить этот товар?')) return;
+  await fetch(`/api/admin/products/${id}`, { method:'DELETE' });
+  loadProducts();
+}
+
+/* ---------------- NEWS ---------------- */
+let newsItems = [];
+let editingNewsId = null;
+const newsModal = document.getElementById('newsModal');
+
+async function loadNews(){
+  const res = await fetch('/api/admin/news');
+  newsItems = await res.json();
+  document.getElementById('newsCount').textContent = newsItems.length + ' новостей';
+  const tbody = document.getElementById('newsTbody');
+  if(newsItems.length===0){ tbody.innerHTML = '<tr><td colspan="4"><div class="empty">Новостей пока нет</div></td></tr>'; return; }
+  tbody.innerHTML = newsItems.map(n=>`
+    <tr>
+      <td>${n.title}</td>
+      <td style="color:var(--gray);">${n.stamp||'—'}</td>
+      <td style="color:var(--gray);font-size:12.5px;">${n.createdAt ? new Date(n.createdAt).toLocaleDateString('ru-RU') : '—'}</td>
+      <td>
+        <div class="row-actions">
+          <button class="icon-btn-sm" data-nedit="${n.id}" title="Изменить">✎</button>
+          <button class="icon-btn-sm danger" data-ndel="${n.id}" title="Удалить">✕</button>
+        </div>
+      </td>
+    </tr>`).join('');
+  tbody.querySelectorAll('[data-nedit]').forEach(b=> b.onclick = ()=> openNewsModal(b.dataset.nedit));
+  tbody.querySelectorAll('[data-ndel]').forEach(b=> b.onclick = ()=> deleteNews(b.dataset.ndel));
+}
+
+function openNewsModal(id){
+  editingNewsId = id || null;
+  const n = id ? newsItems.find(x=>x.id===id) : null;
+  document.getElementById('newsModalTitle').textContent = id ? 'Редактировать новость' : 'Новая новость';
+  document.getElementById('nf_tag').value = n?.tag || '#HustlifyNews';
+  document.getElementById('nf_stamp').value = n?.stamp || '';
+  document.getElementById('nf_title').value = n?.title || '';
+  document.getElementById('nf_headline').value = n?.headline || '';
+  document.getElementById('nf_body').value = n?.body || '';
+  overlay.classList.add('open'); newsModal.classList.add('open');
+}
+function closeNewsModal(){ overlay.classList.remove('open'); newsModal.classList.remove('open'); }
+document.getElementById('addNewsBtn').onclick = ()=> openNewsModal(null);
+document.getElementById('cancelNewsModal').onclick = closeNewsModal;
+// делаем клик по фону закрывающим оба модальных окна
+overlay.onclick = ()=>{ closeModal(); closeNewsModal(); };
+
+document.getElementById('saveNews').onclick = async ()=>{
+  const body = {
+    tag: document.getElementById('nf_tag').value.trim() || '#HustlifyNews',
+    stamp: document.getElementById('nf_stamp').value.trim(),
+    title: document.getElementById('nf_title').value.trim(),
+    headline: document.getElementById('nf_headline').value.trim(),
+    body: document.getElementById('nf_body').value.trim()
+  };
+  if(!body.title){ alert('Укажите заголовок новости'); return; }
+  const url = editingNewsId ? `/api/admin/news/${editingNewsId}` : '/api/admin/news';
+  const method = editingNewsId ? 'PUT' : 'POST';
+  await fetch(url, { method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  closeNewsModal();
+  loadNews();
+};
+
+async function deleteNews(id){
+  if(!confirm('Удалить эту новость?')) return;
+  await fetch(`/api/admin/news/${id}`, { method:'DELETE' });
+  loadNews();
+}
+
+/* ---------------- ORDERS ---------------- */
+async function loadOrders(){
+  const res = await fetch('/api/admin/orders');
+  const orders = await res.json();
+  document.getElementById('orderCount').textContent = orders.length + ' заказов';
+  const tbody = document.getElementById('ordersTbody');
+  if(orders.length===0){ tbody.innerHTML = '<tr><td colspan="9"><div class="empty">Заказов пока нет</div></td></tr>'; return; }
+  tbody.innerHTML = orders.map(o=>`
+    <tr>
+      <td style="font-family:monospace;font-size:12px;">${o.id}</td>
+      <td>${o.items.map(i=>i.name+(i.qty>1?' ×'+i.qty:'')).join(', ')}</td>
+      <td style="font-size:12.5px;">${o.contact || '<span style="color:var(--gray-dim);">не указан</span>'}</td>
+      <td class="num">${money(o.total)}</td>
+      <td style="font-size:12px;">${o.promoCode ? `${o.promoCode} (-${o.discountPercent}%)` : '—'}</td>
+      <td>${o.payment?.provider || '—'}</td>
+      <td><span class="pill ${o.status}">${o.status==='paid'?'Оплачен':o.status==='canceled'?'Отменён':'Ожидает'}</span></td>
+      <td style="color:var(--gray);font-size:12.5px;">${new Date(o.createdAt).toLocaleString('ru-RU')}</td>
+      <td>
+        ${o.status!=='paid' ? `<button class="icon-btn-sm" data-mark="${o.id}" title="Отметить оплаченным">✓</button>` : ''}
+      </td>
+    </tr>`).join('');
+  tbody.querySelectorAll('[data-mark]').forEach(b=>{
+    b.onclick = async ()=>{
+      await fetch(`/api/admin/orders/${b.dataset.mark}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({status:'paid'}) });
+      loadOrders();
+    };
+  });
+}
+document.getElementById('refreshOrdersBtn').onclick = loadOrders;
+
+checkAuth();
+</script>
+</body>
+</html>
