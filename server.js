@@ -599,10 +599,11 @@ app.get('/api/admin/promocodes', requireAdmin, async (req, res) => {
   res.json(data);
 });
 
-/* ================= CALCULATOR ================= */
+/* ================= CALCULATOR (Supabase) ================= */
 app.post('/api/calculator', async (req, res) => {
   const { budget, email } = req.body || {};
   
+  // Валидация
   if (!budget || budget <= 0) {
     return res.status(400).json({ error: 'Введите корректную сумму бюджета' });
   }
@@ -610,25 +611,22 @@ app.post('/api/calculator', async (req, res) => {
     return res.status(400).json({ error: 'Введите корректный email' });
   }
   
-  // Сохраняем в файл (или БД)
-  const calcFile = path.join(DATA_DIR, 'calculator.json');
-  let entries = [];
-  try {
-    entries = JSON.parse(fs.readFileSync(calcFile, 'utf-8'));
-  } catch {
-    entries = [];
+  // Сохраняем в Supabase
+  const { data, error } = await supabase
+    .from('calculator')
+    .insert([{
+      id: 'calc_' + Date.now().toString(36),
+      budget: parseInt(budget),
+      email: email.trim()
+    }])
+    .select();
+  
+  if (error) {
+    console.error('❌ Ошибка сохранения в Supabase:', error);
+    return res.status(500).json({ error: 'Не удалось сохранить данные' });
   }
   
-  entries.push({
-    id: 'calc_' + Date.now().toString(36),
-    budget: parseInt(budget),
-    email,
-    created_at: new Date().toISOString()
-  });
-  
-  fs.writeFileSync(calcFile, JSON.stringify(entries, null, 2));
-  
-  // Уведомление в Telegram (если настроен)
+  // Уведомление в Telegram
   try {
     const { sendTelegramMessage } = require('./telegram');
     await sendTelegramMessage(
@@ -638,13 +636,24 @@ app.post('/api/calculator', async (req, res) => {
       `🕐 Время: ${new Date().toLocaleString('ru-RU')}`
     );
   } catch (e) {
-    console.log('Telegram уведомление не отправлено:', e.message);
+    console.log('⚠️ Telegram уведомление не отправлено:', e.message);
   }
   
   res.json({ 
     message: `Спасибо! Мы свяжемся с вами по email ${email} в ближайшее время.`,
     budget 
   });
+});
+
+// Просмотр заявок (только для админа)
+app.get('/api/admin/calculator', requireAdmin, async (req, res) => {
+  const { data, error } = await supabase
+    .from('calculator')
+    .select('*')
+    .order('created_at', { ascending: false });
+  
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
 });
 
 /* ================= ЗАПУСК ================= */
