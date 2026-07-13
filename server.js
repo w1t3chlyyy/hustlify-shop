@@ -599,6 +599,54 @@ app.get('/api/admin/promocodes', requireAdmin, async (req, res) => {
   res.json(data);
 });
 
+/* ================= CALCULATOR ================= */
+app.post('/api/calculator', async (req, res) => {
+  const { budget, email } = req.body || {};
+  
+  if (!budget || budget <= 0) {
+    return res.status(400).json({ error: 'Введите корректную сумму бюджета' });
+  }
+  if (!email || !email.includes('@')) {
+    return res.status(400).json({ error: 'Введите корректный email' });
+  }
+  
+  // Сохраняем в файл (или БД)
+  const calcFile = path.join(DATA_DIR, 'calculator.json');
+  let entries = [];
+  try {
+    entries = JSON.parse(fs.readFileSync(calcFile, 'utf-8'));
+  } catch {
+    entries = [];
+  }
+  
+  entries.push({
+    id: 'calc_' + Date.now().toString(36),
+    budget: parseInt(budget),
+    email,
+    created_at: new Date().toISOString()
+  });
+  
+  fs.writeFileSync(calcFile, JSON.stringify(entries, null, 2));
+  
+  // Уведомление в Telegram (если настроен)
+  try {
+    const { sendTelegramMessage } = require('./telegram');
+    await sendTelegramMessage(
+      `📊 <b>Новый расчёт бюджета</b>\n\n` +
+      `💰 Бюджет: <b>${budget} ₽</b>\n` +
+      `📧 Email: <b>${email}</b>\n` +
+      `🕐 Время: ${new Date().toLocaleString('ru-RU')}`
+    );
+  } catch (e) {
+    console.log('Telegram уведомление не отправлено:', e.message);
+  }
+  
+  res.json({ 
+    message: `Спасибо! Мы свяжемся с вами по email ${email} в ближайшее время.`,
+    budget 
+  });
+});
+
 /* ================= ЗАПУСК ================= */
 app.listen(PORT, () => {
   console.log(`🚀 Hustlify запущен: http://localhost:${PORT}`);
