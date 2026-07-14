@@ -66,6 +66,7 @@ td.num{font-family:'Unbounded';font-weight:600;}
 .icon-btn-sm.danger:hover{background:rgba(255,77,106,.2);color:var(--red);}
 .pill{padding:4px 10px;border-radius:100px;font-size:11.5px;font-weight:600;}
 .pill.pending{background:rgba(255,255,255,.08);color:var(--gray);}
+.pill.moderation{background:rgba(61,139,255,.15);color:var(--blue);}
 .pill.paid{background:rgba(34,197,139,.15);color:var(--green);}
 .pill.canceled{background:rgba(255,77,106,.15);color:var(--red);}
 .empty{padding:60px 20px;text-align:center;color:var(--gray-dim);font-size:14px;}
@@ -114,6 +115,7 @@ td.num{font-family:'Unbounded';font-weight:600;}
       <button class="tab active" data-tab="products">Товары и кейсы</button>
       <button class="tab" data-tab="news">Новости</button>
       <button class="tab" data-tab="orders">Заказы</button>
+      <button class="tab" data-tab="requisites">Реквизиты</button>
     </div>
 
     <div class="panel active" id="panel-products">
@@ -151,9 +153,23 @@ td.num{font-family:'Unbounded';font-weight:600;}
         <button class="add-btn" id="refreshOrdersBtn" style="background:none;border:1px solid var(--line);color:var(--white);">Обновить</button>
       </div>
       <table>
-        <thead><tr><th>ID заказа</th><th>Товары</th><th>Контакт</th><th>Сумма</th><th>Промокод</th><th>Оплата</th><th>Статус</th><th>Дата</th><th></th></tr></thead>
+        <thead><tr><th>ID заказа</th><th>Товары</th><th>Контакт</th><th>Сумма</th><th>Промокод</th><th>Оплата</th><th>Чек</th><th>Статус</th><th>Дата</th><th></th></tr></thead>
         <tbody id="ordersTbody"></tbody>
       </table>
+    </div>
+
+    <div class="panel" id="panel-requisites">
+      <div style="max-width:520px;">
+        <div class="field"><label>Номер карты</label><input id="rq_card" placeholder="0000 0000 0000 0000"></div>
+        <div class="field"><label>Банк</label><input id="rq_bank" placeholder="Т-Банк, Сбербанк..."></div>
+        <div class="field"><label>Получатель (ФИО)</label><input id="rq_name" placeholder="Иванов Иван Иванович"></div>
+        <div class="field">
+          <label>Комментарий / инструкция для клиента</label>
+          <textarea id="rq_comment" rows="4" style="width:100%;padding:13px 16px;border-radius:12px;background:var(--bg);border:1px solid var(--line);color:var(--white);font-size:14px;outline:none;resize:vertical;font-family:inherit;" placeholder="Например: в комментарии к переводу укажите номер заказа"></textarea>
+        </div>
+        <div id="rqSaved" style="color:var(--green);font-size:13px;min-height:18px;margin-bottom:10px;"></div>
+        <button class="add-btn" id="saveRequisites">Сохранить реквизиты</button>
+      </div>
     </div>
   </div>
 </div>
@@ -178,6 +194,7 @@ td.num{font-family:'Unbounded';font-weight:600;}
     </div>
     <div class="field"><label>Ссылка на фото (необязательно)</label><input id="f_img" placeholder="/images/product.png или https://..."></div>
     <div class="field"><label>Описание</label><input id="f_desc"></div>
+    <div id="productErr" style="color:var(--red);font-size:13px;min-height:18px;"></div>
     <div class="hint">Фото можно положить в папку <b>public/images/</b> проекта и указать путь вида <code>/images/имя-файла.png</code>. Если поле пустое — используется emoji-иконка.</div>
   </div>
   <div class="modal-foot">
@@ -197,6 +214,7 @@ td.num{font-family:'Unbounded';font-weight:600;}
     <div class="field"><label>Заголовок (крупный, capslock-стиль)</label><input id="nf_title" placeholder="ЗОЛОТАЯ РАЗДАЧА"></div>
     <div class="field"><label>Подзаголовок в теле карточки</label><input id="nf_headline" placeholder="Золотая раздача"></div>
     <div class="field"><label>Текст новости</label><textarea id="nf_body" rows="4" style="width:100%;padding:13px 16px;border-radius:12px;background:var(--bg);border:1px solid var(--line);color:var(--white);font-size:14px;outline:none;resize:vertical;font-family:inherit;"></textarea></div>
+    <div id="newsErr" style="color:var(--red);font-size:13px;min-height:18px;"></div>
   </div>
   <div class="modal-foot">
     <button class="cancel-btn" id="cancelNewsModal">Отмена</button>
@@ -214,7 +232,7 @@ async function checkAuth(){
   if(res.ok){ showDash(); } else { showLogin(); }
 }
 function showLogin(){ document.getElementById('loginScreen').style.display='flex'; document.getElementById('dash').style.display='none'; }
-function showDash(){ document.getElementById('loginScreen').style.display='none'; document.getElementById('dash').style.display='block'; loadProducts(); loadNews(); loadOrders(); }
+function showDash(){ document.getElementById('loginScreen').style.display='none'; document.getElementById('dash').style.display='block'; loadProducts(); loadNews(); loadOrders(); loadRequisites(); }
 
 document.getElementById('loginSubmit').onclick = async ()=>{
   const login = document.getElementById('loginUser').value;
@@ -257,12 +275,24 @@ document.querySelectorAll('#sectionFilter .tab').forEach(t=>{
   };
 });
 
+/* ---------------- API HELPER ---------------- */
+// Единая обёртка: если сессия истекла (401) — сразу возвращаем на экран логина
+// вместо того, чтобы молча падать при попытке отрисовать данные.
+async function adminFetch(url, opts){
+  const res = await fetch(url, opts);
+  if(res.status === 401){ showLogin(); throw new Error('unauthorized'); }
+  return res;
+}
+
 /* ---------------- PRODUCTS ---------------- */
 function money(n){ return Number(n).toLocaleString('ru-RU') + ' ₽'; }
 
 async function loadProducts(){
-  const res = await fetch('/api/admin/products');
-  products = await res.json();
+  try{
+    const res = await adminFetch('/api/admin/products');
+    products = await res.json();
+    if(!res.ok){ console.error('Ошибка загрузки товаров:', products.error); products = []; }
+  }catch(e){ return; }
   renderProductsTable();
 }
 
@@ -295,6 +325,7 @@ function openModal(id){
   editingId = id || null;
   const p = id ? products.find(x=>x.id===id) : null;
   document.getElementById('modalTitle').textContent = id ? 'Редактировать товар' : 'Новый товар';
+  document.getElementById('productErr').textContent = '';
   document.getElementById('f_name').value = p?.name || '';
   document.getElementById('f_section').value = p?.section || 'catalog';
   document.getElementById('f_cat').value = p?.cat || '';
@@ -311,6 +342,8 @@ document.getElementById('cancelModal').onclick = closeModal;
 overlay.onclick = closeModal;
 
 document.getElementById('saveProduct').onclick = async ()=>{
+  const errEl = document.getElementById('productErr');
+  errEl.textContent = '';
   const body = {
     name: document.getElementById('f_name').value.trim(),
     section: document.getElementById('f_section').value,
@@ -322,18 +355,36 @@ document.getElementById('saveProduct').onclick = async ()=>{
     desc: document.getElementById('f_desc').value.trim(),
     hit: false
   };
-  if(!body.name || !body.price){ alert('Укажите название и цену'); return; }
+  if(!body.name || !body.price){ errEl.textContent = 'Укажите название и цену'; return; }
+
+  const btn = document.getElementById('saveProduct');
+  btn.disabled = true;
   const url = editingId ? `/api/admin/products/${editingId}` : '/api/admin/products';
   const method = editingId ? 'PUT' : 'POST';
-  await fetch(url, { method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
-  closeModal();
-  loadProducts();
+  try{
+    const res = await adminFetch(url, { method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    let data = {};
+    try{ data = await res.json(); }catch(e){}
+    if(!res.ok){
+      errEl.textContent = data.error || `Не удалось сохранить товар (код ${res.status})`;
+      btn.disabled = false;
+      return;
+    }
+    closeModal();
+    loadProducts();
+  }catch(e){
+    if(e.message !== 'unauthorized') errEl.textContent = 'Сервер недоступен. Проверьте соединение и попробуйте снова';
+  }
+  btn.disabled = false;
 };
 
 async function deleteProduct(id){
   if(!confirm('Удалить этот товар?')) return;
-  await fetch(`/api/admin/products/${id}`, { method:'DELETE' });
-  loadProducts();
+  try{
+    const res = await adminFetch(`/api/admin/products/${id}`, { method:'DELETE' });
+    if(!res.ok){ const d = await res.json().catch(()=>({})); alert(d.error || 'Не удалось удалить товар'); return; }
+    loadProducts();
+  }catch(e){}
 }
 
 /* ---------------- NEWS ---------------- */
@@ -342,8 +393,11 @@ let editingNewsId = null;
 const newsModal = document.getElementById('newsModal');
 
 async function loadNews(){
-  const res = await fetch('/api/admin/news');
-  newsItems = await res.json();
+  try{
+    const res = await adminFetch('/api/admin/news');
+    newsItems = await res.json();
+    if(!res.ok){ console.error('Ошибка загрузки новостей:', newsItems.error); newsItems = []; }
+  }catch(e){ return; }
   document.getElementById('newsCount').textContent = newsItems.length + ' новостей';
   const tbody = document.getElementById('newsTbody');
   if(newsItems.length===0){ tbody.innerHTML = '<tr><td colspan="4"><div class="empty">Новостей пока нет</div></td></tr>'; return; }
@@ -351,7 +405,7 @@ async function loadNews(){
     <tr>
       <td>${n.title}</td>
       <td style="color:var(--gray);">${n.stamp||'—'}</td>
-      <td style="color:var(--gray);font-size:12.5px;">${n.createdAt ? new Date(n.createdAt).toLocaleDateString('ru-RU') : '—'}</td>
+      <td style="color:var(--gray);font-size:12.5px;">${n.created_at ? new Date(n.created_at).toLocaleDateString('ru-RU') : '—'}</td>
       <td>
         <div class="row-actions">
           <button class="icon-btn-sm" data-nedit="${n.id}" title="Изменить">✎</button>
@@ -367,6 +421,7 @@ function openNewsModal(id){
   editingNewsId = id || null;
   const n = id ? newsItems.find(x=>x.id===id) : null;
   document.getElementById('newsModalTitle').textContent = id ? 'Редактировать новость' : 'Новая новость';
+  document.getElementById('newsErr').textContent = '';
   document.getElementById('nf_tag').value = n?.tag || '#HustlifyNews';
   document.getElementById('nf_stamp').value = n?.stamp || '';
   document.getElementById('nf_title').value = n?.title || '';
@@ -381,6 +436,8 @@ document.getElementById('cancelNewsModal').onclick = closeNewsModal;
 overlay.onclick = ()=>{ closeModal(); closeNewsModal(); };
 
 document.getElementById('saveNews').onclick = async ()=>{
+  const errEl = document.getElementById('newsErr');
+  errEl.textContent = '';
   const body = {
     tag: document.getElementById('nf_tag').value.trim() || '#HustlifyNews',
     stamp: document.getElementById('nf_stamp').value.trim(),
@@ -388,49 +445,118 @@ document.getElementById('saveNews').onclick = async ()=>{
     headline: document.getElementById('nf_headline').value.trim(),
     body: document.getElementById('nf_body').value.trim()
   };
-  if(!body.title){ alert('Укажите заголовок новости'); return; }
+  if(!body.title){ errEl.textContent = 'Укажите заголовок новости'; return; }
+  const btn = document.getElementById('saveNews');
+  btn.disabled = true;
   const url = editingNewsId ? `/api/admin/news/${editingNewsId}` : '/api/admin/news';
   const method = editingNewsId ? 'PUT' : 'POST';
-  await fetch(url, { method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
-  closeNewsModal();
-  loadNews();
+  try{
+    const res = await adminFetch(url, { method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    let data = {};
+    try{ data = await res.json(); }catch(e){}
+    if(!res.ok){
+      errEl.textContent = data.error || `Не удалось сохранить новость (код ${res.status})`;
+      btn.disabled = false;
+      return;
+    }
+    closeNewsModal();
+    loadNews();
+  }catch(e){
+    if(e.message !== 'unauthorized') errEl.textContent = 'Сервер недоступен. Проверьте соединение и попробуйте снова';
+  }
+  btn.disabled = false;
 };
 
 async function deleteNews(id){
   if(!confirm('Удалить эту новость?')) return;
-  await fetch(`/api/admin/news/${id}`, { method:'DELETE' });
-  loadNews();
+  try{
+    const res = await adminFetch(`/api/admin/news/${id}`, { method:'DELETE' });
+    if(!res.ok){ const d = await res.json().catch(()=>({})); alert(d.error || 'Не удалось удалить новость'); return; }
+    loadNews();
+  }catch(e){}
 }
 
 /* ---------------- ORDERS ---------------- */
+const STATUS_LABEL = { paid:'Оплачен', canceled:'Отменён', moderation:'На модерации', pending:'Ожидает' };
+
 async function loadOrders(){
-  const res = await fetch('/api/admin/orders');
-  const orders = await res.json();
+  try{
+    const res = await adminFetch('/api/admin/orders');
+    var orders = await res.json();
+    if(!res.ok){ console.error('Ошибка загрузки заказов:', orders.error); orders = []; }
+  }catch(e){ return; }
   document.getElementById('orderCount').textContent = orders.length + ' заказов';
   const tbody = document.getElementById('ordersTbody');
-  if(orders.length===0){ tbody.innerHTML = '<tr><td colspan="9"><div class="empty">Заказов пока нет</div></td></tr>'; return; }
+  if(orders.length===0){ tbody.innerHTML = '<tr><td colspan="10"><div class="empty">Заказов пока нет</div></td></tr>'; return; }
   tbody.innerHTML = orders.map(o=>`
     <tr>
       <td style="font-family:monospace;font-size:12px;">${o.id}</td>
       <td>${o.items.map(i=>i.name+(i.qty>1?' ×'+i.qty:'')).join(', ')}</td>
       <td style="font-size:12.5px;">${o.contact || '<span style="color:var(--gray-dim);">не указан</span>'}</td>
       <td class="num">${money(o.total)}</td>
-      <td style="font-size:12px;">${o.promoCode ? `${o.promoCode} (-${o.discountPercent}%)` : '—'}</td>
+      <td style="font-size:12px;">${o.promo_code ? `${o.promo_code} (-${o.discount_percent}%)` : '—'}</td>
       <td>${o.payment?.provider || '—'}</td>
-      <td><span class="pill ${o.status}">${o.status==='paid'?'Оплачен':o.status==='canceled'?'Отменён':'Ожидает'}</span></td>
-      <td style="color:var(--gray);font-size:12.5px;">${new Date(o.createdAt).toLocaleString('ru-RU')}</td>
+      <td>${o.payment?.receiptUrl ? `<a href="${o.payment.receiptUrl}" target="_blank" style="color:var(--blue);">Открыть</a>` : '—'}</td>
+      <td><span class="pill ${o.status}">${STATUS_LABEL[o.status] || o.status}</span></td>
+      <td style="color:var(--gray);font-size:12.5px;">${new Date(o.created_at).toLocaleString('ru-RU')}</td>
       <td>
-        ${o.status!=='paid' ? `<button class="icon-btn-sm" data-mark="${o.id}" title="Отметить оплаченным">✓</button>` : ''}
+        <div class="row-actions">
+          ${o.status!=='paid' ? `<button class="icon-btn-sm" data-mark="${o.id}" title="Подтвердить оплату">✓</button>` : ''}
+          ${o.status!=='canceled' ? `<button class="icon-btn-sm danger" data-cancel="${o.id}" title="Отклонить">✕</button>` : ''}
+        </div>
       </td>
     </tr>`).join('');
   tbody.querySelectorAll('[data-mark]').forEach(b=>{
     b.onclick = async ()=>{
-      await fetch(`/api/admin/orders/${b.dataset.mark}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({status:'paid'}) });
-      loadOrders();
+      try{
+        const res = await adminFetch(`/api/admin/orders/${b.dataset.mark}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({status:'paid'}) });
+        if(!res.ok){ const d = await res.json().catch(()=>({})); alert(d.error || 'Не удалось обновить заказ'); return; }
+        loadOrders();
+      }catch(e){}
+    };
+  });
+  tbody.querySelectorAll('[data-cancel]').forEach(b=>{
+    b.onclick = async ()=>{
+      if(!confirm('Отклонить этот заказ?')) return;
+      try{
+        const res = await adminFetch(`/api/admin/orders/${b.dataset.cancel}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({status:'canceled'}) });
+        if(!res.ok){ const d = await res.json().catch(()=>({})); alert(d.error || 'Не удалось обновить заказ'); return; }
+        loadOrders();
+      }catch(e){}
     };
   });
 }
 document.getElementById('refreshOrdersBtn').onclick = loadOrders;
+
+/* ---------------- REQUISITES ---------------- */
+async function loadRequisites(){
+  try{
+    const res = await fetch('/api/requisites');
+    const r = await res.json();
+    document.getElementById('rq_card').value = r?.card_number || '';
+    document.getElementById('rq_bank').value = r?.bank_name || '';
+    document.getElementById('rq_name').value = r?.recipient_name || '';
+    document.getElementById('rq_comment').value = r?.comment || '';
+  }catch(e){}
+}
+document.getElementById('saveRequisites').onclick = async ()=>{
+  const saved = document.getElementById('rqSaved');
+  saved.textContent = '';
+  const body = {
+    card_number: document.getElementById('rq_card').value.trim(),
+    bank_name: document.getElementById('rq_bank').value.trim(),
+    recipient_name: document.getElementById('rq_name').value.trim(),
+    comment: document.getElementById('rq_comment').value.trim()
+  };
+  try{
+    const res = await adminFetch('/api/admin/requisites', { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    if(!res.ok){ const d = await res.json().catch(()=>({})); saved.style.color='var(--red)'; saved.textContent = d.error || 'Не удалось сохранить'; }
+    else { saved.style.color='var(--green)'; saved.textContent = 'Сохранено ✓'; }
+  }catch(e){
+    saved.style.color='var(--red)'; saved.textContent = 'Сервер недоступен';
+  }
+  setTimeout(()=> saved.textContent='', 2500);
+};
 
 checkAuth();
 </script>
