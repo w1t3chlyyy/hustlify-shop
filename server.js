@@ -13,7 +13,19 @@ const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
+const multer = require('multer');
 const { createClient } = require('@supabase/supabase-js');
+
+// Приём файла чека в памяти (до 10 МБ, только изображения и PDF)
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'application/pdf'];
+    if (allowed.includes(file.mimetype)) return cb(null, true);
+    cb(new Error('Разрешены только изображения (JPG, PNG, WEBP) или PDF'));
+  }
+});
 
 const app = express();
 app.use(express.json());
@@ -37,7 +49,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 console.log('✅ Supabase подключён');
 
 /* ================= TELEGRAM ================= */
-const { notifyNewOrder, notifyOrderPaid } = require('./telegram');
+const { notifyNewOrder, notifyOrderPaid, notifyReceiptUploaded } = require('./telegram');
 
 /* ================= ADMIN AUTH ================= */
 function signToken() {
@@ -500,91 +512,89 @@ app.post('/api/webhooks/cryptobot', express.raw({ type: '*/*' }), async (req, re
   }
 });
 
-/* ================= YOOKASSA PAYMENT ================= */
-app.post('/api/payments/yookassa/create', async (req, res) => {
-  try {
-    const { orderId } = req.body;
-    const { data: order, error } = await supabase
-      .from('orders')
-      .select('*')
-      .eq('id', orderId)
-      .single();
-    
-    if (error || !order) return res.status(404).json({ error: 'Заказ не найден' });
-    if (!process.env.YOOKASSA_SHOP_ID || !process.env.YOOKASSA_SECRET_KEY) {
-      return res.status(500).json({ error: 'ЮKassa не настроена на сервере' });
-    }
-    
-    const auth = Buffer.from(`${process.env.YOOKASSA_SHOP_ID}:${process.env.YOOKASSA_SECRET_KEY}`).toString('base64');
+/* ================= РЕКВИЗИТЫ ДЛЯ ОПЛАТЫ ================= */
+// Хранятся в таблице requisites (одна строка, id = 1), редактируются из админки
 
-    const resp = await fetch('https://api.yookassa.ru/v3/payments', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Basic ${auth}`,
-        'Idempotence-Key': order.id + '_' + Date.now()
-      },
-      body: JSON.stringify({
-        amount: { value: order.total.toFixed(2), currency: 'RUB' },
-        capture: true,
-        confirmation: { type: 'redirect', return_url: `${PUBLIC_URL}/order-success.html?order=${order.id}` },
-        description: `Заказ ${order.id} — Hustlify`,
-        metadata: { orderId: order.id }
-      })
-    });
-    const data = await resp.json();
-    if (!resp.ok) return res.status(502).json({ error: 'Ошибка ЮKassa', details: data });
+app.get('/api/requisites', async (req, res) => {
+  const { data, error } = await supabase
+    .from('requisites')
+    .select('*')
+    .eq('id', 1)
+    .single();
 
-    await supabase
-      .from('orders')
-      .update({
-        payment: { provider: 'yookassa', paymentId: data.id }
-      })
-      .eq('id', orderId);
-
-    res.json({ payUrl: data.confirmation.confirmation_url });
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
-  }
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
 });
 
-/* ================= WEBHOOK YOOKASSA ================= */
-app.post('/api/webhooks/yookassa', async (req, res) => {
+app.put('/api/admin/requisites', requireAdmin, async (req, res) => {
+  const { card_number, bank_name, recipient_name, comment } = req.body || {};
+
+  const { data, error } = await supabase
+    .from('requisites')
+    .update({
+      card_number: (card_number || '').toString().trim(),
+      bank_name: (bank_name || '').toString().trim(),
+      recipient_name: (recipient_name || '').toString().trim(),
+      comment: (comment || '').toString().trim(),
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', 1)
+    .select();
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data[0]);
+});
+
+/* ================= ЧЕК ОБ ОПЛАТЕ (ручная оплата по реквизитам) ================= */
+// Пользователь загружает фото/PDF чека → файл уходит в Supabase Storage,
+// заказ переводится в статус "moderation", уведомление с чеком летит в Telegram-бота.
+app.post('/api/orders/:id/receipt', upload.single('receipt'), async (req, res) => {
   try {
-    const event = req.body;
-    if (event.event === 'payment.succeeded') {
-      const paymentId = event.object.id;
-      const auth = Buffer.from(`${process.env.YOOKASSA_SHOP_ID}:${process.env.YOOKASSA_SECRET_KEY}`).toString('base64');
-      const check = await fetch(`https://api.yookassa.ru/v3/payments/${paymentId}`, {
-        headers: { 'Authorization': `Basic ${auth}` }
-      });
-      const payment = await check.json();
-      if (payment.status === 'succeeded') {
-        const orderId = payment.metadata && payment.metadata.orderId;
-        if (orderId) {
-          await supabase
-            .from('orders')
-            .update({ 
-              status: 'paid', 
-              payment: { provider: 'yookassa', raw: payment },
-              paid_at: new Date().toISOString()
-            })
-            .eq('id', orderId);
-          
-          const { data: order } = await supabase
-            .from('orders')
-            .select('*')
-            .eq('id', orderId)
-            .single();
-          if (order) await notifyOrderPaid(order);
-        }
-      }
+    if (!req.file) return res.status(400).json({ error: 'Файл чека не передан' });
+
+    const { data: order, error: orderErr } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('id', req.params.id)
+      .single();
+
+    if (orderErr || !order) return res.status(404).json({ error: 'Заказ не найден' });
+
+    const ext = (req.file.originalname.split('.').pop() || 'bin').toLowerCase().slice(0, 10);
+    const path = `${order.id}/${Date.now()}-${crypto.randomBytes(6).toString('hex')}.${ext}`;
+
+    const { error: uploadErr } = await supabase
+      .storage
+      .from('receipts')
+      .upload(path, req.file.buffer, { contentType: req.file.mimetype, upsert: false });
+
+    if (uploadErr) return res.status(500).json({ error: 'Не удалось загрузить чек: ' + uploadErr.message });
+
+    const { data: pub } = supabase.storage.from('receipts').getPublicUrl(path);
+    const receiptUrl = pub.publicUrl;
+
+    const { data: updated, error: updateErr } = await supabase
+      .from('orders')
+      .update({
+        status: 'moderation',
+        payment: { provider: 'requisites', receiptUrl },
+        receipt_submitted_at: new Date().toISOString()
+      })
+      .eq('id', order.id)
+      .select();
+
+    if (updateErr) return res.status(500).json({ error: updateErr.message });
+
+    try {
+      await notifyReceiptUploaded(updated[0]);
+    } catch (e) {
+      console.log('Telegram уведомление о чеке не отправлено:', e.message);
     }
-    res.status(200).end();
+
+    res.json(updated[0]);
   } catch (e) {
     console.error(e);
-    res.status(400).end();
+    res.status(500).json({ error: e.message || 'Внутренняя ошибка сервера' });
   }
 });
 
@@ -654,6 +664,14 @@ app.get('/api/admin/calculator', requireAdmin, async (req, res) => {
   
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
+});
+
+/* ================= ОБРАБОТКА ОШИБОК ЗАГРУЗКИ ФАЙЛА ================= */
+app.use((err, req, res, next) => {
+  if (err instanceof multer.MulterError || (err && /Разрешены только/.test(err.message))) {
+    return res.status(400).json({ error: err.message });
+  }
+  next(err);
 });
 
 /* ================= ЗАПУСК ================= */
