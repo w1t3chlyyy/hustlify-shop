@@ -35,9 +35,14 @@ cp .env.example .env
    Скопируйте результат в `ADMIN_PASSWORD_HASH`.
 2. **JWT_SECRET** — любая случайная длинная строка (например, `openssl rand -hex 32`).
 3. **CRYPTOBOT_TOKEN** — получите в Telegram-боте `@CryptoBot` → «Crypto Pay» → «Create App».
-4. **YOOKASSA_SHOP_ID / YOOKASSA_SECRET_KEY** — из личного кабинета yookassa.ru → Настройки → API.
-5. **TELEGRAM_BOT_TOKEN / TELEGRAM_ADMIN_CHAT_IDS** — см. раздел про бота ниже.
-6. **PUBLIC_URL** — адрес сайта после деплоя (локально подойдёт `http://localhost:3000`, но вебхуки платёжек и Telegram работают только с публичным HTTPS-доменом).
+4. **TELEGRAM_BOT_TOKEN / TELEGRAM_ADMIN_CHAT_IDS** — см. раздел про бота ниже.
+5. **PUBLIC_URL** — адрес сайта после деплоя (локально подойдёт `http://localhost:3000`, но вебхуки платёжек и Telegram работают только с публичным HTTPS-доменом).
+
+Оплата ЮKassa удалена. Вместо неё — оплата по реквизитам: клиент видит реквизиты
+(редактируются в админке, вкладка «Реквизиты») и загружает чек, который
+уходит в Telegram-бота, а заказ переходит в статус «На модерации». Настройка
+Supabase для этого — в разделе **«Supabase: таблица реквизитов и хранилище
+чеков»** ниже.
 
 Запуск:
 ```bash
@@ -88,6 +93,42 @@ npm start
 - При оформлении заказа сервер сам проверяет код: не использован ли, не истёк ли — и применяет скидку к сумме. Код одноразовый, сгорает сразу после применения.
 - В админке во вкладке «Заказы» видно, какой промокод и с какой скидкой был применён, плюс контакт покупателя.
 
+## Supabase: таблица реквизитов и хранилище чеков
+
+Оплата по реквизитам использует таблицу `requisites` (одна строка с реквизитами,
+которую вы редактируете в админке) и Storage-бакет `receipts` (туда
+складываются загруженные клиентами чеки).
+
+**1. Таблица `requisites`** — выполните в Supabase → SQL Editor:
+```sql
+create table if not exists public.requisites (
+  id int primary key default 1,
+  card_number text default '',
+  bank_name text default '',
+  recipient_name text default '',
+  comment text default '',
+  updated_at timestamptz default now()
+);
+
+insert into public.requisites (id, card_number, bank_name, recipient_name, comment)
+values (1, '', '', '', '')
+on conflict (id) do nothing;
+```
+Сервер обращается к этой таблице через `SUPABASE_SERVICE_ROLE_KEY`, который
+обходит RLS, так что дополнительные политики не обязательны. Если вы всё же
+включите RLS на этой таблице, service-role ключ продолжит работать как есть.
+
+**2. Storage-бакет `receipts`** — в Supabase → Storage → **New bucket**:
+- Имя: `receipts`
+- **Public bucket**: включить (чтобы ссылка на чек открывалась в Telegram и в
+  админке без дополнительной авторизации). Путь к файлу содержит случайный
+  суффикс, поэтому «угадать» чужой чек по ссылке практически невозможно, но
+  учитывайте, что бакет публичный.
+
+Дополнительно менять таблицу `orders` не нужно — статус заказа (`pending` /
+`moderation` / `paid` / `canceled`) и ссылка на чек хранятся в уже
+существующих полях `status` и `payment` (jsonb).
+
 ## Деплой на Render.com
 
 ⚠️ **Важная особенность Render, из-за которой обычный «бесплатный» тариф не подойдёт**: у бесплатных веб-сервисов Render файловая система эфемерная — все файлы стираются при каждом перезапуске/передеплое, а подключить постоянный диск можно только на платном тарифе. Наш магазин хранит товары/заказы/промокоды в файлах на диске, поэтому нужен план **Starter** ($7/мес) + **Persistent Disk** ($0.25/ГБ/мес, для наших json хватит 1 ГБ = 25 центов) — итого около **$7.25/мес**. Я уже подготовил код под это (переменная `DATA_DIR`), просто следуйте шагам ниже.
@@ -132,8 +173,6 @@ ADMIN_PASSWORD_HASH=...
 JWT_SECRET=...
 CRYPTOBOT_TOKEN=...
 CRYPTOBOT_ASSET=USDT
-YOOKASSA_SHOP_ID=...
-YOOKASSA_SECRET_KEY=...
 TELEGRAM_BOT_TOKEN=...
 TELEGRAM_ADMIN_CHAT_IDS=...
 ```
@@ -143,10 +182,8 @@ TELEGRAM_ADMIN_CHAT_IDS=...
 1. **Create Web Service** — Render соберёт и запустит проект (2–5 минут). В логах увидите `Инициализирован products.json на постоянном диске...` — это разовое копирование стартовых товаров/новостей на ваш новый диск.
 2. Скопируйте выданный адрес вида `https://hustlify-shop.onrender.com`.
 3. Обновите переменную `PUBLIC_URL` этим адресом (или вашим кастомным доменом, см. ниже) → Render передеплоит сервис автоматически.
-4. В кабинетах CryptoBot и ЮKassa укажите webhook-адреса:
-   - `https://ВАШ-АДРЕС/api/webhooks/cryptobot`
-   - `https://ВАШ-АДРЕС/api/webhooks/yookassa`
-5. Админка: `https://ВАШ-АДРЕС/admin.html`
+4. В кабинете CryptoBot укажите webhook-адрес: `https://ВАШ-АДРЕС/api/webhooks/cryptobot`
+5. Реквизиты для оплаты внесите в админке (вкладка «Реквизиты»): `https://ВАШ-АДРЕС/admin.html`
 
 ### Свой домен вместо onrender.com
 В настройках сервиса → **Custom Domains** → добавьте домен → Render покажет DNS-запись (CNAME/A), которую нужно прописать у вашего регистратора домена. TLS-сертификат Render выпускает и обновляет сам, бесплатно. После подключения домена не забудьте обновить `PUBLIC_URL` и webhook-адреса на новый домен.
@@ -161,7 +198,7 @@ TELEGRAM_ADMIN_CHAT_IDS=...
 Если предпочитаете VPS (Timeweb, Selectel, Hetzner) вместо Render:
 1. Разместите проект на сервере, укажите `PUBLIC_URL=https://ваш-домен.ru` в `.env`. `DATA_DIR` можно не задавать — на VPS диск обычный, не эфемерный, подойдёт папка `./data` по умолчанию.
 2. Настройте HTTPS (Let's Encrypt / Certbot, если Nginx стоит перед Node).
-3. Вебхуки — те же пути: `/api/webhooks/cryptobot` и `/api/webhooks/yookassa`.
+3. Вебхук — тот же путь: `/api/webhooks/cryptobot`.
 4. Запустите процесс через `pm2`, чтобы сервер работал постоянно и перезапускался при сбое:
    ```bash
    npm install -g pm2
