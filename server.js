@@ -94,11 +94,32 @@ app.post('/api/admin/logout', (req, res) => {
 
 app.get('/api/admin/me', requireAdmin, (req, res) => res.json({ ok: true }));
 
+/* ================= PRODUCTS: маппинг полей ================= */
+// Фронтенд (index.html, admin.html) работает с полями name/cat/old/desc,
+// а в реальной таблице Supabase они называются name/category/old_price/description.
+// Всё преобразование делаем тут, чтобы не трогать фронтенд.
+const PRODUCT_SELECT = 'id,name,price,cat:category,old:old_price,desc:description,section,img,icon,hit,created_at';
+
+function toDbProduct(p) {
+  const out = {};
+  if (p.name !== undefined) out.name = p.name;
+  if (p.price !== undefined) out.price = p.price;
+  if (p.cat !== undefined) out.category = p.cat;
+  if (p.old !== undefined) out.old_price = p.old;
+  if (p.desc !== undefined) out.description = p.desc;
+  if (p.section !== undefined) out.section = p.section;
+  if (p.img !== undefined) out.img = p.img;
+  if (p.icon !== undefined) out.icon = p.icon;
+  if (p.hit !== undefined) out.hit = p.hit;
+  if (p.id !== undefined) out.id = p.id;
+  return out;
+}
+
 /* ================= PUBLIC: PRODUCTS ================= */
 app.get('/api/products', async (req, res) => {
   const { data, error } = await supabase
     .from('products')
-    .select('*')
+    .select(PRODUCT_SELECT)
     .order('created_at', { ascending: false });
   
   if (error) return res.status(500).json({ error: error.message });
@@ -109,7 +130,7 @@ app.get('/api/products', async (req, res) => {
 app.get('/api/admin/products', requireAdmin, async (req, res) => {
   const { data, error } = await supabase
     .from('products')
-    .select('*')
+    .select(PRODUCT_SELECT)
     .order('created_at', { ascending: false });
   
   if (error) return res.status(500).json({ error: error.message });
@@ -121,12 +142,13 @@ app.post('/api/admin/products', requireAdmin, async (req, res) => {
   if (!p.name || !p.price) {
     return res.status(400).json({ error: 'Укажите как минимум name и price' });
   }
-  p.id = 'p' + Date.now().toString(36);
+  const dbRow = toDbProduct(p);
+  dbRow.id = 'p' + Date.now().toString(36);
   
   const { data, error } = await supabase
     .from('products')
-    .insert([p])
-    .select();
+    .insert([dbRow])
+    .select(PRODUCT_SELECT);
   
   if (error) return res.status(500).json({ error: error.message });
   res.json(data[0]);
@@ -135,9 +157,9 @@ app.post('/api/admin/products', requireAdmin, async (req, res) => {
 app.put('/api/admin/products/:id', requireAdmin, async (req, res) => {
   const { data, error } = await supabase
     .from('products')
-    .update(req.body)
+    .update(toDbProduct(req.body))
     .eq('id', req.params.id)
-    .select();
+    .select(PRODUCT_SELECT);
   
   if (error) return res.status(500).json({ error: error.message });
   if (data.length === 0) return res.status(404).json({ error: 'Товар не найден' });
@@ -577,8 +599,7 @@ app.post('/api/orders/:id/receipt', upload.single('receipt'), async (req, res) =
       .from('orders')
       .update({
         status: 'moderation',
-        payment: { provider: 'requisites', receiptUrl },
-        receipt_submitted_at: new Date().toISOString()
+        payment: { provider: 'requisites', receiptUrl, submittedAt: new Date().toISOString() }
       })
       .eq('id', order.id)
       .select();
