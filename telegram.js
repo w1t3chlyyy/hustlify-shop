@@ -57,12 +57,45 @@ async function sendTelegramMessage(text) {
   }
 }
 
+async function sendTelegramDocument(documentUrl, caption) {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const chatIds = (process.env.TELEGRAM_ADMIN_CHAT_IDS || '')
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean);
+
+  if (!token || chatIds.length === 0) {
+    return; // бот не настроен в .env — молча пропускаем, сайт продолжает работать
+  }
+
+  for (const chatId of chatIds) {
+    try {
+      const resp = await fetch(`https://api.telegram.org/bot${token}/sendDocument`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: chatId,
+          document: documentUrl,
+          caption,
+          parse_mode: 'HTML'
+        })
+      });
+      const data = await resp.json();
+      if (!data.ok) {
+        console.error('Telegram API отказал (документ):', data.description);
+      }
+    } catch (e) {
+      console.error('Не удалось отправить чек в Telegram:', e.message);
+    }
+  }
+}
+
 function formatOrderMessage(order, emoji, title) {
   const itemsList = order.items
     .map(i => `• ${i.name}${i.qty > 1 ? ' × ' + i.qty : ''} — ${i.price * i.qty} ₽`)
     .join('\n');
-  const promoLine = order.promoCode
-    ? `\n🎟 Промокод: <b>${order.promoCode}</b> (-${order.discountPercent}%)`
+  const promoLine = order.promo_code
+    ? `\n🎟 Промокод: <b>${order.promo_code}</b> (-${order.discount_percent}%)`
     : '';
   const contactLine = order.contact
     ? `\n👤 Контакт: <b>${order.contact}</b>`
@@ -85,4 +118,10 @@ function notifyOrderPaid(order) {
   return sendTelegramMessage(formatOrderMessage(order, '✅', 'Заказ оплачен!'));
 }
 
-module.exports = { notifyNewOrder, notifyOrderPaid, sendTelegramMessage };
+function notifyReceiptUploaded(order) {
+  const caption = formatOrderMessage(order, '🧾', 'Загружен чек — заказ на модерации');
+  // caption у sendDocument ограничен 1024 символами — на всякий случай подрежем
+  return sendTelegramDocument(order.payment?.receiptUrl, caption.slice(0, 1000));
+}
+
+module.exports = { notifyNewOrder, notifyOrderPaid, notifyReceiptUploaded, sendTelegramMessage };
