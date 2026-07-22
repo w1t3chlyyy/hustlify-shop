@@ -14,6 +14,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const multer = require('multer');
+const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
 
 // Приём файла чека в памяти (до 10 МБ, только изображения и PDF)
@@ -31,6 +32,19 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.static('public'));
+
+// На Vercel express.static() иногда не покрывает "/", поэтому раздаём
+// ключевые HTML-страницы явными роутами — это работает независимо от
+// того, как настроена статика/рерайты на хостинге.
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+app.get('/admin.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+app.get('/order-success.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'order-success.html'));
+});
 
 const PORT = process.env.PORT || 3000;
 const PUBLIC_URL = process.env.PUBLIC_URL || `http://localhost:${PORT}`;
