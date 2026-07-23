@@ -514,9 +514,9 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
 }
 .wheel-mask{
   overflow:hidden;border-radius:16px;background:var(--bg-soft);border:1px solid var(--line);
-}
+  
 .wheel-track{
-  display:flex;transition:transform 3.6s cubic-bezier(.12,.7,.1,1);
+  display:flex;transition:transform 5.5s cubic-bezier(.12,.7,.1,1);
 }
 .wheel-seg{
   min-width:120px;padding:34px 0;text-align:center;
@@ -1649,18 +1649,18 @@ document.getElementById('spinBtn').addEventListener('click', async ()=>{
   const candidates = wheelValues.map((v,i)=>i).filter(i => wheelValues[i]===discount && i>=10 && i<=17);
   const winnerIndex = candidates.length ? candidates[Math.floor(Math.random()*candidates.length)] : 12;
   const offset = SEG_W*winnerIndex + SEG_W/2 - 240; // center in ~480px mask
-  wheelTrack.style.transition = 'transform 3.6s cubic-bezier(.12,.7,.1,1)';
+  wheelTrack.style.transition = 'transform 5.5s cubic-bezier(.12,.7,.1,1)';
   wheelTrack.style.transform = `translateX(-${offset}px)`;
 
-  setTimeout(()=>{
+ setTimeout(()=>{
     document.querySelectorAll('.wheel-seg').forEach((s,i)=> s.classList.toggle('win', i===winnerIndex));
     document.getElementById('promoCode').value = code;
     lastPromoCode = code;
     showToast(`🎉 Ваша скидка: ${discount}%! Промокод ${code} действует 24 часа`);
     spinning = false;
-    setSpinLock(Date.now()); // фиксируем момент прокрута — следующий доступен через 24ч
+    setSpinLock(Date.now());
     refreshSpinLock();
-  }, 3700);
+  }, 5600);
 });
 
 /* ---- ограничение: 1 прокрут рулетки в 24 часа ----
