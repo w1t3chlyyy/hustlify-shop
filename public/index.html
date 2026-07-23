@@ -1207,6 +1207,9 @@ footer .flinks a:hover{color:var(--white);}
       Подробнее в Telegram
       <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M21.9 3.3 2.8 11c-1.3.5-1.3 1.2-.2 1.5l4.9 1.5 1.9 5.8c.2.6.4.8.8.8.4 0 .6-.2.9-.5l2.2-2.1 4.6 3.4c.8.5 1.4.2 1.6-.7l3-14c.3-1.1-.4-1.6-1.6-1.4Z"/></svg>
     </a>
+     <a href="#" target="_blank" rel="noopener" class="btn btn-outline detail-cta" id="prPortfolioBtn" style="display:none;margin-top:10px;">
+    Портфолио
+  </a>
   </div>
 </div>
 
@@ -1729,37 +1732,45 @@ document.getElementById('mbMiniAppBtn').href = TELEGRAM_LINK;
 const projectDetails = {
   vieto: {
     icon: '👛',
-    img: 'images/projects/vieto.png', // ДОБАВЛЯЕМ ИЗОБРАЖЕНИЕ
+    img: 'images/projects/vieto.png',
     title: 'Vieto Store',
     desc: 'Магазин цифровых продуктов: верификации криптокошельков, бирж и Telegram-сервисов, накрутка активности в соцсетях. Работает в формате автовыдачи 24/7 — заказ обрабатывается без ожидания менеджера в рабочее время.'
   },
   flux: {
     icon: '🎨',
-    img: 'images/projects/flux.jpg', // ДОБАВЛЯЕМ ИЗОБРАЖЕНИЕ
+    img: 'images/projects/flux.jpg',
     title: 'Flux Studio',
-    desc: 'Студия визуального оформления: аватарки, баннеры, полная упаковка бренда с нуля. Помогаем каналу или проекту выглядеть узнаваемо и профессионально с первого касания.'
+    desc: 'Студия визуального оформления: аватарки, баннеры, полная упаковка бренда с нуля. Помогаем каналу или проекту выглядеть узнаваемо и профессионально с первого касания.',
+    portfolioLink: 'https://t.me/+0Bd2iyw1aOU4NDEy' // ← замените на реальную ссылку
   },
   cursor: {
     icon: '🖋️',
-    img: 'images/projects/cursor.png', // ДОБАВЛЯЕМ ИЗОБРАЖЕНИЕ
+    img: 'images/projects/cursor.png',
     title: 'Cursor Market',
     desc: 'Витрина премиум-атрибутики Telegram: юзернеймы, NFT, подарки и звёзды. Помогаем собрать заметный, статусный профиль.'
   }
 };
-
 const projectModal = document.getElementById('projectModal');
 function openProjectModal(key){
   const d = projectDetails[key];
   if(!d) return;
   document.getElementById('prName').textContent = d.title;
-  
-  // Показываем изображение, если оно есть, иначе иконку
+
   document.getElementById('prMedia').innerHTML = d.img 
     ? `<img src="${d.img}" alt="${d.title}" style="width:100%;height:100%;object-fit:contain;border-radius:16px;">`
     : `<div class="dobj">${d.icon}</div>`;
-  
+
   document.getElementById('prDesc').textContent = d.desc;
   document.getElementById('prMoreBtn').href = TELEGRAM_LINK;
+
+  const portfolioBtn = document.getElementById('prPortfolioBtn');
+  if(d.portfolioLink){
+    portfolioBtn.href = d.portfolioLink;
+    portfolioBtn.style.display = 'flex';
+  } else {
+    portfolioBtn.style.display = 'none';
+  }
+
   closeAll();
   openDrawer(projectModal);
 }
