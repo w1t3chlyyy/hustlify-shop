@@ -945,3 +945,11 @@ if (require.main === module) {
 }
 
 module.exports = (req, res) => app(req, res);
+
+app.get('/cases', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'cases.html'));
+});
+
+app.get('/cases/*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'cases.html'));
+});
