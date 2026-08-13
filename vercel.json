@@ -1,20 +1,9 @@
 {
   "version": 2,
-  "builds": [
-    { "src": "index.js", "use": "@vercel/node" },
-    { "src": "public/**", "use": "@vercel/static" }
-  ],
   "routes": [
-    { "src": "/api/(.*)", "dest": "index.js" },
-    { "src": "/(.*)", "dest": "public/$1" }
-  ]
-}
-{
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "rewrites": [
     {
-      "source": "/cases/:path*",
-      "destination": "https://hustlify-cases1.vercel.app/:path*"
+      "src": "/cases/:path*",
+      "dest": "https://hustlify-cases1.vercel.app/:path*"
     }
   ]
 }
