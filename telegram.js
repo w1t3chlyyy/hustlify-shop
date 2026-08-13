@@ -123,5 +123,17 @@ function notifyReceiptUploaded(order) {
   // caption у sendDocument ограничен 1024 символами — на всякий случай подрежем
   return sendTelegramDocument(order.payment?.receiptUrl, caption.slice(0, 1000));
 }
+// Добавить в telegram.js после функции notifyReceiptUploaded
 
+function notifySurveyCompleted(answers, promoCode) {
+  const answersText = answers.map((a, i) => `${i + 1}. ${a}`).join('\n');
+  const text = 
+    `📋 <b>Новый пройденный опрос</b>\n\n` +
+    `🎟 Промокод: <code>${promoCode}</code> (-20%)\n\n` +
+    `<b>Ответы:</b>\n${answersText}\n\n` +
+    `🕐 Время: ${new Date().toLocaleString('ru-RU')}`;
+  return sendTelegramMessage(text);
+}
+
+module.exports = { notifyNewOrder, notifyOrderPaid, notifyReceiptUploaded, notifySurveyCompleted, sendTelegramMessage };
 module.exports = { notifyNewOrder, notifyOrderPaid, notifyReceiptUploaded, sendTelegramMessage };
