@@ -174,6 +174,39 @@ app.get('/api/products', async (req, res) => {
   res.json(readJsonFile('products.json'));
 });
 
+// Подключить notifySurveyCompleted (строка 95 заменить на):
+const { notifyNewOrder, notifyOrderPaid, notifyReceiptUploaded, notifySurveyCompleted } = require('./telegram');
+
+// Добавить после эндпоинта /api/survey/promo (после строки 441):
+app.post('/api/survey/submit', async (req, res) => {
+  const { answers } = req.body || {};
+  if (!Array.isArray(answers) || answers.length === 0) {
+    return res.status(400).json({ error: 'Ответы опроса не переданы' });
+  }
+
+  const code = 'SURVEY20-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+  const discount = 20;
+  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+  // Сохраняем в Supabase или локально
+  if (supabase) {
+    try {
+      await supabase.from('promocodes').insert([{ code, discount, expires_at: expiresAt }]);
+    } catch (e) {}
+  }
+  const promos = readJsonFile('promocodes.json');
+  promos.push({ code, discount, expires_at: expiresAt.toISOString(), used: false });
+  writeJsonFile('promocodes.json', promos);
+
+  // Отправляем уведомление в Telegram с ответами
+  try {
+    await notifySurveyCompleted(answers, code);
+  } catch (e) {
+    console.log('Telegram уведомление об опросе не отправлено:', e.message);
+  }
+
+  res.json({ code, discount });
+});
 /* ================= ADMIN: PRODUCTS CRUD ================= */
 app.get('/api/admin/products', requireAdmin, async (req, res) => {
   if (supabase) {
