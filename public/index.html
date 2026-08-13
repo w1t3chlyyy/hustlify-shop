@@ -1246,6 +1246,7 @@ footer .flinks a:hover{color:var(--white);}
 
 </style>
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
 
@@ -1706,34 +1707,43 @@ Telegram: Напишите в личные сообщения на аккаун�
 </section>
 
 <!-- CONTACT SECTION -->
-<section class="section cta-motivational-section" id="contacts">
+<section class="section" id="contacts" style="padding:100px 0 80px;">
   <div class="wrap">
-    <div class="eyebrow cyan-text" style="letter-spacing:3px;">Связь с нами</div>
-    <h2>Мы на связи 24/7 — просто выберите удобный способ</h2>
-    <p>Напишите нам в мессенджер, задайте вопрос в чате поддержки или закажите бесплатную консультацию. Команда Hustlify всегда готова помочь вам на каждом этапе.</p>
+    <div class="reveal" style="text-align:center;max-width:720px;margin:0 auto;">
+      <h2 style="font-family:'Unbounded',sans-serif;font-size:clamp(32px,5vw,56px);font-weight:800;line-height:1.05;margin-bottom:18px;letter-spacing:-0.03em;">Мы на связи</h2>
+      <p style="color:var(--gray);font-size:16px;line-height:1.6;max-width:420px;margin:0 auto 40px;">Напишите нам в мессенджер или закажите бесплатную консультацию</p>
 
-    <div class="cta-actions" style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;align-items:stretch;margin-top:28px;">
-      <a href="https://t.me/HustlifyHelp" target="_blank" rel="noopener" class="btn btn-white btn-lg" style="flex:1;min-width:160px;text-align:center;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 24px;border-radius:60px;font-weight:600;text-decoration:none;transition:all 0.3s;background:#fff;color:#000;border:none;">
-        Написать в Telegram
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-      </a>
-      <a href="mailto:hustlify@mail.ru" class="btn btn-outline btn-lg" style="flex:1;min-width:160px;text-align:center;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 24px;border-radius:60px;font-weight:600;text-decoration:none;background:transparent;color:#fff;border:none;transition:all 0.3s;">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-        Написать на почту
-      </a>
-      <a href="https://t.me/HustlifyBot" target="_blank" rel="noopener" class="btn btn-ghost btn-lg" style="flex:1;min-width:160px;text-align:center;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 24px;border-radius:60px;font-weight:600;text-decoration:none;background:transparent;color:#aaa;border:none;transition:all 0.3s;">
-        Открыть MiniApp
-      </a>
+      <div style="display:flex;justify-content:center;flex-wrap:wrap;gap:12px;">
+        <a href="https://t.me/HustlifyHelp" target="_blank" rel="noopener" class="btn btn-white" style="display:inline-flex;align-items:center;gap:10px;padding:16px 32px;border-radius:100px;font-weight:700;font-size:14px;text-decoration:none;transition:all 0.3s var(--ease);"
+           onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 16px 40px rgba(255,255,255,0.12)'" 
+           onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='none'">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          Telegram
+        </a>
+        <a href="mailto:hustlify@mail.ru" class="btn btn-outline" style="display:inline-flex;align-items:center;gap:10px;padding:16px 32px;border-radius:100px;border:1px solid rgba(255,255,255,0.2);color:#fff;font-weight:600;font-size:14px;text-decoration:none;transition:all 0.3s var(--ease);"
+           onmouseover="this.style.borderColor='rgba(255,255,255,0.4)';this.style.background='rgba(255,255,255,0.04)';this.style.transform='translateY(-3px)'" 
+           onmouseout="this.style.borderColor='rgba(255,255,255,0.2)';this.style.background='transparent';this.style.transform='translateY(0)'">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-8.97 5.7a1.94 1.94 0 01-2.06 0L2 7"/></svg>
+          Email
+        </a>
+        <a href="https://t.me/HustlifyBot" target="_blank" rel="noopener" class="btn btn-ghost" style="display:inline-flex;align-items:center;gap:10px;padding:16px 32px;border-radius:100px;border:1px solid rgba(255,255,255,0.08);color:var(--gray-dim);font-weight:600;font-size:14px;text-decoration:none;transition:all 0.3s var(--ease);"
+           onmouseover="this.style.borderColor='rgba(255,255,255,0.25)';this.style.color='#fff';this.style.transform='translateY(-3px)'" 
+           onmouseout="this.style.borderColor='rgba(255,255,255,0.08)';this.style.color='var(--gray-dim)';this.style.transform='translateY(0)'">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          MiniApp
+        </a>
+      </div>
     </div>
   </div>
 </section>
+
 <footer>
   <div class="wrap">
     <div class="fbrand">
       <div class="logo" style="width:32px;height:32px;"><img src="images/logo.png" alt="Hustlify" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>
       <span>Hustlify</span>
     </div>
-    <div class="fcopy">© 2026 Hustlify. Все права защищены</div>
+    <div class="fcopy">© 2026 Hustlify. Все права защищены. Платформа готовых IT-бизнесов.</div>
     <div class="flinks">
       <a href="#catalog">Каталог</a>
       <a href="#calculator">Калькулятор</a>
