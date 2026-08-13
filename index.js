@@ -19,7 +19,9 @@ const fs = require('fs');
 const { createClient } = require('@supabase/supabase-js');
 
 // Вспомогательные функции для локального хранилища /data
-const DATA_DIR = path.join(__dirname, 'data');
+const DATA_DIR = process.env.VERCEL 
+  ? path.join('/tmp', 'data') 
+  : path.join(__dirname, 'data');
 if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
 }
@@ -92,7 +94,7 @@ if (supabaseUrl && supabaseKey) {
 }
 
 /* ================= TELEGRAM ================= */
-const { notifyNewOrder, notifyOrderPaid, notifyReceiptUploaded } = require('./telegram');
+const { notifyNewOrder, notifyOrderPaid, notifyReceiptUploaded, notifySurveyCompleted, sendTelegramMessage } = require('./telegram');
 
 /* ================= ADMIN AUTH ================= */
 function signToken() {
@@ -174,10 +176,7 @@ app.get('/api/products', async (req, res) => {
   res.json(readJsonFile('products.json'));
 });
 
-// Подключить notifySurveyCompleted (строка 95 заменить на):
-const { notifyNewOrder, notifyOrderPaid, notifyReceiptUploaded, notifySurveyCompleted } = require('./telegram');
-
-// Добавить после эндпоинта /api/survey/promo (после строки 441):
+/* ================= SURVEY SUBMIT ================= */
 app.post('/api/survey/submit', async (req, res) => {
   const { answers } = req.body || {};
   if (!Array.isArray(answers) || answers.length === 0) {
@@ -207,6 +206,7 @@ app.post('/api/survey/submit', async (req, res) => {
 
   res.json({ code, discount });
 });
+
 /* ================= ADMIN: PRODUCTS CRUD ================= */
 app.get('/api/admin/products', requireAdmin, async (req, res) => {
   if (supabase) {
@@ -936,10 +936,12 @@ app.use((err, req, res, next) => {
 });
 
 /* ================= ЗАПУСК ================= */
-app.listen(PORT, () => {
-  console.log(`🚀 Hustlify запущен: http://localhost:${PORT}`);
-  console.log(`📋 Админка: http://localhost:${PORT}/admin.html`);
-  console.log(`🗄️  База данных: Supabase`);
-});
-module.exports = app;
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`🚀 Hustlify запущен: http://localhost:${PORT}`);
+    console.log(`📋 Админка: http://localhost:${PORT}/admin.html`);
+    console.log(`🗄️  База данных: Supabase`);
+  });
+}
+
 module.exports = (req, res) => app(req, res);
