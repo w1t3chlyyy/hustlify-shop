@@ -9,3 +9,12 @@
     { "src": "/(.*)", "dest": "public/$1" }
   ]
 }
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    {
+      "source": "/cases/:path*",
+      "destination": "https://hustlify-cases1.vercel.app/:path*"
+    }
+  ]
+}
