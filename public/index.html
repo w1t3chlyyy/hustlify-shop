@@ -3249,11 +3249,11 @@ function playCyberSound(type){
     `;
 
     try {
-      const res = await fetch('/api/survey/promo', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ answers })
-      });
+      const res = await fetch('/api/survey/submit', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ answers })
+});
       const data = await res.json();
       const code = data.code || 'SURVEY20-HUSTLIFY';
 
