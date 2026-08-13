@@ -942,3 +942,4 @@ app.listen(PORT, () => {
   console.log(`🗄️  База данных: Supabase`);
 });
 module.exports = app;
+module.exports = (req, res) => app(req, res);
