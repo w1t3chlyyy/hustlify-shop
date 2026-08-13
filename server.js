@@ -941,3 +941,4 @@ app.listen(PORT, () => {
   console.log(`📋 Админка: http://localhost:${PORT}/admin.html`);
   console.log(`🗄️  База данных: Supabase`);
 });
+module.exports = app;
