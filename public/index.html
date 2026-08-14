@@ -193,13 +193,15 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
   font-family:'Unbounded';font-weight:600;font-size:15px;letter-spacing:.5px;
 }
 .hero h1{
-  font-size:clamp(34px,5.4vw,60px);
-  line-height:1.1;font-weight:800;
+  font-size:clamp(38px, 5.8vw, 72px);
+  line-height:1.05;
+  font-weight:800;
   margin-bottom:18px;
+  letter-spacing:-0.03em;
 }
 .hero h1 em{font-style:italic;font-weight:600;color:var(--white);}
 .hero h1 u{text-decoration-thickness:3px;text-underline-offset:8px;}
-.hero .sub{color:var(--gray);font-size:16px;margin-bottom:34px;}
+.hero .sub{color:var(--gray);font-size:clamp(14px, 1.2vw, 18px);margin-bottom:34px;line-height:1.5;}
 .hero-ctas{display:flex;gap:14px;justify-content:center;}
 .btn{
   padding:15px 34px;border-radius:100px;font-size:14.5px;font-weight:600;
@@ -245,6 +247,141 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
 }
 .section-head h2{font-size:clamp(26px,3.6vw,42px);font-weight:800;margin-bottom:14px;line-height:1.15;}
 .section-head p{color:var(--gray);font-size:15.5px;line-height:1.6;}
+/* === TYPOGRAPHY HIERARCHY === */
+/* Hero / H1 - largest */
+.hero h1{
+  font-size:clamp(38px, 5.8vw, 72px);
+  line-height:1.05;
+  font-weight:800;
+  letter-spacing:-0.03em;
+}
+
+/* Section main headings - large */
+.section-head h2{
+  font-size:clamp(32px, 4.2vw, 52px);
+  line-height:1.08;
+  font-weight:800;
+  letter-spacing:-0.025em;
+}
+
+/* Section subheadings / descriptions */
+.section-head p{
+  font-size:clamp(15px, 1.3vw, 18px);
+  line-height:1.65;
+  font-weight:400;
+  color:var(--gray);
+}
+
+/* Card titles - medium */
+.tilt-card h3,
+.news-card h3{
+  font-size:clamp(18px, 1.8vw, 24px);
+  line-height:1.2;
+  font-weight:700;
+}
+
+/* Card descriptions - small */
+.tilt-card .desc,
+.news-card .body-txt{
+  font-size:clamp(13px, 1.05vw, 15px);
+  line-height:1.6;
+}
+
+/* Product titles */
+.product-info h4{
+  font-size:clamp(15px, 1.2vw, 17px);
+  font-weight:700;
+}
+
+/* Product descriptions */
+.product-info .cat-sub{
+  font-size:clamp(12px, 0.95vw, 14px);
+  line-height:1.5;
+}
+
+/* FAQ titles */
+.faq-q{
+  font-size:clamp(15px, 1.3vw, 18px);
+}
+
+/* FAQ answers */
+.faq-a{
+  font-size:clamp(13px, 1.05vw, 15px);
+  line-height:1.65;
+}
+
+/* Process steps */
+.pstep h3{
+  font-size:clamp(18px, 1.6vw, 22px);
+}
+.pstep p{
+  font-size:clamp(13px, 1.05vw, 15px);
+}
+
+/* Review cards */
+.rev-card p{
+  font-size:clamp(13px, 1.05vw, 15px);
+  line-height:1.65;
+}
+
+/* Team section */
+.team-info h3{
+  font-size:clamp(24px, 3vw, 36px);
+}
+.team-info .quote{
+  font-size:clamp(15px, 1.3vw, 18px);
+}
+.team-info .bio{
+  font-size:clamp(13px, 1.05vw, 15px);
+}
+
+/* Calculator */
+.calc-step-title{
+  font-size:clamp(20px, 2vw, 26px);
+}
+.calc-value-big{
+  font-size:clamp(20px, 2.2vw, 28px);
+}
+.calc-metric-num{
+  font-size:clamp(18px, 2vw, 26px);
+}
+.calc-metric-title{
+  font-size:clamp(10px, 0.85vw, 12px);
+}
+.calc-metric-sub{
+  font-size:clamp(11px, 0.95vw, 13px);
+}
+
+/* Eyebrow labels */
+.eyebrow{
+  font-size:clamp(10px, 0.85vw, 12px);
+  letter-spacing:3px;
+}
+
+/* Buttons */
+.btn{
+  font-size:clamp(13px, 1.05vw, 15px);
+}
+
+/* Price */
+.price-row .now{
+  font-size:clamp(15px, 1.3vw, 18px);
+}
+.price-row .old{
+  font-size:clamp(12px, 0.95vw, 14px);
+}
+
+/* Roulette */
+.roulette-card h2{
+  font-size:clamp(28px, 3.5vw, 40px);
+}
+
+/* Modal titles */
+.search-input-row h3{
+  font-size:clamp(16px, 1.4vw, 20px);
+}
+
+
 
 .stat-row{
   display:flex;justify-content:center;gap:60px;margin-bottom:56px;flex-wrap:wrap;
@@ -1114,17 +1251,17 @@ footer .flinks a:hover{color:var(--white);}
 }
 .cta-banner-content h2{
   font-family:'Unbounded', sans-serif;
-  font-size:clamp(26px, 3.4vw, 42px);
+  font-size:clamp(28px, 3.6vw, 48px);
   font-weight:800;
   margin:14px 0 16px;
-  line-height:1.2;
+  line-height:1.15;
   color:#ffffff;
-  letter-spacing:-0.02em;
+  letter-spacing:-0.025em;
 }
 .cta-banner-content p{
-  font-size:clamp(15px, 1.4vw, 17.5px);
+  font-size:clamp(14px, 1.2vw, 17px);
   color:var(--gray);
-  line-height:1.65;
+  line-height:1.6;
   margin-bottom:32px;
 }
 .cta-features-list{
@@ -1697,7 +1834,7 @@ footer .flinks a:hover{color:var(--white);}
       </article>
     </div>
     <div class="reveal" style="text-align:center;margin-top:44px;">
-      <a href="https://t.me/HustlifyRep" target="_blank" rel="noopener" class="btn btn-white" style="display:inline-flex;align-items:center;gap:10px;padding:16px 44px;font-weight:700;">
+      <a href="https://t.me/HustlifyReviews" target="_blank" rel="noopener" class="btn btn-white" style="display:inline-flex;align-items:center;gap:10px;padding:16px 44px;font-weight:700;">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         Смотреть все отзывы
       </a>
@@ -1800,7 +1937,7 @@ Telegram: Напишите в личные сообщения на аккаун�
   <div class="wrap">
     <div class="reveal" style="display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;max-width:1000px;margin:0 auto;">
       <div>
-        <h2 style="font-family:'Unbounded',sans-serif;font-size:clamp(32px,4vw,52px);font-weight:800;line-height:1.05;letter-spacing:-0.03em;margin-bottom:16px;">Мы на связи<br>24/7</h2>
+        <h2 style="font-family:'Unbounded',sans-serif;font-size:clamp(28px,3.5vw,44px);font-weight:800;line-height:1.08;letter-spacing:-0.025em;margin-bottom:16px;">Мы на связи<br>24/7</h2>
         <p style="color:var(--gray);font-size:15px;line-height:1.65;max-width:320px;">Ответим за пару минут. Работаем без выходных и праздников.</p>
       </div>
       <div style="display:flex;flex-direction:column;gap:10px;">
