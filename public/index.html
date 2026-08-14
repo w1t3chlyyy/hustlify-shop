@@ -193,15 +193,13 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
   font-family:'Unbounded';font-weight:600;font-size:15px;letter-spacing:.5px;
 }
 .hero h1{
-  font-size:clamp(38px, 5.8vw, 72px);
-  line-height:1.05;
-  font-weight:800;
+  font-size:clamp(34px,5.4vw,60px);
+  line-height:1.1;font-weight:800;
   margin-bottom:18px;
-  letter-spacing:-0.03em;
 }
 .hero h1 em{font-style:italic;font-weight:600;color:var(--white);}
 .hero h1 u{text-decoration-thickness:3px;text-underline-offset:8px;}
-.hero .sub{color:var(--gray);font-size:clamp(14px, 1.2vw, 18px);margin-bottom:34px;line-height:1.5;}
+.hero .sub{color:var(--gray);font-size:16px;margin-bottom:34px;}
 .hero-ctas{display:flex;gap:14px;justify-content:center;}
 .btn{
   padding:15px 34px;border-radius:100px;font-size:14.5px;font-weight:600;
@@ -1538,20 +1536,14 @@ footer .flinks a:hover{color:var(--white);}
 
 <div class="hero-content">
   <div class="hero-badge-row">
-    <img src="images/logo.png" alt="Hustlify" style="width:52px;height:52px;object-fit:cover;border-radius:50%;border:1.5px solid rgba(255,255,255,0.6);box-shadow:0 0 20px rgba(255,255,255,0.2);">
-    <div class="brand-pill" style="border-color:var(--white);color:#fff;">HUSTLIFY</div>
+    <img src="images/logo.png" alt="Hustlify" style="width:52px;height:52px;object-fit:cover;border-radius:50%;border:1.5px solid rgba(255,255,255,0.5);">
+    <div class="brand-pill">HUSTLIFY</div>
   </div>
-  <h1>От <em class="cyan-text">голой идеи</em> до монетизации за  <br><u>     14 дней</u></h1>
+  <h1>От <em>голой</em> идеи до монетизации за<br><u>2 недели</u></h1>
   <p class="sub">Место успешных решений</p>
   <div class="hero-ctas">
-    <a href="#catalog" class="btn btn-white" style="box-shadow:0 0 30px rgba(255,255,255,0.2);">
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-      Каталог
-    </a>
-    <a href="#cases" class="btn btn-outline" style="border-color:var(--white);color:#fff;display:inline-flex;align-items:center;gap:8px;padding:15px 34px;border-radius:100px;font-size:14.5px;font-weight:600;transition:all .3s var(--ease);">
-  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
-  Кейсы
-</a>
+    <a href="#catalog" class="btn btn-white">Каталог</a>
+    <a href="#cases" class="btn btn-outline">Кейсы</a>
   </div>
 </div>
 </section>
