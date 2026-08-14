@@ -246,89 +246,15 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
 .section-head h2{font-size:clamp(26px,3.6vw,42px);font-weight:800;margin-bottom:14px;line-height:1.15;}
 .section-head p{color:var(--gray);font-size:15.5px;line-height:1.6;}
 
+.stat-row{
+  display:flex;justify-content:center;gap:60px;margin-bottom:56px;flex-wrap:wrap;
+}
+.stat-item{text-align:center;}
+.stat-item .num{font-family:'Unbounded';font-size:34px;font-weight:800;}
+.stat-item .lbl{color:var(--gray);font-size:13px;margin-top:4px;}
+
 .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;}
 @media(max-width:900px){.grid-3{grid-template-columns:1fr;}}
-
-/* ========== FLIP CARDS STYLES ========== */
-.flip-card {
-  height: 380px;
-  perspective: 1400px;
-  padding: 0;
-  background: none;
-  border: none;
-  cursor: default;
-}
-.flip-card:hover {
-  box-shadow: none;
-  border-color: transparent;
-}
-.flip-inner {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  transition: transform 0.7s var(--ease);
-  transform-style: preserve-3d;
-}
-.flip-card.flipped .flip-inner {
-  transform: rotateY(180deg);
-}
-.flip-face {
-  position: absolute;
-  inset: 0;
-  backface-visibility: hidden;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--line);
-  overflow: hidden;
-}
-.flip-front {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--card);
-}
-.flip-front-bg {
-  position: absolute;
-  inset: -20px;
-  background-size: cover;
-  background-position: center;
-  filter: blur(20px) brightness(0.45);
-}
-.flip-front-overlay {
-  position: relative;
-  z-index: 2;
-  text-align: center;
-  padding: 0 26px;
-}
-.flip-front-overlay h3 {
-  font-family: 'Unbounded', sans-serif;
-  font-size: 22px;
-  font-weight: 800;
-  line-height: 1.25;
-  margin-bottom: 24px;
-}
-.flip-open-btn {
-  background: var(--white);
-  color: var(--bg);
-  padding: 13px 28px;
-  border-radius: 100px;
-  font-size: 13.5px;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  transition: transform 0.25s var(--ease);
-}
-.flip-open-btn:hover {
-  transform: translateY(-2px);
-}
-.flip-back {
-  transform: rotateY(180deg);
-  background: var(--card);
-  padding: 32px 28px;
-  display: flex;
-  flex-direction: column;
-}
-/* ========== END FLIP CARDS STYLES ========== */
-
 .tilt-card{
   background:var(--card);
   border:1px solid var(--line);
@@ -366,10 +292,54 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
 .tg-btn:hover{transform:translateY(-2px) rotate(-8deg);background:rgba(255,255,255,.14);}
 .tg-btn svg{width:18px;height:18px;}
 
+/* ---- flip cards (О нас) ---- */
+.flip-card{
+  height:380px;
+  perspective:1400px;
+  padding:0;
+  background:none;
+  border:none;
+  cursor:default;
+}
+.flip-card:hover{box-shadow:none;border-color:transparent;}
+.flip-inner{
+  position:relative;
+  width:100%;height:100%;
+  transition:transform .7s var(--ease);
+  transform-style:preserve-3d;
+}
+.flip-card.flipped .flip-inner{transform:rotateY(180deg);}
+.flip-face{
+  position:absolute;inset:0;
+  backface-visibility:hidden;
+  border-radius:var(--radius-lg);
+  border:1px solid var(--line);
+  overflow:hidden;
+}
+.flip-front{display:flex;align-items:center;justify-content:center;background:var(--card);}
+.flip-front-bg{
+  position:absolute;inset:-20px;
+  background-size:cover;background-position:center;
+  filter:blur(20px) brightness(.45);
+}
+.flip-front-overlay{position:relative;z-index:2;text-align:center;padding:0 26px;}
+.flip-front-overlay h3{
+  font-family:'Unbounded';font-size:22px;font-weight:800;line-height:1.25;margin-bottom:24px;
+}
+.flip-open-btn{
+  background:var(--white);color:var(--bg);
+  padding:13px 28px;border-radius:100px;
+  font-size:13.5px;font-weight:600;border:none;cursor:pointer;
+  transition:transform .25s var(--ease);
+}
+.flip-open-btn:hover{transform:translateY(-2px);}
+.flip-back{transform:rotateY(180deg);background:var(--card);padding:32px 28px;display:flex;flex-direction:column;}
+
 .news-wrap{
   position:relative;
   padding: 0 60px;
 }
+
 .news-track{
   display:flex;
   gap:22px;
@@ -436,6 +406,7 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
   font-size:13.5px;
   line-height:1.6;
 }
+
 .news-nav{
   position:absolute;
   top:50%;
@@ -588,6 +559,7 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
   opacity:0.7;
   z-index:0;
 }
+
 .roulette-card::after{
   content:'';position:absolute;inset:0;
   background:
@@ -610,6 +582,7 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
   opacity:0.5;
   z-index:0;
 }
+
 @keyframes starTwinkle{
   0%{opacity:0.4;transform:scale(1);}
   50%{opacity:0.8;transform:scale(1.02);}
@@ -919,6 +892,11 @@ footer .flinks a:hover{color:var(--white);}
 }
 @keyframes pulseDot{0%,100%{scale:1;opacity:1;}50%{scale:1.4;opacity:0.5;}}
 
+/* === THREE.JS HERO CANVAS & LIGHTS === */
+#heroThreeCanvas{
+  display:none;
+}
+
 /* === ROI & PROFIT CALCULATOR === */
 .calc-section{
   padding:100px 0;position:relative;
@@ -1069,7 +1047,7 @@ footer .flinks a:hover{color:var(--white);}
   line-height:1.35;
 }
 
-/* === SOCIAL PROOF TOAST === */
+/* === SOCIAL PROOF TOAST (GLASSMORPHISM) === */
 .social-proof-toast{
   position:fixed;bottom:24px;left:24px;z-index:9990;
   background:rgba(18, 18, 24, 0.65);
@@ -1111,32 +1089,70 @@ footer .flinks a:hover{color:var(--white);}
 }
 .sp-close:hover{color:#ffffff;}
 
-/* === FAQ ACCORDION === */
-.faq-grid{max-width:800px;margin:0 auto;display:grid;gap:16px;}
-.faq-item{
-  background:var(--card);border:1px solid var(--line);
-  border-radius:var(--radius-md);overflow:hidden;
-  transition:all 0.3s var(--ease);
+/* === MOTIVATIONAL CTA BANNER (LAST BLOCK) === */
+.cta-motivational-section{
+  padding:40px 0 80px;
 }
-.faq-item.active{border-color:rgba(255,255,255,0.4);background:var(--card-hi);}
-.faq-q{
-  padding:22px 28px;font-family:'Unbounded';font-size:16px;font-weight:700;
-  display:flex;align-items:center;justify-content:space-between;cursor:pointer;
-  user-select:none;
+.cta-banner-card{
+  position:relative;
+  background:linear-gradient(135deg, rgba(28,28,36,0.92) 0%, rgba(12,12,16,0.96) 100%);
+  border:1px solid rgba(255,255,255,0.22);
+  border-radius:28px;
+  padding:56px 44px;
+  overflow:hidden;
+  backdrop-filter:blur(24px);
+  box-shadow:0 30px 80px rgba(0,0,0,0.7), inset 0 1px 1px rgba(255,255,255,0.3);
+  text-align:center;
 }
-.faq-icon{
-  width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.06);
-  display:flex;align-items:center;justify-content:center;
-  transition:transform 0.3s var(--ease);
+.cta-banner-glow{
+  position:absolute;top:-40%;right:-20%;width:500px;height:500px;
+  background:radial-gradient(circle, rgba(255,255,255,0.12) 0%, rgba(0,0,0,0) 70%);
+  pointer-events:none;filter:blur(60px);
 }
-.faq-item.active .faq-icon{transform:rotate(180deg);background:#ffffff;color:#000000;}
-.faq-a{
-  padding:0 28px 22px;color:var(--gray);font-size:14.5px;line-height:1.65;
-  display:none;
+.cta-banner-content{
+  position:relative;z-index:2;max-width:840px;margin:0 auto;
 }
-.faq-item.active .faq-a{display:block;animation:fadeInUp 0.3s var(--ease);}
+.cta-banner-content h2{
+  font-family:'Unbounded', sans-serif;
+  font-size:clamp(26px, 3.4vw, 42px);
+  font-weight:800;
+  margin:14px 0 16px;
+  line-height:1.2;
+  color:#ffffff;
+  letter-spacing:-0.02em;
+}
+.cta-banner-content p{
+  font-size:clamp(15px, 1.4vw, 17.5px);
+  color:var(--gray);
+  line-height:1.65;
+  margin-bottom:32px;
+}
+.cta-features-list{
+  display:flex;justify-content:center;flex-wrap:wrap;gap:14px;
+  margin-bottom:38px;
+}
+.cta-feat-item{
+  display:flex;align-items:center;gap:10px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.14);
+  padding:11px 20px;border-radius:14px;
+  font-size:13.5px;font-weight:600;color:#ffffff;
+  box-shadow:0 4px 15px rgba(0,0,0,0.2);
+}
+.cta-feat-item svg{color:#ffffff;flex-shrink:0;}
+.cta-actions{
+  display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:16px;
+}
+.btn-lg{
+  padding:16px 28px;font-size:15px;border-radius:14px;
+}
+@media(max-width:768px){
+  .cta-banner-card{padding:36px 20px;}
+  .cta-actions{flex-direction:column;width:100%;}
+  .cta-actions .btn{width:100%;justify-content:center;}
+}
 
-/* === SURVEY PROMPT === */
+/* === BOTTOM SURVEY PROMPT TOAST === */
 .survey-prompt-toast{
   position:fixed;bottom:24px;right:24px;z-index:9995;
   background:rgba(12, 12, 15, 0.96);
@@ -1162,11 +1178,119 @@ footer .flinks a:hover{color:var(--white);}
 .spt-close{background:none;border:none;color:var(--gray-dim);cursor:pointer;padding:4px;display:flex;align-items:center;justify-content:center;transition:color 0.2s;}
 .spt-close:hover{color:#ffffff;}
 
-.cyan-text{background:linear-gradient(135deg,#ffffff 0%,#a1a1aa 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+@media(max-width:640px){
+  .survey-prompt-toast{left:14px;right:14px;bottom:14px;max-width:none;padding:14px 16px;}
+  .spt-title{font-size:12.5px;}
+  .spt-sub{font-size:11px;}
+}
+
+/* === SURVEY QUESTION OPTIONS === */
+.survey-q-title{
+  font-family:'Unbounded',sans-serif;font-size:clamp(16px, 2vw, 19px);font-weight:700;color:#ffffff;
+  line-height:1.35;margin-bottom:18px;
+}
+.survey-options-grid{
+  display:grid;gap:10px;
+}
+.survey-opt-btn{
+  background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.12);
+  border-radius:14px;padding:14px 18px;color:#ffffff;
+  font-family:'Inter',sans-serif;font-size:13.5px;font-weight:600;
+  text-align:left;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  transition:all 0.2s ease;cursor:pointer;
+}
+.survey-opt-btn:hover{
+  background:rgba(255,255,255,0.14);border-color:#ffffff;
+  transform:translateX(4px);box-shadow:0 0 20px rgba(255,255,255,0.12);
+}
+.survey-opt-badge{
+  font-size:11px;color:var(--gray-dim);text-transform:uppercase;letter-spacing:1px;font-weight:600;
+  background:rgba(255,255,255,0.06);padding:3px 8px;border-radius:6px;border:1px solid rgba(255,255,255,0.08);
+}
+.survey-nav-row{
+  display:flex;justify-content:space-between;align-items:center;margin-top:20px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.08);
+}
+.sp-close:hover{color:#fff;}
+
+/* === AI MATCHMAKER WIZARD MODAL === */
+.ai-wizard-modal{
+  position:fixed;inset:0;z-index:9999;
+  background:rgba(0,0,0,0.9);backdrop-filter:blur(20px);
+  display:flex;align-items:center;justify-content:center;padding:20px;
+  opacity:0;pointer-events:none;transition:opacity 0.3s;
+}
+.ai-wizard-modal.show{opacity:1;pointer-events:auto;}
+.wizard-box{
+  background:linear-gradient(160deg, #121214, #08080a);
+  border:1px solid rgba(255,255,255,0.3);
+  box-shadow:0 30px 90px rgba(0,0,0,0.8);
+  border-radius:var(--radius-lg);padding:40px;width:100%;max-width:580px;
+  position:relative;
+}
+.wizard-close{
+  position:absolute;top:20px;right:20px;width:36px;height:36px;
+  border-radius:50%;background:rgba(255,255,255,0.06);color:#fff;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  transition:background 0.2s;
+}
+.wizard-close:hover{background:rgba(255,255,255,0.15);}
+.wizard-step{display:none;}
+.wizard-step.active{display:block;animation:fadeInUp 0.3s var(--ease);}
+.wizard-options{display:grid;gap:12px;margin-top:24px;}
+.wizard-opt{
+  background:rgba(255,255,255,0.03);border:1px solid var(--line);
+  padding:16px 20px;border-radius:16px;text-align:left;
+  font-size:14.5px;font-weight:600;color:#fff;
+  transition:all 0.25s;display:flex;align-items:center;justify-content:space-between;
+}
+.wizard-opt:hover{
+  background:rgba(255,255,255,0.1);border-color:#ffffff;
+  transform:translateX(6px);box-shadow:0 0 20px rgba(255,255,255,0.1);
+}
+
+/* === FAQ ACCORDION === */
+.faq-grid{max-width:800px;margin:0 auto;display:grid;gap:16px;}
+.faq-item{
+  background:var(--card);border:1px solid var(--line);
+  border-radius:var(--radius-md);overflow:hidden;
+  transition:all 0.3s var(--ease);
+}
+.faq-item.active{border-color:rgba(255,255,255,0.4);background:var(--card-hi);}
+.faq-q{
+  padding:22px 28px;font-family:'Unbounded';font-size:16px;font-weight:700;
+  display:flex;align-items:center;justify-content:space-between;cursor:pointer;
+  user-select:none;
+}
+.faq-icon{
+  width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.06);
+  display:flex;align-items:center;justify-content:center;
+  transition:transform 0.3s var(--ease);
+}
+.faq-item.active .faq-icon{transform:rotate(180deg);background:#ffffff;color:#000000;}
+.faq-a{
+  padding:0 28px 22px;color:var(--gray);font-size:14.5px;line-height:1.65;
+  display:none;
+}
+.faq-item.active .faq-a{display:block;animation:fadeInUp 0.3s var(--ease);}
+
+/* === GLOW EFFECTS & SHIMMER === */
 .gold-text{background:linear-gradient(135deg,#ffffff 0%,#a1a1aa 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.cyan-text{background:linear-gradient(135deg,#ffffff 0%,#a1a1aa 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.badge-3d{
+  position:absolute;top:14px;right:14px;
+  background:rgba(255,255,255,0.12);
+  border:1px solid #ffffff;color:#fff;
+  font-size:10px;font-weight:800;padding:4px 10px;border-radius:100px;
+  letter-spacing:0.5px;backdrop-filter:blur(8px);
+  box-shadow:0 0 15px rgba(255,255,255,0.2);
+}
+
 @keyframes fadeInUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
 
 </style>
+<base target="_blank">
+<base target="_blank">
+<base target="_blank">
 </head>
 <body>
 
@@ -1221,7 +1345,10 @@ footer .flinks a:hover{color:var(--white);}
   <div class="wrap">
     <div class="nav-left">
       <a href="#catalog">Каталог</a>
-      <a href="#calculator">Калькулятор</a>
+      <a href="#calculator">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block;vertical-align:-2px;margin-right:4px;"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="18"/><path d="M16 10h.01M12 10h.01M8 10h.01M12 14h.01M8 14h.01M12 18h.01M8 18h.01"/></svg>
+        Калькулятор
+      </a>
       <a href="#about">О нас</a>
       <a href="#faq">FAQ</a>
     </div>
@@ -1238,7 +1365,7 @@ footer .flinks a:hover{color:var(--white);}
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1.5"/><circle cx="19" cy="21" r="1.5"/><path d="M2.5 3h2l2.4 12.4a2 2 0 0 0 2 1.6h8.6a2 2 0 0 0 2-1.6L21 7.5H6"/></svg>
         <span class="badge" id="cartCount">0</span>
       </button>
-      <a href="#contacts" class="btn-contact">Контакты</a>
+      <a href="#contact" class="btn-contact">Контакты</a>
     </div>
   </div>
 </header>
@@ -1277,17 +1404,17 @@ footer .flinks a:hover{color:var(--white);}
     <img src="images/logo.png" alt="Hustlify" style="width:52px;height:52px;object-fit:cover;border-radius:50%;border:1.5px solid rgba(255,255,255,0.6);box-shadow:0 0 20px rgba(255,255,255,0.2);">
     <div class="brand-pill" style="border-color:var(--white);color:#fff;">HUSTLIFY</div>
   </div>
-  <h1>От <em class="cyan-text">голой идеи</em> до монетизации за  <br><u>14 дней</u></h1>
+  <h1>От <em class="cyan-text">голой идеи</em> до монетизации за  <br><u>     14 дней</u></h1>
   <p class="sub">Место успешных решений</p>
   <div class="hero-ctas">
     <a href="#catalog" class="btn btn-white" style="box-shadow:0 0 30px rgba(255,255,255,0.2);">
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
       Каталог
     </a>
-    <a href="#cases" class="btn btn-outline" style="border-color:var(--white);color:#fff;">
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
-      Кейсы
-    </a>
+    <a href="#cases" class="btn btn-outline" style="border-color:var(--white);color:#fff;display:inline-flex;align-items:center;gap:8px;padding:15px 34px;border-radius:100px;font-size:14.5px;font-weight:600;transition:all .3s var(--ease);">
+  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+  Кейсы
+</a>
   </div>
 </div>
 </section>
@@ -1353,17 +1480,14 @@ footer .flinks a:hover{color:var(--white);}
         </div>
 
         <button id="calcCtaBtn" class="btn btn-white" style="margin-top:28px;width:100%;justify-content:center;background:#ffffff;color:#000;font-family:'Unbounded',sans-serif;font-weight:700;font-size:13.5px;letter-spacing:-0.01em;border:none;">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          Подобрать готовый проект за 50,000 ₽
-        </button>
+  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+  Подобрать готовый проект за 50,000 ₽
+</button>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ============================================================ -->
-<!-- ================ БЛОК "О НАС" С FLIP КАРТОЧКАМИ ================ -->
-<!-- ============================================================ -->
 <section class="section" id="about">
   <div class="wrap">
     <div class="section-head reveal">
@@ -1372,8 +1496,7 @@ footer .flinks a:hover{color:var(--white);}
     </div>
     <div class="grid-3" id="projectsGrid">
 
-      <!-- Карточка 1: Vieto Store -->
-      <div class="flip-card" data-project="vieto">
+      <article class="tilt-card flip-card" data-project="vieto">
         <div class="flip-inner">
           <div class="flip-face flip-front">
             <div class="flip-front-bg" style="background-image:url('images/projects/vieto.png');"></div>
@@ -1396,10 +1519,9 @@ footer .flinks a:hover{color:var(--white);}
             </div>
           </div>
         </div>
-      </div>
+      </article>
 
-      <!-- Карточка 2: Flux Studio -->
-      <div class="flip-card" data-project="flux">
+      <article class="tilt-card flip-card" data-project="flux">
         <div class="flip-inner">
           <div class="flip-face flip-front">
             <div class="flip-front-bg" style="background-image:url('images/projects/flux.jpg');"></div>
@@ -1422,10 +1544,9 @@ footer .flinks a:hover{color:var(--white);}
             </div>
           </div>
         </div>
-      </div>
+      </article>
 
-      <!-- Карточка 3: Cursor Market -->
-      <div class="flip-card" data-project="cursor">
+      <article class="tilt-card flip-card" data-project="cursor">
         <div class="flip-inner">
           <div class="flip-face flip-front">
             <div class="flip-front-bg" style="background-image:url('images/projects/cursor.png');"></div>
@@ -1448,14 +1569,11 @@ footer .flinks a:hover{color:var(--white);}
             </div>
           </div>
         </div>
-      </div>
+      </article>
 
     </div>
   </div>
 </section>
-<!-- ============================================================ -->
-<!-- ================ КОНЕЦ БЛОКА "О НАС" ================ -->
-<!-- ============================================================ -->
 
 <section class="section">
   <div class="wrap">
@@ -1479,10 +1597,10 @@ footer .flinks a:hover{color:var(--white);}
     </div>
     <div class="pgrid reveal" id="casesGrid"></div>
     <div class="reveal" style="text-align:center;margin-top:44px;">
-      <a href="/cases" target="_blank" rel="noopener" class="btn btn-white" style="display:inline-flex;align-items:center;gap:10px;padding:16px 44px;font-weight:700;">
-        Смотреть закрытые кейсы →
-      </a>
-    </div>
+  <a href="/cases" target="_blank" rel="noopener" class="btn btn-white" style="display:inline-flex;align-items:center;gap:10px;padding:16px 44px;font-weight:700;">
+    Смотреть закрытые кейсы →
+  </a>
+</div>
   </div>
 </section>
 
@@ -1544,7 +1662,6 @@ footer .flinks a:hover{color:var(--white);}
     </div>
   </div>
 </section>
-
 <section class="section">
   <div class="wrap">
     <div class="section-head reveal">
@@ -1591,29 +1708,88 @@ footer .flinks a:hover{color:var(--white);}
     </div>
     <div class="faq-grid reveal">
       <div class="faq-item active">
-        <div class="faq-q"><span>Как сделать заказ?</span><div class="faq-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg></div></div>
-        <div class="faq-a">Процесс покупки максимально прост и занимает всего пару минут: Шаг 1: Выберите понравившийся товар и нажмите кнопку «В корзину». Шаг 2: Перейдите в корзину, проверьте состав заказа и итоговую сумму. Шаг 3: Заполните все обязательные поля: контактный email, номер телефона и точный адрес. Шаг 4: Выберите удобный способ оплаты и завершите транзакцию. Шаг 5: После успешной оплаты вы получите письмо с подтверждением.</div>
+        <div class="faq-q">
+          <span> Как сделать заказ?</span>
+          <div class="faq-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg></div>
+        </div>
+        <div class="faq-a">
+          Процесс покупки максимально прост и занимает всего пару минут:
+
+Шаг 1: Выберите понравившийся товар и нажмите кнопку «В корзину».
+
+Шаг 2: Перейдите в корзину, проверьте состав заказа и итоговую сумму.
+
+Шаг 3: Заполните все обязательные поля: контактный email, номер телефона (для связи с доставкой) и точный адрес.
+
+Шаг 4: Выберите удобный способ оплаты и завершите транзакцию.
+
+Шаг 5: После успешной оплаты вы получите письмо с подтверждением и деталями заказа.
+
+
+        </div>
       </div>
       <div class="faq-item">
-        <div class="faq-q"><span>Какие способы оплаты доступны?</span><div class="faq-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg></div></div>
-        <div class="faq-a">Мы предлагаем два варианта: Банковские карты (МИР) — быстрая и привычная оплата через защищенный протокол шифрования. Криптовалюта (BTC / ETH / USDT) — для тех, кто ценит анонимность и скорость международных переводов.</div>
+        <div class="faq-q">
+          <span>Какие способы оплаты доступны?</span>
+          <div class="faq-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg></div>
+        </div>
+        <div class="faq-a">
+          Мы заботимся о вашем комфорте и предлагаем два варианта расчета:
+
+Банковские карты (МИР): Быстрая и привычная оплата. Все платежи проходят через защищенный протокол шифрования.
+
+Криптовалюта (BTC / ETH / USDT): Для тех, кто ценит анонимность и скорость международных переводов. Реквизиты для перевода генерируются автоматически при выборе этого метода.
+
+Обратите внимание: валюту платежа вы выбираете на этапе оформления. Комиссия сети при переводе криптовалюты оплачивается покупателем.
+        </div>
       </div>
       <div class="faq-item">
-        <div class="faq-q"><span>Когда и как можно крутить рулетку скидок?</span><div class="faq-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg></div></div>
-        <div class="faq-a">Рулетка доступна 1 раз в 24 часа. Вы можете вращать её на главной странице или в карточке товара. Каждый прокрут даёт персональный промокод на скидку до 25%.</div>
+        <div class="faq-q">
+          <span>Когда и как можно крутить рулетку скидок?</span>
+          <div class="faq-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg></div>
+        </div>
+        <div class="faq-a">
+          Наша дисконтная рулетка — это способ получить приятный бонус!
+
+Доступность: Функция доступна для каждого авторизованного пользователя.
+
+Периодичность: Вы можете вращать рулетку 1 раз в 24 часа. Отсчет времени начинается с момента последнего вращения.
+
+Как активировать: Найдите виджет с рулеткой на главной странице или в карточке товара. Нажмите «Крутить», чтобы узнать свой персональный промокод на скидку.
+        </div>
       </div>
       <div class="faq-item">
-        <div class="faq-q"><span>Возможен ли возврат товара?</span><div class="faq-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg></div></div>
-        <div class="faq-a">Согласно нашей политике, возврат товара недоступен. После подтверждения и оплаты заказа все права на товар переходят к покупателю. Мы настоятельно рекомендуем внимательно проверять состав корзины перед оплатой.</div>
-      </div>
+        <div class="faq-q">
+          <span>Возможен ли возврат товара?</span>
+          <div class="faq-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg></div>
+        </div>
+        <div class="faq-a">
+          Согласно нашей политике, возврат товара недоступен.
+
+После подтверждения и оплаты заказа все права на товар переходят к покупателю, и сделка считается окончательной.
+
+В нашей сети действует принцип "товар становится бесценным" — это означает, что каждая позиция проходит многоступенчатую проверку качества перед отправкой, а стоимость списания средств технически невозможна после активации сделки.
+
+Мы настоятельно рекомендуем внимательно проверять состав корзины, размеры и характеристики товара перед оплатой.
+        </div>
+        </div>
       <div class="faq-item">
-        <div class="faq-q"><span>Где отслеживать статус заказа?</span><div class="faq-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg></div></div>
-        <div class="faq-a">Для получения актуальной информации по вашему заказу обращайтесь к менеджеру службы поддержки в Telegram: @HustlifyHelp</div>
+        <div class="faq-q">
+          <span>Где отслеживать статус заказа?</span>
+          <div class="faq-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg></div>
+        </div>
+        <div class="faq-a">
+          Для получения актуальной информации по вашему заказу обращайтесь к менеджеру службы поддержки:
+
+Telegram: Напишите в личные сообщения на аккаунт @HustlifyHelp.
+        </div>
+
       </div>
     </div>
   </div>
 </section>
 
+<!-- CONTACT SECTION -->
 <section class="section" id="contacts" style="padding:100px 0 80px;">
   <div class="wrap">
     <div class="reveal" style="display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;max-width:1000px;margin:0 auto;">
@@ -1622,16 +1798,31 @@ footer .flinks a:hover{color:var(--white);}
         <p style="color:var(--gray);font-size:15px;line-height:1.65;max-width:320px;">Ответим за пару минут. Работаем без выходных и праздников.</p>
       </div>
       <div style="display:flex;flex-direction:column;gap:10px;">
-        <a href="https://t.me/HustlifyHelp" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:space-between;padding:20px 28px;border-radius:16px;background:#fff;color:#000;font-weight:700;font-size:15px;text-decoration:none;transition:all 0.3s var(--ease);" onmouseover="this.style.transform='translateX(6px)';this.style.boxShadow='0 12px 40px rgba(255,255,255,0.08)'" onmouseout="this.style.transform='translateX(0)';this.style.boxShadow='none'">
-          <span style="display:flex;align-items:center;gap:12px;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> Написать в Telegram</span>
+        <a href="https://t.me/HustlifyHelp" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:space-between;padding:20px 28px;border-radius:16px;background:#fff;color:#000;font-weight:700;font-size:15px;text-decoration:none;transition:all 0.3s var(--ease);" 
+           onmouseover="this.style.transform='translateX(6px)';this.style.boxShadow='0 12px 40px rgba(255,255,255,0.08)'" 
+           onmouseout="this.style.transform='translateX(0)';this.style.boxShadow='none'">
+          <span style="display:flex;align-items:center;gap:12px;">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            Написать в Telegram
+          </span>
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
         </a>
-        <a href="mailto:hustlify@mail.ru" style="display:flex;align-items:center;justify-content:space-between;padding:20px 28px;border-radius:16px;border:1px solid rgba(255,255,255,0.12);color:#fff;font-weight:600;font-size:15px;text-decoration:none;transition:all 0.3s var(--ease);" onmouseover="this.style.borderColor='rgba(255,255,255,0.3)';this.style.background='rgba(255,255,255,0.03)';this.style.transform='translateX(6px)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.12)';this.style.background='transparent';this.style.transform='translateX(0)'">
-          <span style="display:flex;align-items:center;gap:12px;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-8.97 5.7a1.94 1.94 0 01-2.06 0L2 7"/></svg> Написать на почту</span>
+        <a href="mailto:hustlify@mail.ru" style="display:flex;align-items:center;justify-content:space-between;padding:20px 28px;border-radius:16px;border:1px solid rgba(255,255,255,0.12);color:#fff;font-weight:600;font-size:15px;text-decoration:none;transition:all 0.3s var(--ease);"
+           onmouseover="this.style.borderColor='rgba(255,255,255,0.3)';this.style.background='rgba(255,255,255,0.03)';this.style.transform='translateX(6px)'" 
+           onmouseout="this.style.borderColor='rgba(255,255,255,0.12)';this.style.background='transparent';this.style.transform='translateX(0)'">
+          <span style="display:flex;align-items:center;gap:12px;">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-8.97 5.7a1.94 1.94 0 01-2.06 0L2 7"/></svg>
+            Написать на почту
+          </span>
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
         </a>
-        <a href="https://t.me/HustlifyBot" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:space-between;padding:20px 28px;border-radius:16px;border:1px solid rgba(255,255,255,0.12);color:#fff;font-weight:600;font-size:15px;text-decoration:none;transition:all 0.3s var(--ease);" onmouseover="this.style.borderColor='rgba(255,255,255,0.3)';this.style.background='rgba(255,255,255,0.03)';this.style.transform='translateX(6px)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.12)';this.style.background='transparent';this.style.transform='translateX(0)'">
-          <span style="display:flex;align-items:center;gap:12px;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Открыть MiniApp</span>
+        <a href="https://t.me/HustlifyBot" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:space-between;padding:20px 28px;border-radius:16px;border:1px solid rgba(255,255,255,0.12);color:#fff;font-weight:600;font-size:15px;text-decoration:none;transition:all 0.3s var(--ease);"
+           onmouseover="this.style.borderColor='rgba(255,255,255,0.3)';this.style.background='rgba(255,255,255,0.03)';this.style.transform='translateX(6px)'" 
+           onmouseout="this.style.borderColor='rgba(255,255,255,0.12)';this.style.background='transparent';this.style.transform='translateX(0)'">
+          <span style="display:flex;align-items:center;gap:12px;">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            Открыть MiniApp
+          </span>
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
         </a>
       </div>
@@ -1641,28 +1832,84 @@ footer .flinks a:hover{color:var(--white);}
 
 <footer>
   <div class="wrap">
-    <div class="fbrand"><div class="logo" style="width:32px;height:32px;"><img src="images/logo.png" alt="Hustlify" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div><span>Hustlify</span></div>
+    <div class="fbrand">
+      <div class="logo" style="width:32px;height:32px;"><img src="images/logo.png" alt="Hustlify" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>
+      <span>Hustlify</span>
+    </div>
     <div class="fcopy">© 2026 Hustlify. Все права защищены. Платформа готовых IT-бизнесов.</div>
-    <div class="flinks"><a href="#catalog">Каталог</a><a href="#calculator">Калькулятор</a><a href="#about">О нас</a><a href="#faq">FAQ</a></div>
+    <div class="flinks">
+      <a href="#catalog">Каталог</a>
+      <a href="#calculator">Калькулятор</a>
+      <a href="#about">О нас</a>
+      <a href="#faq">FAQ</a>
+    </div>
   </div>
 </footer>
 
+<!-- SOCIAL PROOF LIVE SALES TOAST -->
 <div class="social-proof-toast" id="socialProofToast">
-  <div class="sp-avatar" id="spAvatar"><img id="spAvatarImg" src="/images/avatars/alexey.jpg" alt="Avatar"></div>
-  <div class="sp-info"><h5 id="spName">Алексей П. (Москва)</h5><p id="spAction">Купил 'AI Telegram Bot v3.4'</p><div class="sp-tag" id="spTag">Окупаемость: 12 дней</div></div>
+  <div class="sp-avatar" id="spAvatar">
+    <img id="spAvatarImg" src="/images/avatars/alexey.jpg" alt="Avatar">
+  </div>
+  <div class="sp-info">
+    <h5 id="spName">Алексей П. (Москва)</h5>
+    <p id="spAction">Купил 'AI Telegram Bot v3.4'</p>
+    <div class="sp-tag" id="spTag">Окупаемость: 12 дней</div>
+  </div>
   <div class="sp-close" id="spClose">✕</div>
+</div>
+
+<!-- AI MATCHMAKER WIZARD MODAL -->
+<div class="ai-wizard-modal" id="aiWizardModal">
+  <div class="wizard-box">
+    <div class="wizard-close" id="aiWizardClose">✕</div>
+    
+    <div class="wizard-step active" id="wizStep1">
+      <div class="eyebrow cyan-text">Шаг 1 из 3</div>
+      <h3 style="font-family:'Unbounded';font-size:22px;font-weight:800;margin:10px 0 8px;">Какой у вас бюджет на запуск?</h3>
+      <p style="color:var(--gray);font-size:14px;">Мы подберем идеальную связку с гарантией окупаемости</p>
+      <div class="wizard-options">
+        <button class="wizard-opt" data-budget="15000"><span>До 15,000 ₽</span> <span style="color:var(--white)">Быстрый старт</span></button>
+        <button class="wizard-opt" data-budget="50000"><span>15,000 – 50,000 ₽</span> <span style="color:var(--white)">Оптимальный выбор</span></button>
+        <button class="wizard-opt" data-budget="150000"><span>От 50,000 ₽</span> <span style="color:var(--white)">Масштабный бизнес</span></button>
+      </div>
+    </div>
+
+    <div class="wizard-step" id="wizStep2">
+      <div class="eyebrow cyan-text">Шаг 2 из 3</div>
+      <h3 style="font-family:'Unbounded';font-size:22px;font-weight:800;margin:10px 0 8px;">Какая ниша вам ближе?</h3>
+      <p style="color:var(--gray);font-size:14px;">Выберите направление, которое вам интересно развивать</p>
+      <div class="wizard-options">
+        <button class="wizard-opt" data-format="ai"><span>AI Боты & ИИ Модели</span> <span>Высокий тренд</span></button>
+        <button class="wizard-opt" data-format="saas"><span>SaaS Сервисы & Подписки</span> <span>Регулярный доход</span></button>
+        <button class="wizard-opt" data-format="shop"><span>Готовые Магазины & Маркетплейсы</span> <span>Простые продажи</span></button>
+      </div>
+    </div>
+
+    <div class="wizard-step" id="wizStep3">
+      <div class="eyebrow cyan-text">Результат AI Анализа</div>
+      <h3 style="font-family:'Unbounded';font-size:22px;font-weight:800;margin:10px 0 8px;">Идеальные проекты под ваши критерии:</h3>
+      <div id="wizResultsGrid" style="display:grid;gap:12px;margin-top:20px;"></div>
+    </div>
+  </div>
 </div>
 
 <div class="overlay" id="overlay"></div>
 <div class="search-modal" id="searchModal">
-  <div class="search-input-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input type="text" id="searchInput" placeholder="Найти услугу или товар..."></div>
+  <div class="search-input-row">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+    <input type="text" id="searchInput" placeholder="Найти услугу или товар...">
+  </div>
   <div class="search-results" id="searchResults"></div>
 </div>
 
 <div class="drawer" id="cartDrawer">
   <div class="drawer-head"><h3>Корзина</h3><button class="close-x" id="cartClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="drawer-body" id="cartBody"></div>
-  <div class="drawer-foot"><div class="total-row"><span>Итого</span><span id="cartTotal">0 ₽</span></div><button class="checkout-btn" id="checkoutBtn">Оформить заказ</button></div>
+  <div class="drawer-foot">
+    <div class="total-row"><span>Итого</span><span id="cartTotal">0 ₽</span></div>
+    <button class="checkout-btn" id="checkoutBtn">Оформить заказ</button>
+  </div>
 </div>
 
 <div class="drawer" id="wishDrawer">
@@ -1671,33 +1918,57 @@ footer .flinks a:hover{color:var(--white);}
 </div>
 
 <div class="search-modal" id="checkoutModal" style="top:50%;transform:translate(-50%,calc(-50% - 16px));">
-  <div class="search-input-row" style="justify-content:space-between;"><h3 style="font-size:17px;">Оформление заказа</h3><button class="close-x" id="checkoutClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="search-input-row" style="justify-content:space-between;">
+    <h3 style="font-size:17px;">Оформление заказа</h3>
+    <button class="close-x" id="checkoutClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div>
   <div style="padding:22px 24px 26px;display:flex;flex-direction:column;gap:14px;">
-    <div><label style="display:block;font-size:12.5px;color:var(--gray);margin-bottom:7px;">Как с вами связаться (Telegram, телефон)</label><input type="text" id="checkoutContact" placeholder="@username или +7..." style="width:100%;padding:13px 16px;border-radius:12px;background:var(--bg-soft);border:1px solid var(--line);color:var(--white);font-size:14.5px;outline:none;"></div>
-    <div><label style="display:block;font-size:12.5px;color:var(--gray);margin-bottom:7px;">Промокод (необязательно)</label><input type="text" id="checkoutPromo" placeholder="Например R7QK9M2XPLTN" style="width:100%;padding:13px 16px;border-radius:12px;background:var(--bg-soft);border:1px solid var(--line);color:var(--white);font-size:14.5px;outline:none;text-transform:uppercase;"></div>
+    <div>
+      <label style="display:block;font-size:12.5px;color:var(--gray);margin-bottom:7px;">Как с вами связаться (Telegram, телефон)</label>
+      <input type="text" id="checkoutContact" placeholder="@username или +7..." style="width:100%;padding:13px 16px;border-radius:12px;background:var(--bg-soft);border:1px solid var(--line);color:var(--white);font-size:14.5px;outline:none;">
+    </div>
+    <div>
+      <label style="display:block;font-size:12.5px;color:var(--gray);margin-bottom:7px;">Промокод (необязательно)</label>
+      <input type="text" id="checkoutPromo" placeholder="Например R7QK9M2XPLTN" style="width:100%;padding:13px 16px;border-radius:12px;background:var(--bg-soft);border:1px solid var(--line);color:var(--white);font-size:14.5px;outline:none;text-transform:uppercase;">
+    </div>
     <div id="checkoutErr" style="color:var(--white);font-weight:600;font-size:12.5px;min-height:16px;"></div>
     <button class="btn btn-white" id="checkoutContinueBtn" style="justify-content:center;">Продолжить к оплате</button>
   </div>
 </div>
 
 <div class="search-modal" id="payModal" style="top:50%;transform:translate(-50%,calc(-50% - 16px));">
-  <div class="search-input-row" style="justify-content:space-between;"><h3 style="font-size:17px;">Выберите способ оплаты</h3><button class="close-x" id="payClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="search-input-row" style="justify-content:space-between;">
+    <h3 style="font-size:17px;">Выберите способ оплаты</h3>
+    <button class="close-x" id="payClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div>
   <div style="padding:22px 24px 26px;display:flex;flex-direction:column;gap:12px;">
     <div id="payDiscountLine" style="color:var(--white);font-weight:600;font-size:12.5px;display:none;"></div>
     <div style="color:var(--gray);font-size:13.5px;margin-bottom:6px;">К оплате: <b id="payTotal" style="color:var(--white);"></b></div>
-    <button class="btn btn-white" id="payCryptoBot" style="justify-content:center;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12l4 6-10 12L2 9l4-6z"/></svg> Оплатить через CryptoBot</button>
-    <button class="btn btn-outline" id="payRequisites" style="justify-content:center;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg> Оплатить по реквизитам</button>
+    <button class="btn btn-white" id="payCryptoBot" style="justify-content:center;">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12l4 6-10 12L2 9l4-6z"/></svg>
+      Оплатить через CryptoBot
+    </button>
+    <button class="btn btn-outline" id="payRequisites" style="justify-content:center;">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+      Оплатить по реквизитам
+    </button>
     <div id="payHint" style="color:var(--gray-dim);font-size:12px;margin-top:4px;"></div>
   </div>
 </div>
 
 <div class="search-modal" id="requisitesModal" style="top:50%;transform:translate(-50%,calc(-50% - 16px));">
-  <div class="search-input-row" style="justify-content:space-between;"><h3 style="font-size:17px;">Оплата по реквизитам</h3><button class="close-x" id="requisitesClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="search-input-row" style="justify-content:space-between;">
+    <h3 style="font-size:17px;">Оплата по реквизитам</h3>
+    <button class="close-x" id="requisitesClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div>
   <div style="padding:22px 24px 26px;display:flex;flex-direction:column;gap:14px;">
     <div style="color:var(--gray);font-size:13.5px;">К оплате: <b id="reqTotal" style="color:var(--white);"></b></div>
     <div id="reqDetails" style="background:var(--bg-soft);border:1px solid var(--line);border-radius:12px;padding:16px;font-size:14px;line-height:1.9;color:var(--white);"></div>
     <div style="color:var(--gray-dim);font-size:12px;">Переведите точную сумму по реквизитам выше, затем прикрепите скриншот или PDF чека и отправьте его на проверку.</div>
-    <div><label style="display:block;font-size:12.5px;color:var(--gray);margin-bottom:7px;">Чек об оплате (фото или PDF)</label><input type="file" id="receiptFile" accept="image/*,application/pdf" style="width:100%;padding:11px 14px;border-radius:12px;background:var(--bg-soft);border:1px solid var(--line);color:var(--white);font-size:13.5px;outline:none;"></div>
+    <div>
+      <label style="display:block;font-size:12.5px;color:var(--gray);margin-bottom:7px;">Чек об оплате (фото или PDF)</label>
+      <input type="file" id="receiptFile" accept="image/*,application/pdf" style="width:100%;padding:11px 14px;border-radius:12px;background:var(--bg-soft);border:1px solid var(--line);color:var(--white);font-size:13.5px;outline:none;">
+    </div>
     <div id="reqErr" style="color:var(--white);font-weight:600;font-size:12.5px;min-height:16px;"></div>
     <button class="btn btn-white" id="submitReceiptBtn" style="justify-content:center;">Отправить чек на проверку</button>
   </div>
@@ -1705,7 +1976,9 @@ footer .flinks a:hover{color:var(--white);}
 
 <div class="search-modal" id="receiptSentModal" style="top:50%;transform:translate(-50%,calc(-50% - 16px));">
   <div style="padding:36px 30px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px;">
-    <div style="width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;color:#ffffff;"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+    <div style="width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;color:#ffffff;">
+      <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    </div>
     <h3 style="font-size:18px;">Отправлено на модерацию</h3>
     <p style="color:var(--gray);font-size:14px;line-height:1.6;margin:0;">Ожидайте, с вами свяжутся в ближайшее время для подтверждения оплаты.</p>
     <button class="btn btn-white" id="receiptSentClose" style="justify-content:center;margin-top:6px;">Понятно</button>
@@ -1713,30 +1986,71 @@ footer .flinks a:hover{color:var(--white);}
 </div>
 
 <div class="search-modal" id="productModal" style="top:50%;transform:translate(-50%,calc(-50% - 16px));max-width:480px;">
-  <div class="search-input-row" style="justify-content:space-between;"><h3 id="pmName" style="font-size:18px;"></h3><button class="close-x" id="productModalClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="search-input-row" style="justify-content:space-between;">
+    <h3 id="pmName" style="font-size:18px;"></h3>
+    <button class="close-x" id="productModalClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div>
   <div class="detail-media" id="pmMedia"></div>
-  <div class="detail-body"><div class="detail-eyebrow" id="pmCat"></div><p class="detail-desc" id="pmDesc"></p><div class="detail-price" id="pmPrice"></div><button class="btn btn-white detail-cta" id="pmAddBtn"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg> В корзину</button></div>
+  <div class="detail-body">
+    <div class="detail-eyebrow" id="pmCat"></div>
+    <p class="detail-desc" id="pmDesc"></p>
+    <div class="detail-price" id="pmPrice"></div>
+    <button class="btn btn-white detail-cta" id="pmAddBtn">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+      В корзину
+    </button>
+  </div>
 </div>
 
 <div class="search-modal" id="projectModal" style="top:50%;transform:translate(-50%,calc(-50% - 16px));max-width:480px;">
-  <div class="search-input-row" style="justify-content:space-between;"><h3 id="prName" style="font-size:18px;"></h3><button class="close-x" id="projectModalClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="search-input-row" style="justify-content:space-between;">
+    <h3 id="prName" style="font-size:18px;"></h3>
+    <button class="close-x" id="projectModalClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div>
   <div class="detail-media" id="prMedia"></div>
-  <div class="detail-body"><div class="detail-eyebrow" id="prTag">Наш проект</div><p class="detail-desc" id="prDesc"></p><a href="#" target="_blank" rel="noopener" class="btn btn-white detail-cta" id="prMoreBtn">Подробнее в Telegram <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M21.9 3.3 2.8 11c-1.3.5-1.3 1.2-.2 1.5l4.9 1.5 1.9 5.8c.2.6.4.8.8.8.4 0 .6-.2.9-.5l2.2-2.1 4.6 3.4c.8.5 1.4.2 1.6-.7l3-14c.3-1.1-.4-1.6-1.6-1.4Z"/></svg></a><a href="#" target="_blank" rel="noopener" class="btn btn-outline detail-cta" id="prPortfolioBtn" style="display:none;margin-top:10px;">Портфолио</a></div>
+  <div class="detail-body">
+    <div class="detail-eyebrow" id="prTag">Наш проект</div>
+    <p class="detail-desc" id="prDesc"></p>
+    <a href="#" target="_blank" rel="noopener" class="btn btn-white detail-cta" id="prMoreBtn">
+      Подробнее в Telegram
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M21.9 3.3 2.8 11c-1.3.5-1.3 1.2-.2 1.5l4.9 1.5 1.9 5.8c.2.6.4.8.8.8.4 0 .6-.2.9-.5l2.2-2.1 4.6 3.4c.8.5 1.4.2 1.6-.7l3-14c.3-1.1-.4-1.6-1.6-1.4Z"/></svg>
+    </a>
+     <a href="#" target="_blank" rel="noopener" class="btn btn-outline detail-cta" id="prPortfolioBtn" style="display:none;margin-top:10px;">
+    Портфолио
+  </a>
+  </div>
 </div>
 
+<!-- SURVEY PROMPT BOTTOM TOAST -->
 <div class="survey-prompt-toast" id="surveyPromptToast">
-  <div class="spt-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
-  <div class="spt-content"><div class="spt-title">Пройдите опрос и получите подарок</div><div class="spt-sub">Ответьте на 8 быстрых вопросов и получите промокод на скидку 20%</div></div>
+  <div class="spt-icon">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+  </div>
+  <div class="spt-content">
+    <div class="spt-title">Пройдите опрос и получите подарок </div>
+    <div class="spt-sub">Ответьте на 8 быстрых вопросов и получите промокод на скидку 20%</div>
+  </div>
   <button class="spt-btn" id="sptOpenBtn">Перейти</button>
   <button class="spt-close" id="sptCloseBtn"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
 </div>
 
+<!-- 8-QUESTION SURVEY MODAL -->
 <div class="search-modal" id="surveyModal" style="top:50%;transform:translate(-50%,calc(-50% - 16px));max-width:540px;width:92%;">
   <div class="search-input-row" style="justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:14px;">
-    <div style="display:flex;align-items:center;gap:10px;"><div><h3 style="font-size:16px;font-weight:700;line-height:1.2;">Опрос клиентов Hustlify</h3><span style="font-size:11px;color:var(--gray-dim);text-transform:uppercase;letter-spacing:1px;" id="surveyProgressLabel">Вопрос 1 из 8</span></div></div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span style="font-size:20px;"></span>
+      <div>
+        <h3 style="font-size:16px;font-weight:700;line-height:1.2;">Опрос клиентов Hustlify</h3>
+        <span style="font-size:11px;color:var(--gray-dim);text-transform:uppercase;letter-spacing:1px;" id="surveyProgressLabel">Вопрос 1 из 8</span>
+      </div>
+    </div>
     <button class="close-x" id="surveyModalClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   </div>
-  <div style="width:100%;height:3px;background:rgba(255,255,255,0.08);position:relative;overflow:hidden;"><div id="surveyProgressBar" style="height:100%;background:#ffffff;width:12.5%;transition:width 0.3s ease;"></div></div>
+  
+  <div style="width:100%;height:3px;background:rgba(255,255,255,0.08);position:relative;overflow:hidden;">
+    <div id="surveyProgressBar" style="height:100%;background:#ffffff;width:12.5%;transition:width 0.3s ease;"></div>
+  </div>
+
   <div style="padding:22px 24px 28px;" id="surveyBody"></div>
 </div>
 
@@ -2126,6 +2440,7 @@ document.getElementById('catalogMoreBtn').addEventListener('click', ()=>{
   catalogExpanded = true;
   renderCatalog();
   bindProductEvents();
+  // Smooth scroll to show new items
   const btn = document.getElementById('catalogMoreBtn');
   if(btn) btn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 });
@@ -2274,7 +2589,7 @@ function bindTilt(selector){
     card.addEventListener('mouseleave', ()=>{ card.style.transform = 'perspective(900px) rotateY(0) rotateX(0) translateY(0)'; });
   });
 }
-bindTilt('.tilt-card');
+bindTilt('.tilt-card:not(.flip-card)');
 
 const TELEGRAM_LINK = 'https://t.me/HustlifyBot';
 document.getElementById('mbMiniAppBtn').href = TELEGRAM_LINK;
@@ -2325,37 +2640,20 @@ function openProjectModal(key){
   openDrawer(projectModal);
 }
 document.getElementById('projectModalClose').onclick = closeAll;
+document.querySelectorAll('.flip-open-btn').forEach(btn=>{
+  btn.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    btn.closest('.flip-card').classList.add('flipped');
+  });
+});
+
 document.querySelectorAll('.tilt-card[data-project]').forEach(card=>{
   card.addEventListener('click', (e)=>{
     if(e.target.closest('[data-nomodal]')) return;
+    if(!card.classList.contains('flipped')) return;
     openProjectModal(card.dataset.project);
   });
 });
-
-/* ========================================================= */
-/* =============== FLIP CARDS JAVASCRIPT =============== */
-/* ========================================================= */
-document.querySelectorAll('.flip-open-btn').forEach(function(btn) {
-  btn.addEventListener('click', function(e) {
-    e.stopPropagation();
-    var card = this.closest('.flip-card');
-    if (card) {
-      card.classList.toggle('flipped');
-    }
-  });
-});
-
-document.querySelectorAll('.flip-card').forEach(function(card) {
-  card.addEventListener('click', function(e) {
-    if (e.target.closest('[data-nomodal]')) return;
-    if (e.target.closest('.tg-btn')) return;
-    if (e.target.closest('.pbtn')) return;
-    this.classList.toggle('flipped');
-  });
-});
-/* ========================================================= */
-/* =============== END FLIP CARDS JS =============== */
-/* ========================================================= */
 
 (function(){
   const canvas = document.getElementById('heroCanvas');
@@ -2680,7 +2978,7 @@ document.querySelectorAll('[data-tg]').forEach(el=>{
   el.addEventListener('click', e=>{ e.preventDefault(); showToast('Открываем Telegram...'); });
 });
 
-/* === URGENCY BANNER === */
+/* === 1. URGENCY BANNER & LIVE USERS COUNTER === */
 (function initUrgency(){
   let seconds = 3 * 3600 + 42 * 60 + 18;
   const timerEl = document.getElementById('urgencyTimer');
@@ -2703,7 +3001,9 @@ document.querySelectorAll('[data-tg]').forEach(el=>{
   }, 4000);
 })();
 
-/* === ROI CALCULATOR === */
+
+
+/* === 3. INTERACTIVE ROI & PROFIT CALCULATOR === */
 (function initRoiCalculator(){
   const slider = document.getElementById('calcSlider');
   const budgetVal = document.getElementById('calcBudgetValue');
@@ -2727,6 +3027,7 @@ document.querySelectorAll('[data-tg]').forEach(el=>{
     const budget = parseInt(slider.value);
     const m = catMultipliers[currentCat];
     
+    // Fill slider gradient
     const min = parseFloat(slider.min) || 10000;
     const max = parseFloat(slider.max) || 500000;
     const pct = ((budget - min) / (max - min)) * 100;
@@ -2750,23 +3051,25 @@ document.querySelectorAll('[data-tg]').forEach(el=>{
       catBtns.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       currentCat = btn.dataset.cat;
+      playCyberSound('click');
       updateCalc();
     });
   });
 
   if(ctaBtn){
-    ctaBtn.addEventListener('click', () => {
-      window.open('https://t.me/hustlify_support', '_blank');
-    });
-  }
+  ctaBtn.addEventListener('click', () => {
+    window.open('https://t.me/hustlify_support', '_blank');
+  });
+}
 
   updateCalc();
 })();
 
-/* === SOCIAL PROOF === */
+/* === 4. LIVE SOCIAL PROOF SALES TOAST === */
 (function initSocialProof(){
   const toast = document.getElementById('socialProofToast');
   const avatarImg = document.getElementById('spAvatarImg');
+  const avatar = document.getElementById('spAvatar');
   const nameEl = document.getElementById('spName');
   const actionEl = document.getElementById('spAction');
   const tagEl = document.getElementById('spTag');
@@ -2775,11 +3078,11 @@ document.querySelectorAll('[data-tg]').forEach(el=>{
   if(!toast) return;
 
   const purchases = [
-    { name: "Алексей П. (Москва)", img: "/images/avatars/alexey.jpg", item: "Запустил Музыкальный сервис", roi: "Окупаемость: 27 дней" },
-    { name: "SummitStudio (СПб)", img: "/images/avatars/dmitry.jpg", item: "Запустили Нейросеть", roi: "Окупаемость: 9 дней" },
-    { name: "Максим Р. (Казань)", img: "/images/avatars/maxim.jpg", item: "Запустил CryptoКошелек в TG", roi: "Окупаемость: 15 дней" },
-    { name: "Артем Е. (Минск)", img: "/images/avatars/artem.jpg", item: "Запустил Студию дизайна", roi: "Окупаемость: 10 дней" },
-    { name: "Даниил Л. (Екатеринбург)", img: "/images/avatars/sergey.jpg", item: "Запустил агенство по WEB", roi: "Чистая прибыль: +110k/мес" }
+    { name: "Алексей П. (Москва)", img: "/images/avatars/alexey.jpg", item: "Запустил Музыкальный сервис", price: "", roi: "Окупаемость: 27 дней" },
+    { name: "SummitStudio (СПб)", img: "/images/avatars/dmitry.jpg", item: "Запустили Нейросеть", price: "", roi: "Окупаемость: 9 дней" },
+    { name: "Максим Р. (Казань)", img: "/images/avatars/maxim.jpg", item: "Запустил CryptoКошелек в TG", price: "", roi: "Окупаемость: 15 дней" },
+    { name: "Артем Е. (Минск)", img: "/images/avatars/artem.jpg", item: "Запустил Студию дизайна", price: "", roi: "Окупаемость: 10 дней" },
+    { name: "Даниил Л. (Екатеринбург)", img: "/images/avatars/sergey.jpg", item: "Запустил агенство по WEB", price: "", roi: "Чистая прибыль: +110k/мес" }
   ];
 
   let index = 0;
@@ -2792,7 +3095,12 @@ document.querySelectorAll('[data-tg]').forEach(el=>{
     if(tagEl) tagEl.textContent = p.roi;
 
     toast.classList.add('show');
-    setTimeout(() => { toast.classList.remove('show'); }, 5500);
+    playCyberSound('hover');
+
+    setTimeout(() => {
+      toast.classList.remove('show');
+    }, 5500);
+
     index++;
   }
 
@@ -2804,15 +3112,391 @@ document.querySelectorAll('[data-tg]').forEach(el=>{
   }
 })();
 
-/* === FAQ ACCORDION === */
+/* === 5. AI MATCHMAKER WIZARD LOGIC === */
+(function initAiWizard(){
+  const modal = document.getElementById('aiWizardModal');
+  const openBtn = document.getElementById('openAiWizardBtn');
+  const closeBtn = document.getElementById('aiWizardClose');
+  const step1 = document.getElementById('wizStep1');
+  const step2 = document.getElementById('wizStep2');
+  const step3 = document.getElementById('wizStep3');
+  const grid = document.getElementById('wizResultsGrid');
+
+  if(!modal) return;
+
+  let selectedBudget = 50000;
+  let selectedFormat = 'ai';
+
+  function resetWizard(){
+    step1.classList.add('active');
+    step2.classList.remove('active');
+    step3.classList.remove('active');
+  }
+
+  document.querySelectorAll('#openAiWizardBtn, .open-ai-wizard-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      resetWizard();
+      modal.classList.add('show');
+      playCyberSound('click');
+    });
+  });
+
+  if(closeBtn){
+    closeBtn.addEventListener('click', () => modal.classList.remove('show'));
+  }
+
+  document.querySelectorAll('[data-budget]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectedBudget = parseInt(btn.dataset.budget);
+      step1.classList.remove('active');
+      step2.classList.add('active');
+      playCyberSound('click');
+    });
+  });
+
+  document.querySelectorAll('[data-format]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectedFormat = btn.dataset.format;
+      step2.classList.remove('active');
+      step3.classList.add('active');
+      playCyberSound('success');
+      renderResults();
+    });
+  });
+
+  function renderResults(){
+    if(!grid) return;
+    const matches = (ALL_PRODUCTS || []).slice(0, 2);
+    grid.innerHTML = matches.map(p => `
+      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.2);padding:16px;border-radius:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+        <div>
+          <div style="font-weight:700;color:#fff;font-size:15px;">${p.name || p.title}</div>
+          <div style="font-size:12px;color:var(--gray);margin-top:2px;">Окупаемость: 10-14 дней | Прибыль: от 90k ₽</div>
+          <div style="font-size:14px;font-weight:800;color:#ffffff;margin-top:6px;">${(p.price || 18900).toLocaleString('ru-RU')} ₽</div>
+        </div>
+        <button class="btn btn-white" onclick="addToCart('${p.id}'); document.getElementById('aiWizardModal').classList.remove('show');" style="padding:10px 18px;font-size:12px;">Заказать</button>
+      </div>
+    `).join('');
+  }
+})();
+
+/* === 6. FAQ ACCORDION HANDLER === */
 document.querySelectorAll('.faq-q').forEach(q => {
   q.addEventListener('click', () => {
     const item = q.parentElement;
     const isActive = item.classList.contains('active');
     document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('active'));
     if(!isActive) item.classList.add('active');
+    playCyberSound('click');
   });
 });
+
+/* === 7. WEB AUDIO API SOUND SYNTHESIZER === */
+let soundEnabled = true;
+const soundBtn = document.getElementById('soundToggleBtn');
+
+if(soundBtn){
+  soundBtn.addEventListener('click', () => {
+    soundEnabled = !soundEnabled;
+    soundBtn.style.opacity = soundEnabled ? '1' : '0.4';
+    showToast(soundEnabled ? 'Звуковые эффекты включены' : 'Звуковые эффекты выключены');
+  });
+}
+
+function playCyberSound(type){
+  if(!soundEnabled) return;
+  try{
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    if(type === 'hover'){
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(580, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.08);
+      gain.gain.setValueAtTime(0.04, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.08);
+    } else if(type === 'click'){
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(320, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(120, ctx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.08, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.1);
+    } else if(type === 'success'){
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(440, ctx.currentTime);
+      osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.08);
+      osc.frequency.setValueAtTime(880, ctx.currentTime + 0.16);
+      gain.gain.setValueAtTime(0.06, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.28);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.28);
+    }
+  } catch(e){}
+}
+
+/* === SURVEY MODULE LOGIC === */
+(function initSurveyModule(){
+  const promptToast = document.getElementById('surveyPromptToast');
+  const sptOpenBtn = document.getElementById('sptOpenBtn');
+  const sptCloseBtn = document.getElementById('sptCloseBtn');
+  const modal = document.getElementById('surveyModal');
+  const modalClose = document.getElementById('surveyModalClose');
+  const progressLabel = document.getElementById('surveyProgressLabel');
+  const progressBar = document.getElementById('surveyProgressBar');
+  const surveyBody = document.getElementById('surveyBody');
+
+  const QUESTIONS = [
+    {
+      q: "Откуда вы впервые узнали о проекте Hustlify?",
+      opts: [
+        { text: "Telegram-каналы и паблики", badge: "TG" },
+        { text: "Поиск Google / Яндекс", badge: "Search" },
+        { text: "YouTube / Соцсети", badge: "Media" },
+        { text: "Рекомендация друзей / партнеров", badge: "Word of mouth" },
+        { text: "Прямая реклама", badge: "Ads" }
+      ]
+    },
+    {
+      q: "Какая сфера IT-бизнеса вас больше всего привлекает?",
+      opts: [
+        { text: "AI & Telegram Боты", badge: "Тренд 2026" },
+        { text: "SaaS Платформы и CRM", badge: "Подписки" },
+        { text: "Крипто Обменники & Web3", badge: "Высокий ROI" },
+        { text: "E-commerce и Маркетплейсы", badge: "Продажи" },
+        { text: "Другое", badge: "Other" }
+      ]
+    },
+    {
+      q: "Укажите ваш возраст",
+      opts: [
+        { text: "До 22 лет", badge: "Старт" },
+        { text: "22 – 30 лет", badge: "Прогресс" },
+        { text: "31 – 42 года", badge: "Опыт" },
+        { text: "43+ лет", badge: "Инвестор" }
+      ]
+    },
+    {
+      q: "Какой у вас опыт в управлении готовым IT-бизнесом?",
+      opts: [
+        { text: "Новичок — это мой первый проект", badge: "С нуля" },
+        { text: "Есть небольшой опыт (1-2 года)", badge: "Практик" },
+        { text: "Опытный предприниматель", badge: "Профи" },
+        { text: "Серийный инвестор", badge: "Капитал" }
+      ]
+    },
+    {
+      q: "Какой ваш планируемый бюджет на покупку проекта?",
+      opts: [
+        { text: "До 30 000 ₽", badge: "Микро" },
+        { text: "30 000 – 70 000 ₽", badge: "Стандарт" },
+        { text: "70 000 – 150 000 ₽", badge: "Бизнес" },
+        { text: "Свыше 150 000 ₽", badge: "VIP" }
+      ]
+    },
+    {
+      q: "Главная цель покупки готового бизнеса?",
+      opts: [
+        { text: "Запуск основного источника дохода", badge: "Главный доход" },
+        { text: "Пассивный доход без затрат времени", badge: "Пассив" },
+        { text: "Диверсификация капитала", badge: "Защита" },
+        { text: "Перепродажа и масштабирование", badge: "Флиппинг" }
+      ]
+    },
+    {
+      q: "Желаемый срок окупаемости инвестиций?",
+      opts: [
+        { text: "Меньше 1 месяца", badge: "Быстрый старт" },
+        { text: "1 – 3 месяца", badge: "Оптимально" },
+        { text: "3 – 6 месяцев", badge: "Устойчиво" },
+        { text: "Главное — минимальные риски", badge: "Надёжно" }
+      ]
+    },
+    {
+      q: "Нужна ли вам помощь с маркетингом и запуском под ключ?",
+      opts: [
+        { text: "Да, нужен полный запуск под ключ + реклама", badge: "Full Service" },
+        { text: "Нужна консультация на старте", badge: "Mentoring" },
+        { text: "Справлюсь самостоятельно", badge: "Self" }
+      ]
+    }
+  ];
+
+  let currentStep = 0;
+  let answers = [];
+  let surveyCompleted = false;
+
+  window.triggerSurveyPrompt = function(){
+    if(surveyCompleted || !promptToast) return;
+    promptToast.classList.add('show');
+    playCyberSound('hover');
+  };
+
+  if(sptCloseBtn){
+    sptCloseBtn.addEventListener('click', () => promptToast.classList.remove('show'));
+  }
+
+  if(sptOpenBtn){
+    sptOpenBtn.addEventListener('click', () => {
+      promptToast.classList.remove('show');
+      openSurveyModal();
+    });
+  }
+
+  if(modalClose){
+    modalClose.addEventListener('click', () => {
+      modal.classList.remove('open');
+      overlay.classList.remove('open');
+    });
+  }
+
+  function openSurveyModal(){
+    currentStep = 0;
+    answers = [];
+    renderStep();
+    openDrawer(modal);
+    playCyberSound('click');
+  }
+
+  function renderStep(){
+    if(currentStep >= QUESTIONS.length){
+      finishSurvey();
+      return;
+    }
+
+    const qData = QUESTIONS[currentStep];
+    const total = QUESTIONS.length;
+    
+    if(progressLabel) progressLabel.textContent = `Вопрос ${currentStep + 1} из ${total}`;
+    if(progressBar) progressBar.style.width = `${((currentStep + 1) / total) * 100}%`;
+
+    surveyBody.innerHTML = `
+      <div class="survey-q-title">${currentStep + 1}. ${qData.q}</div>
+      <div class="survey-options-grid">
+        ${qData.opts.map((opt, i) => `
+          <button class="survey-opt-btn" data-opt-idx="${i}">
+            <span>${opt.text}</span>
+            <span class="survey-opt-badge">${opt.badge}</span>
+          </button>
+        `).join('')}
+      </div>
+      <div class="survey-nav-row">
+        ${currentStep > 0 ? `<button class="btn btn-outline" id="surveyPrevBtn" style="padding:8px 16px;font-size:12px;">← Назад</button>` : '<div></div>'}
+        <span style="font-size:12px;color:var(--gray-dim);">Выберите один вариант</span>
+      </div>
+    `;
+
+    surveyBody.querySelectorAll('.survey-opt-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.optIdx);
+        answers[currentStep] = qData.opts[idx].text;
+        playCyberSound('click');
+        currentStep++;
+        renderStep();
+      });
+    });
+
+    const prevBtn = document.getElementById('surveyPrevBtn');
+    if(prevBtn){
+      prevBtn.addEventListener('click', () => {
+        currentStep = Math.max(0, currentStep - 1);
+        playCyberSound('click');
+        renderStep();
+      });
+    }
+  }
+
+  async function finishSurvey(){
+    if(progressLabel) progressLabel.textContent = `Готово! `;
+    if(progressBar) progressBar.style.width = `100%`;
+
+    surveyBody.innerHTML = `
+      <div style="text-align:center;padding:20px 10px;">
+        <div style="width:40px;height:40px;border-radius:50%;border:2px solid #ffffff;border-top-color:transparent;animation:spin 1s linear infinite;margin:0 auto 16px;"></div>
+        <h3 style="font-family:'Unbounded';font-size:18px;font-weight:700;margin-bottom:8px;">Генерируем ваш личный промокод...</h3>
+        <p style="color:var(--gray);font-size:13px;">Анализируем ваши ответы и применяем скидку 20%</p>
+      </div>
+    `;
+
+    try {
+      const res = await fetch('/api/survey/submit', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ answers })
+});
+      const data = await res.json();
+      const code = data.code || 'SURVEY20-HUSTLIFY';
+
+      surveyCompleted = true;
+      playCyberSound('success');
+
+      surveyBody.innerHTML = `
+        <div style="text-align:center;padding:10px 0;">
+          <div style="font-size:40px;margin-bottom:10px;"></div>
+          <h3 style="font-family:'Unbounded',sans-serif;font-size:20px;font-weight:800;color:#ffffff;margin-bottom:8px;">Вам начислена скидка -20%!</h3>
+          <p style="color:var(--gray);font-size:13.5px;margin-bottom:20px;">Спасибо за прохождение опроса. Ваш персональный промокод сформирован:</p>
+          
+          <div style="background:rgba(255,255,255,0.06);border:1px dashed rgba(255,255,255,0.4);border-radius:16px;padding:18px;margin-bottom:20px;box-shadow:0 0 25px rgba(255,255,255,0.15);">
+            <div style="font-size:11px;color:var(--gray-dim);text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;">Промокод на скидку 20%</div>
+            <div style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:800;color:#ffffff;letter-spacing:2px;user-select:all;" id="surveyPromoValue">${code}</div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <button class="btn btn-white" id="applySurveyPromoBtn" style="justify-content:center;font-weight:700;background:#ffffff;color:#000000;font-family:'Unbounded',sans-serif;">
+              Применить к корзине
+            </button>
+            <button class="btn btn-outline" id="copySurveyPromoBtn" style="justify-content:center;font-size:13px;">
+              Скопировать промокод
+            </button>
+          </div>
+        </div>
+      `;
+
+      const applyBtn = document.getElementById('applySurveyPromoBtn');
+      if(applyBtn){
+        applyBtn.addEventListener('click', () => {
+          lastPromoCode = code;
+          const checkoutPromoInput = document.getElementById('checkoutPromo');
+          if(checkoutPromoInput) checkoutPromoInput.value = code;
+          
+          modal.classList.remove('open');
+          overlay.classList.remove('open');
+          showToast(`🎟 Промокод ${code} (-20%) применён!`);
+
+          renderCartDrawer();
+          openDrawer(cartDrawer);
+          playCyberSound('success');
+        });
+      }
+
+      const copyBtn = document.getElementById('copySurveyPromoBtn');
+      if(copyBtn){
+        copyBtn.addEventListener('click', () => {
+          navigator.clipboard.writeText(code);
+          copyBtn.textContent = 'Скопировано в буфер! ✓';
+          playCyberSound('click');
+          setTimeout(() => copyBtn.textContent = 'Скопировать промокод', 2000);
+        });
+      }
+
+    } catch(e) {
+      surveyBody.innerHTML = `
+        <div style="text-align:center;padding:20px;">
+          <h3 style="font-size:16px;color:#ffffff;">Ваш промокод: <b>SURVEY20-SPECIAL</b></h3>
+          <p style="color:var(--gray);font-size:13px;margin:10px 0;">Скидка 20% действительна в течение 30 дней.</p>
+          <button class="btn btn-white" onclick="document.getElementById('surveyModal').classList.remove('open');document.getElementById('overlay').classList.remove('open');" style="margin-top:10px;justify-content:center;width:100%;">Закрыть</button>
+        </div>
+      `;
+    }
+  }
+})();
 
 loadProducts();
 loadNews();
@@ -2820,10 +3504,11 @@ updateBadges();
 renderCartDrawer();
 renderWishDrawer();
 
+// Smooth scroll for anchor links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   anchor.addEventListener('click', function(e) {
     const href = this.getAttribute('href');
-    if (href === '#') return;
+    if (href === '#') return; // Skip empty anchors
     const target = document.querySelector(href);
     if (target) {
       e.preventDefault();
@@ -2831,6 +3516,7 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     }
   });
 });
+
 </script>
 </body>
 </html>
