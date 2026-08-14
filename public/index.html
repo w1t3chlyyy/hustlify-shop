@@ -3,24 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hustlify — Платформа и Маркетплейс Готовых IT-Бизнесов и Стартапов</title>
+<title>Hustlify — От голой идеи до монетизации</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
 <style>
 :root{
-  --bg:#000000;
-  --bg-soft:#08080a;
-  --card:rgba(18, 18, 22, 0.85);
-  --card-hi:rgba(28, 28, 34, 0.9);
-  --line:rgba(255,255,255,.15);
-  --white:#ffffff;
-  --gray:#a1a1aa;
-  --gray-dim:#71717a;
-  --cyan:#ffffff;
-  --purple:#e4e4e7;
-  --gold:#ffffff;
+  --bg:#08090a;
+  --bg-soft:#0f1012;
+  --card:#141517;
+  --card-hi:#1b1d20;
+  --line:rgba(255,255,255,.08);
+  --white:#f5f5f4;
+  --gray:#8b8d92;
+  --gray-dim:#5c5e63;
+  --chrome-1:#e8e9ec;
+  --chrome-2:#8a8d96;
+  --blue:#d7d8db;
+  --green:#f5f5f4;
+  --purple:#77787c;
   --accent:#ffffff;
   --radius-lg:28px;
   --radius-md:18px;
@@ -292,6 +292,49 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
 .tg-btn:hover{transform:translateY(-2px) rotate(-8deg);background:rgba(255,255,255,.14);}
 .tg-btn svg{width:18px;height:18px;}
 
+/* ---- flip cards (О нас) ---- */
+.flip-card{
+  height:380px;
+  perspective:1400px;
+  padding:0;
+  background:none;
+  border:none;
+  cursor:default;
+}
+.flip-card:hover{box-shadow:none;border-color:transparent;}
+.flip-inner{
+  position:relative;
+  width:100%;height:100%;
+  transition:transform .7s var(--ease);
+  transform-style:preserve-3d;
+}
+.flip-card.flipped .flip-inner{transform:rotateY(180deg);}
+.flip-face{
+  position:absolute;inset:0;
+  backface-visibility:hidden;
+  border-radius:var(--radius-lg);
+  border:1px solid var(--line);
+  overflow:hidden;
+}
+.flip-front{display:flex;align-items:center;justify-content:center;background:var(--card);}
+.flip-front-bg{
+  position:absolute;inset:-20px;
+  background-size:cover;background-position:center;
+  filter:blur(20px) brightness(.45);
+}
+.flip-front-overlay{position:relative;z-index:2;text-align:center;padding:0 26px;}
+.flip-front-overlay h3{
+  font-family:'Unbounded';font-size:22px;font-weight:800;line-height:1.25;margin-bottom:24px;
+}
+.flip-open-btn{
+  background:var(--white);color:var(--bg);
+  padding:13px 28px;border-radius:100px;
+  font-size:13.5px;font-weight:600;border:none;cursor:pointer;
+  transition:transform .25s var(--ease);
+}
+.flip-open-btn:hover{transform:translateY(-2px);}
+.flip-back{transform:rotateY(180deg);background:var(--card);padding:32px 28px;display:flex;flex-direction:column;}
+
 .news-wrap{
   position:relative;
   padding: 0 60px;
@@ -479,71 +522,10 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
   position:relative;overflow:hidden;
 }
 .roulette-card::before{
-  content:'';position:absolute;inset:0;
-  background:
-    radial-gradient(1.5px 1.5px at 12% 18%, rgba(255,255,255,0.9), transparent),
-    radial-gradient(1.2px 1.2px at 28% 42%, rgba(255,255,255,0.7), transparent),
-    radial-gradient(1.8px 1.8px at 55% 12%, rgba(255,255,255,0.85), transparent),
-    radial-gradient(1px 1px at 72% 35%, rgba(255,255,255,0.6), transparent),
-    radial-gradient(1.6px 1.6px at 88% 22%, rgba(255,255,255,0.8), transparent),
-    radial-gradient(1.3px 1.3px at 15% 65%, rgba(255,255,255,0.75), transparent),
-    radial-gradient(1.7px 1.7px at 42% 78%, rgba(255,255,255,0.9), transparent),
-    radial-gradient(1.1px 1.1px at 68% 58%, rgba(255,255,255,0.65), transparent),
-    radial-gradient(1.4px 1.4px at 82% 72%, rgba(255,255,255,0.8), transparent),
-    radial-gradient(1.9px 1.9px at 35% 28%, rgba(255,255,255,0.7), transparent),
-    radial-gradient(1.2px 1.2px at 58% 65%, rgba(255,255,255,0.85), transparent),
-    radial-gradient(1.5px 1.5px at 8% 88%, rgba(255,255,255,0.6), transparent),
-    radial-gradient(1.3px 1.3px at 92% 48%, rgba(255,255,255,0.75), transparent),
-    radial-gradient(1.6px 1.6px at 22% 92%, rgba(255,255,255,0.8), transparent),
-    radial-gradient(1px 1px at 48% 52%, rgba(255,255,255,0.5), transparent),
-    radial-gradient(1.8px 1.8px at 75% 85%, rgba(255,255,255,0.9), transparent),
-    radial-gradient(1.4px 1.4px at 5% 45%, rgba(255,255,255,0.7), transparent),
-    radial-gradient(1.2px 1.2px at 95% 8%, rgba(255,255,255,0.65), transparent),
-    radial-gradient(1.7px 1.7px at 38% 8%, rgba(255,255,255,0.8), transparent),
-    radial-gradient(1.1px 1.1px at 62% 92%, rgba(255,255,255,0.6), transparent),
-    radial-gradient(2px 2px at 18% 32%, rgba(255,255,255,0.5), transparent),
-    radial-gradient(1.3px 1.3px at 85% 62%, rgba(255,255,255,0.75), transparent),
-    radial-gradient(1.5px 1.5px at 45% 45%, rgba(255,255,255,0.85), transparent),
-    radial-gradient(1px 1px at 65% 18%, rgba(255,255,255,0.55), transparent),
-    radial-gradient(1.6px 1.6px at 25% 55%, rgba(255,255,255,0.7), transparent),
-    radial-gradient(1.4px 1.4px at 78% 38%, rgba(255,255,255,0.8), transparent),
-    radial-gradient(1.8px 1.8px at 52% 82%, rgba(255,255,255,0.65), transparent),
-    radial-gradient(1.2px 1.2px at 8% 58%, rgba(255,255,255,0.9), transparent),
-    radial-gradient(1.5px 1.5px at 90% 78%, rgba(255,255,255,0.7), transparent),
-    radial-gradient(1.3px 1.3px at 32% 72%, rgba(255,255,255,0.6), transparent),
-    radial-gradient(1.7px 1.7px at 72% 12%, rgba(255,255,255,0.85), transparent);
-  animation:starTwinkle 4s ease-in-out infinite alternate;
-  opacity:0.7;
-  z-index:0;
-}
-
-.roulette-card::after{
-  content:'';position:absolute;inset:0;
-  background:
-    radial-gradient(1.2px 1.2px at 20% 20%, rgba(255,255,255,0.6), transparent),
-    radial-gradient(1.5px 1.5px at 50% 50%, rgba(255,255,255,0.8), transparent),
-    radial-gradient(1px 1px at 80% 80%, rgba(255,255,255,0.5), transparent),
-    radial-gradient(1.8px 1.8px at 35% 75%, rgba(255,255,255,0.7), transparent),
-    radial-gradient(1.3px 1.3px at 65% 25%, rgba(255,255,255,0.9), transparent),
-    radial-gradient(1.6px 1.6px at 10% 90%, rgba(255,255,255,0.65), transparent),
-    radial-gradient(1.4px 1.4px at 90% 10%, rgba(255,255,255,0.75), transparent),
-    radial-gradient(1.1px 1.1px at 45% 15%, rgba(255,255,255,0.55), transparent),
-    radial-gradient(1.9px 1.9px at 75% 65%, rgba(255,255,255,0.85), transparent),
-    radial-gradient(1.2px 1.2px at 15% 48%, rgba(255,255,255,0.7), transparent),
-    radial-gradient(1.5px 1.5px at 88% 42%, rgba(255,255,255,0.6), transparent),
-    radial-gradient(1.7px 1.7px at 55% 88%, rgba(255,255,255,0.8), transparent),
-    radial-gradient(1px 1px at 28% 62%, rgba(255,255,255,0.5), transparent),
-    radial-gradient(1.4px 1.4px at 82% 18%, rgba(255,255,255,0.9), transparent),
-    radial-gradient(1.6px 1.6px at 42% 38%, rgba(255,255,255,0.65), transparent);
-  animation:starTwinkle 6s ease-in-out infinite alternate-reverse;
-  opacity:0.5;
-  z-index:0;
-}
-
-@keyframes starTwinkle{
-  0%{opacity:0.4;transform:scale(1);}
-  50%{opacity:0.8;transform:scale(1.02);}
-  100%{opacity:0.5;transform:scale(1);}
+  content:'';position:absolute;inset:-2px;
+  background:conic-gradient(from 0deg, transparent, rgba(255,255,255,.4), transparent 30%);
+  animation:rotateGlow 6s linear infinite;
+  opacity:.5;
 }
 @keyframes rotateGlow{to{transform:rotate(360deg);}}
 .roulette-card > *{position:relative;z-index:2;}
@@ -561,7 +543,7 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
   overflow:hidden;border-radius:16px;background:var(--bg-soft);border:1px solid var(--line);
 }
 .wheel-track{
-  display:flex;transition:transform 8.5s cubic-bezier(.12,.7,.1,1);
+  display:flex;transition:transform 5.5s cubic-bezier(.12,.7,.1,1);
 }
 .wheel-seg{
   min-width:120px;padding:34px 0;text-align:center;
@@ -819,434 +801,7 @@ footer .flinks a:hover{color:var(--white);}
 .mb-sub{color:var(--gray);font-size:14.5px;line-height:1.6;margin-bottom:30px;}
 .mb-btn{width:100%;justify-content:center;}
 
-/* === TOP URGENCY BANNER === */
-.urgency-bar{
-  background:#08080a;
-  border-bottom:1px solid rgba(255, 255, 255, 0.2);
-  color:#ffffff;padding:9px 16px;font-size:13px;
-  display:flex;align-items:center;justify-content:center;gap:16px;
-  position:relative;z-index:100;
-  box-shadow:0 4px 20px rgba(0,0,0,0.5);
-}
-.urgency-badge{
-  background:#ffffff;
-  color:#000000;font-weight:800;font-size:11px;padding:3px 10px;
-  border-radius:100px;letter-spacing:0.5px;text-transform:uppercase;
-  display:inline-flex;align-items:center;gap:4px;
-}
-.urgency-timer{
-  font-family:'Unbounded', sans-serif;font-weight:700;
-  color:#ffffff;letter-spacing:1px;
-}
-.live-users-pill{
-  display:inline-flex;align-items:center;gap:6px;
-  background:rgba(255,255,255,0.06);padding:3px 12px;border-radius:100px;
-  border:1px solid rgba(255,255,255,0.1);font-size:12px;
-}
-.live-dot{
-  width:7px;height:7px;border-radius:50%;background:#ffffff;
-  box-shadow:0 0 10px #ffffff;animation:pulseDot 1.5s ease-in-out infinite;
-}
-@keyframes pulseDot{0%,100%{scale:1;opacity:1;}50%{scale:1.4;opacity:0.5;}}
-
-/* === THREE.JS HERO CANVAS & LIGHTS === */
-#heroThreeCanvas{
-  display:none;
-}
-
-/* === ROI & PROFIT CALCULATOR === */
-.calc-section{
-  padding:100px 0;position:relative;
-}
-.calc-card{
-  background:linear-gradient(145deg, rgba(18,18,22,0.95), rgba(8,8,10,0.98));
-  border:1px solid rgba(255,255,255,0.25);
-  box-shadow:0 24px 80px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.15);
-  border-radius:var(--radius-lg);padding:48px;
-  display:grid;grid-template-columns:1fr 1.1fr;gap:48px;
-  backdrop-filter:blur(20px);
-  position:relative;overflow:hidden;
-}
-.calc-card::after{
-  content:'';position:absolute;top:-50%;right:-50%;width:100%;height:100%;
-  background:radial-gradient(circle, rgba(255,255,255,0.08), transparent 70%);
-  pointer-events:none;
-}
-@media(max-width:900px){.calc-card{grid-template-columns:1fr;padding:28px;}}
-.calc-slider-group{margin:24px 0 32px;}
-.calc-step-tag{
-  font-family:'Unbounded', sans-serif;
-  font-size:11px;
-  font-weight:700;
-  letter-spacing:2px;
-  color:var(--gray-dim);
-  text-transform:uppercase;
-  margin-bottom:8px;
-  display:flex;
-  align-items:center;
-  gap:8px;
-}
-.calc-step-tag::before{
-  content:'';
-  display:inline-block;
-  width:6px;
-  height:6px;
-  border-radius:50%;
-  background:#ffffff;
-  box-shadow:0 0 8px rgba(255,255,255,0.8);
-}
-.calc-step-title{
-  font-family:'Unbounded', sans-serif;
-  font-size:clamp(18px, 1.8vw, 22px);
-  font-weight:700;
-  letter-spacing:-0.02em;
-  color:#ffffff;
-  line-height:1.25;
-  margin-bottom:20px;
-}
-.calc-label-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;}
-.calc-value-big{
-  font-family:'Unbounded', sans-serif;
-  font-size:clamp(18px, 2vw, 24px);
-  font-weight:800;
-  letter-spacing:-0.02em;
-  color:#ffffff;
-  font-variant-numeric:tabular-nums;
-  line-height:1;
-  white-space:nowrap;
-}
-.calc-range{
-  width:100%;-webkit-appearance:none;height:8px;border-radius:4px;
-  background:rgba(255,255,255,0.1);outline:none;
-  cursor:pointer;
-}
-.calc-range::-webkit-slider-thumb{
-  -webkit-appearance:none;width:24px;height:24px;border-radius:50%;
-  background:#fff;border:3px solid #ffffff;cursor:pointer;
-  box-shadow:0 0 15px rgba(255,255,255,0.8);
-  transition:transform 0.15s ease;
-}
-.calc-range::-webkit-slider-thumb:hover{transform:scale(1.15);}
-.calc-range::-moz-range-thumb{
-  width:24px;height:24px;border-radius:50%;
-  background:#fff;border:3px solid #ffffff;cursor:pointer;
-  box-shadow:0 0 15px rgba(255,255,255,0.8);
-  transition:transform 0.15s ease;
-}
-.calc-range::-moz-range-thumb:hover{transform:scale(1.15);}
-
-.calc-ticks{
-  display:flex;
-  justify-content:space-between;
-  color:var(--gray-dim);
-  font-family:'Inter', sans-serif;
-  font-size:11.5px;
-  font-weight:500;
-  font-variant-numeric:tabular-nums;
-  margin-top:10px;
-  letter-spacing:-0.01em;
-}
-
-.calc-cats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:16px;}
-.calc-cat-btn{
-  background:rgba(255,255,255,0.03);border:1px solid var(--line);
-  padding:14px 18px;border-radius:14px;color:var(--gray);
-  font-family:'Inter', sans-serif;
-  font-size:13.5px;font-weight:600;letter-spacing:-0.01em;text-align:left;
-  transition:all 0.25s var(--ease);display:flex;align-items:center;gap:10px;
-}
-.calc-cat-btn:hover,.calc-cat-btn.active{
-  background:rgba(255,255,255,0.12);border-color:#ffffff;color:#fff;
-  box-shadow:0 0 20px rgba(255,255,255,0.15);
-}
-
-.calc-metrics-grid{
-  display:grid;grid-template-columns:repeat(2, 1fr);gap:18px;
-}
-.calc-metric-box{
-  background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);
-  border-radius:18px;padding:20px 16px;position:relative;
-  transition:transform 0.3s, border-color 0.3s;
-  overflow:hidden;
-}
-.calc-metric-box:hover{transform:translateY(-3px);border-color:rgba(255,255,255,0.3);}
-.calc-metric-title{
-  font-family:'Inter', sans-serif;
-  font-size:11px;
-  font-weight:700;
-  color:var(--gray-dim);
-  text-transform:uppercase;
-  letter-spacing:1.5px;
-  margin-bottom:10px;
-  line-height:1.2;
-}
-.calc-metric-num{
-  font-family:'Unbounded', sans-serif;
-  font-size:clamp(16px, 1.8vw, 22px);
-  font-weight:800;
-  letter-spacing:-0.02em;
-  color:#ffffff;
-  line-height:1.15;
-  font-variant-numeric:tabular-nums;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-.calc-metric-num.gold{color:#ffffff;text-shadow:0 0 12px rgba(255,255,255,0.4);}
-.calc-metric-num.cyan{color:#ffffff;text-shadow:0 0 12px rgba(255,255,255,0.4);}
-.calc-metric-num.purple{color:#e4e4e7;text-shadow:0 0 12px rgba(255,255,255,0.3);}
-.calc-metric-sub{
-  font-family:'Inter', sans-serif;
-  font-size:12.5px;
-  font-weight:400;
-  color:var(--gray);
-  margin-top:8px;
-  line-height:1.35;
-}
-
-/* === SOCIAL PROOF TOAST (GLASSMORPHISM) === */
-.social-proof-toast{
-  position:fixed;bottom:24px;left:24px;z-index:9990;
-  background:rgba(18, 18, 24, 0.65);
-  background:linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.04) 100%);
-  border:1px solid rgba(255, 255, 255, 0.28);
-  box-shadow:0 20px 50px rgba(0,0,0,0.7), inset 0 1px 1px rgba(255, 255, 255, 0.4), 0 0 30px rgba(255, 255, 255, 0.12);
-  backdrop-filter:blur(24px) saturate(190%);
-  -webkit-backdrop-filter:blur(24px) saturate(190%);
-  border-radius:20px;padding:14px 18px;
-  display:flex;align-items:center;gap:14px;max-width:400px;
-  transform:translateY(120px) scale(0.9);opacity:0;
-  transition:all 0.5s var(--ease);pointer-events:none;
-}
-.social-proof-toast.show{
-  transform:translateY(0) scale(1);opacity:1;pointer-events:auto;
-}
-.sp-avatar{
-  width:48px;height:48px;border-radius:50%;
-  background:rgba(255,255,255,0.1);
-  border:2px solid rgba(255,255,255,0.4);
-  box-shadow:0 0 18px rgba(255,255,255,0.25);
-  display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;overflow:hidden;position:relative;
-}
-.sp-avatar img{
-  width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;
-  filter:grayscale(100%) contrast(110%) brightness(105%);
-}
-.sp-info h5{font-size:14px;font-weight:700;color:#ffffff;margin-bottom:2px;line-height:1.2;}
-.sp-info p{font-size:12px;color:rgba(255,255,255,0.85);margin-bottom:5px;line-height:1.3;}
-.sp-tag{
-  display:inline-block;font-size:11px;font-weight:700;color:#ffffff;
-  background:rgba(255,255,255,0.16);border:1px solid rgba(255,255,255,0.25);
-  padding:3px 10px;border-radius:8px;backdrop-filter:blur(8px);
-}
-.sp-close{
-  position:absolute;top:8px;right:10px;color:rgba(255,255,255,0.6);
-  font-size:14px;cursor:pointer;padding:4px;transition:color 0.2s;
-}
-.sp-close:hover{color:#ffffff;}
-
-/* === MOTIVATIONAL CTA BANNER (LAST BLOCK) === */
-.cta-motivational-section{
-  padding:40px 0 80px;
-}
-.cta-banner-card{
-  position:relative;
-  background:linear-gradient(135deg, rgba(28,28,36,0.92) 0%, rgba(12,12,16,0.96) 100%);
-  border:1px solid rgba(255,255,255,0.22);
-  border-radius:28px;
-  padding:56px 44px;
-  overflow:hidden;
-  backdrop-filter:blur(24px);
-  box-shadow:0 30px 80px rgba(0,0,0,0.7), inset 0 1px 1px rgba(255,255,255,0.3);
-  text-align:center;
-}
-.cta-banner-glow{
-  position:absolute;top:-40%;right:-20%;width:500px;height:500px;
-  background:radial-gradient(circle, rgba(255,255,255,0.12) 0%, rgba(0,0,0,0) 70%);
-  pointer-events:none;filter:blur(60px);
-}
-.cta-banner-content{
-  position:relative;z-index:2;max-width:840px;margin:0 auto;
-}
-.cta-banner-content h2{
-  font-family:'Unbounded', sans-serif;
-  font-size:clamp(26px, 3.4vw, 42px);
-  font-weight:800;
-  margin:14px 0 16px;
-  line-height:1.2;
-  color:#ffffff;
-  letter-spacing:-0.02em;
-}
-.cta-banner-content p{
-  font-size:clamp(15px, 1.4vw, 17.5px);
-  color:var(--gray);
-  line-height:1.65;
-  margin-bottom:32px;
-}
-.cta-features-list{
-  display:flex;justify-content:center;flex-wrap:wrap;gap:14px;
-  margin-bottom:38px;
-}
-.cta-feat-item{
-  display:flex;align-items:center;gap:10px;
-  background:rgba(255,255,255,0.06);
-  border:1px solid rgba(255,255,255,0.14);
-  padding:11px 20px;border-radius:14px;
-  font-size:13.5px;font-weight:600;color:#ffffff;
-  box-shadow:0 4px 15px rgba(0,0,0,0.2);
-}
-.cta-feat-item svg{color:#ffffff;flex-shrink:0;}
-.cta-actions{
-  display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:16px;
-}
-.btn-lg{
-  padding:16px 28px;font-size:15px;border-radius:14px;
-}
-@media(max-width:768px){
-  .cta-banner-card{padding:36px 20px;}
-  .cta-actions{flex-direction:column;width:100%;}
-  .cta-actions .btn{width:100%;justify-content:center;}
-}
-
-/* === BOTTOM SURVEY PROMPT TOAST === */
-.survey-prompt-toast{
-  position:fixed;bottom:24px;right:24px;z-index:9995;
-  background:rgba(12, 12, 15, 0.96);
-  border:1px solid rgba(255, 255, 255, 0.35);
-  box-shadow:0 20px 50px rgba(0,0,0,0.85), 0 0 30px rgba(255,255,255,0.2);
-  backdrop-filter:blur(18px);border-radius:20px;padding:16px 20px;
-  display:flex;align-items:center;gap:16px;max-width:440px;
-  transform:translateY(120px) scale(0.9);opacity:0;
-  transition:all 0.5s var(--ease);pointer-events:none;
-}
-.survey-prompt-toast.show{
-  transform:translateY(0) scale(1);opacity:1;pointer-events:all;
-}
-.spt-icon{
-  width:44px;height:44px;border-radius:50%;
-  background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.3);
-  display:flex;align-items:center;justify-content:center;color:#ffffff;flex-shrink:0;
-}
-.spt-content{flex:1;}
-.spt-title{font-family:'Unbounded',sans-serif;font-weight:700;font-size:13.5px;color:#ffffff;line-height:1.25;margin-bottom:3px;}
-.spt-sub{font-size:12px;color:var(--gray);line-height:1.35;}
-.spt-btn{padding:10px 18px;font-size:12.5px;font-weight:700;white-space:nowrap;border-radius:100px;font-family:'Unbounded',sans-serif;background:#ffffff;color:#000000;}
-.spt-close{background:none;border:none;color:var(--gray-dim);cursor:pointer;padding:4px;display:flex;align-items:center;justify-content:center;transition:color 0.2s;}
-.spt-close:hover{color:#ffffff;}
-
-@media(max-width:640px){
-  .survey-prompt-toast{left:14px;right:14px;bottom:14px;max-width:none;padding:14px 16px;}
-  .spt-title{font-size:12.5px;}
-  .spt-sub{font-size:11px;}
-}
-
-/* === SURVEY QUESTION OPTIONS === */
-.survey-q-title{
-  font-family:'Unbounded',sans-serif;font-size:clamp(16px, 2vw, 19px);font-weight:700;color:#ffffff;
-  line-height:1.35;margin-bottom:18px;
-}
-.survey-options-grid{
-  display:grid;gap:10px;
-}
-.survey-opt-btn{
-  background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.12);
-  border-radius:14px;padding:14px 18px;color:#ffffff;
-  font-family:'Inter',sans-serif;font-size:13.5px;font-weight:600;
-  text-align:left;display:flex;align-items:center;justify-content:space-between;gap:12px;
-  transition:all 0.2s ease;cursor:pointer;
-}
-.survey-opt-btn:hover{
-  background:rgba(255,255,255,0.14);border-color:#ffffff;
-  transform:translateX(4px);box-shadow:0 0 20px rgba(255,255,255,0.12);
-}
-.survey-opt-badge{
-  font-size:11px;color:var(--gray-dim);text-transform:uppercase;letter-spacing:1px;font-weight:600;
-  background:rgba(255,255,255,0.06);padding:3px 8px;border-radius:6px;border:1px solid rgba(255,255,255,0.08);
-}
-.survey-nav-row{
-  display:flex;justify-content:space-between;align-items:center;margin-top:20px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.08);
-}
-.sp-close:hover{color:#fff;}
-
-/* === AI MATCHMAKER WIZARD MODAL === */
-.ai-wizard-modal{
-  position:fixed;inset:0;z-index:9999;
-  background:rgba(0,0,0,0.9);backdrop-filter:blur(20px);
-  display:flex;align-items:center;justify-content:center;padding:20px;
-  opacity:0;pointer-events:none;transition:opacity 0.3s;
-}
-.ai-wizard-modal.show{opacity:1;pointer-events:auto;}
-.wizard-box{
-  background:linear-gradient(160deg, #121214, #08080a);
-  border:1px solid rgba(255,255,255,0.3);
-  box-shadow:0 30px 90px rgba(0,0,0,0.8);
-  border-radius:var(--radius-lg);padding:40px;width:100%;max-width:580px;
-  position:relative;
-}
-.wizard-close{
-  position:absolute;top:20px;right:20px;width:36px;height:36px;
-  border-radius:50%;background:rgba(255,255,255,0.06);color:#fff;
-  display:flex;align-items:center;justify-content:center;cursor:pointer;
-  transition:background 0.2s;
-}
-.wizard-close:hover{background:rgba(255,255,255,0.15);}
-.wizard-step{display:none;}
-.wizard-step.active{display:block;animation:fadeInUp 0.3s var(--ease);}
-.wizard-options{display:grid;gap:12px;margin-top:24px;}
-.wizard-opt{
-  background:rgba(255,255,255,0.03);border:1px solid var(--line);
-  padding:16px 20px;border-radius:16px;text-align:left;
-  font-size:14.5px;font-weight:600;color:#fff;
-  transition:all 0.25s;display:flex;align-items:center;justify-content:space-between;
-}
-.wizard-opt:hover{
-  background:rgba(255,255,255,0.1);border-color:#ffffff;
-  transform:translateX(6px);box-shadow:0 0 20px rgba(255,255,255,0.1);
-}
-
-/* === FAQ ACCORDION === */
-.faq-grid{max-width:800px;margin:0 auto;display:grid;gap:16px;}
-.faq-item{
-  background:var(--card);border:1px solid var(--line);
-  border-radius:var(--radius-md);overflow:hidden;
-  transition:all 0.3s var(--ease);
-}
-.faq-item.active{border-color:rgba(255,255,255,0.4);background:var(--card-hi);}
-.faq-q{
-  padding:22px 28px;font-family:'Unbounded';font-size:16px;font-weight:700;
-  display:flex;align-items:center;justify-content:space-between;cursor:pointer;
-  user-select:none;
-}
-.faq-icon{
-  width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.06);
-  display:flex;align-items:center;justify-content:center;
-  transition:transform 0.3s var(--ease);
-}
-.faq-item.active .faq-icon{transform:rotate(180deg);background:#ffffff;color:#000000;}
-.faq-a{
-  padding:0 28px 22px;color:var(--gray);font-size:14.5px;line-height:1.65;
-  display:none;
-}
-.faq-item.active .faq-a{display:block;animation:fadeInUp 0.3s var(--ease);}
-
-/* === GLOW EFFECTS & SHIMMER === */
-.gold-text{background:linear-gradient(135deg,#ffffff 0%,#a1a1aa 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-.cyan-text{background:linear-gradient(135deg,#ffffff 0%,#a1a1aa 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-.badge-3d{
-  position:absolute;top:14px;right:14px;
-  background:rgba(255,255,255,0.12);
-  border:1px solid #ffffff;color:#fff;
-  font-size:10px;font-weight:800;padding:4px 10px;border-radius:100px;
-  letter-spacing:0.5px;backdrop-filter:blur(8px);
-  box-shadow:0 0 15px rgba(255,255,255,0.2);
-}
-
-@keyframes fadeInUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
-
 </style>
-<base target="_blank">
-<base target="_blank">
 </head>
 <body>
 
@@ -1300,13 +855,9 @@ footer .flinks a:hover{color:var(--white);}
 <header>
   <div class="wrap">
     <div class="nav-left">
+      <a href="#reviews">Отзывы</a>
       <a href="#catalog">Каталог</a>
-      <a href="#calculator">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block;vertical-align:-2px;margin-right:4px;"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="18"/><path d="M16 10h.01M12 10h.01M8 10h.01M12 14h.01M8 14h.01M12 18h.01M8 18h.01"/></svg>
-        Калькулятор
-      </a>
       <a href="#about">О нас</a>
-      <a href="#faq">FAQ</a>
     </div>
     <div class="logo"><img src="images/logo.png" alt="Hustlify" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>
     <div class="nav-right">
@@ -1326,19 +877,6 @@ footer .flinks a:hover{color:var(--white);}
   </div>
 </header>
 
-<div class="urgency-bar">
-  <div class="urgency-badge">
-    <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M12 2c0 3.8-3.1 7-7 7 0 5 4 9 9 9s9-4 9-9c-2 0-4-1-5-3 0 2-2 3-4 3 0-3-2-5-2-7z"/></svg>
-    FLASH SALE
-  </div>
-  <div>Скидка до <b>-30%</b> на готовые IT-проекты под ключ</div>
-  <div class="urgency-timer" id="urgencyTimer">03:42:18</div>
-  <div class="live-users-pill">
-    <span class="live-dot"></span>
-    <span><b id="liveUserCount">24</b> человека выбирают проект</span>
-  </div>
-</div>
-
 <section class="hero">
   <canvas class="hero-bg-canvas" id="heroCanvas"></canvas>
   <div class="hero-glow hg1"></div>
@@ -1350,98 +888,23 @@ footer .flinks a:hover{color:var(--white);}
     <div class="ring r3"></div>
   </div>
 
-  <div class="float-chip fc1"><span class="chip-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></span>Быстрый старт за 24 часа</div>
-  <div class="float-chip fc2"><span class="chip-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></span>Гарантия окупаемости</div>
-  <div class="float-chip fc3"><span class="chip-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4M8 15h.01M16 15h.01"/></svg></span>Поддержка на всех этапах</div>
-  <div class="float-chip fc4"><span class="chip-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12l4 6-10 12L2 9l4-6z"/><path d="M11 3l-4 6 5 12M13 3l4 6-5 12M2 9h20"/></svg></span>500+ готовых бизнесов</div>
+  <div class="float-chip fc1"><span class="chip-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.2 6.8H21l-5.6 4.1 2.1 6.8L12 15.6l-5.5 4.1 2.1-6.8L3 8.8h6.8z"/></svg></span>Самые вкусные цены</div>
+  <div class="float-chip fc2"><span class="chip-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg></span>Чистейшая репутация</div>
+  <div class="float-chip fc3"><span class="chip-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M12 20V4M20 20v-7"/></svg></span>Лучшее продюссирование</div>
+  <div class="float-chip fc4"><span class="chip-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1.3"/><circle cx="18" cy="21" r="1.3"/><path d="M1 3h3l2.3 11.4a2 2 0 0 0 2 1.6h8.2a2 2 0 0 0 2-1.6L20 7H5"/></svg></span>Огромный каталог товаров</div>
 
 <div class="hero-content">
   <div class="hero-badge-row">
-    <img src="images/logo.png" alt="Hustlify" style="width:52px;height:52px;object-fit:cover;border-radius:50%;border:1.5px solid rgba(255,255,255,0.6);box-shadow:0 0 20px rgba(255,255,255,0.2);">
-    <div class="brand-pill" style="border-color:var(--white);color:#fff;">HUSTLIFY</div>
+    <img src="images/logo.png" alt="Hustlify" style="width:52px;height:52px;object-fit:cover;border-radius:50%;border:1.5px solid rgba(255,255,255,0.5);">
+    <div class="brand-pill">HUSTLIFY</div>
   </div>
-  <h1>От <em class="cyan-text">голой идеи</em> до монетизации за  <br><u>     14 дней</u></h1>
+  <h1>От <em>голой</em> идеи до монетизации за<br><u>2 недели</u></h1>
   <p class="sub">Место успешных решений</p>
   <div class="hero-ctas">
-    <a href="#catalog" class="btn btn-white" style="box-shadow:0 0 30px rgba(255,255,255,0.2);">
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-      Каталог
-    </a>
-    <a href="#cases" class="btn btn-outline" style="border-color:var(--white);color:#fff;display:inline-flex;align-items:center;gap:8px;padding:15px 34px;border-radius:100px;font-size:14.5px;font-weight:600;transition:all .3s var(--ease);">
-  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
-  Кейсы
-</a>
+    <a href="#catalog" class="btn btn-white">Каталог</a>
+    <a href="#cases" class="btn btn-outline">Кейсы</a>
   </div>
 </div>
-</section>
-
-<!-- ROI & PROFIT CALCULATOR SECTION -->
-<section class="calc-section" id="calculator">
-  <div class="wrap">
-    <div class="section-head reveal">
-      <div class="eyebrow" style="color:var(--gray-dim);letter-spacing:3px;">Интерактивный расчет</div>
-      <h2>Калькулятор окупаемости готового бизнеса</h2>
-      <p>Передвигайте ползунок и выбирайте категорию, чтобы рассчитать чистый доход и окупаемость в реальном времени</p>
-    </div>
-
-    <div class="calc-card reveal">
-      <div class="calc-inputs">
-        <div class="calc-step-tag">01 / Бюджет и Инвестиции</div>
-        <h3 class="calc-step-title">Сумма ваших инвестиций</h3>
-        <div class="calc-label-row">
-          <span class="calc-label-text">Желаемый бюджет:</span>
-          <span class="calc-value-big" id="calcBudgetValue">50,000 ₽</span>
-        </div>
-        <div class="calc-slider-group">
-          <input type="range" class="calc-range" id="calcSlider" min="10000" max="500000" step="5000" value="50000">
-          <div class="calc-ticks">
-            <span>10 000 ₽</span>
-            <span>250 000 ₽</span>
-            <span>500 000 ₽</span>
-          </div>
-        </div>
-
-        <div class="calc-step-tag" style="margin-top:32px;">02 / Ниша и Направление</div>
-        <h3 class="calc-step-title">Выберите категорию IT-бизнеса</h3>
-        <div class="calc-cats">
-          <button class="calc-cat-btn active" data-cat="ai"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/></svg> PropTech / Недвиж.</button>
-          <button class="calc-cat-btn" data-cat="saas"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> EdTech / Онлайн-курсы</button>
-          <button class="calc-cat-btn" data-cat="crypto"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12l4 6-10 12L2 9l4-6z"/></svg> HealthTech / Wellness</button>
-          <button class="calc-cat-btn" data-cat="shop"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg> E-Commerce / Маркет</button>
-        </div>
-      </div>
-
-      <div class="calc-results" style="display:flex;flex-direction:column;justify-content:center;">
-        <div class="calc-metrics-grid">
-          <div class="calc-metric-box">
-            <div class="calc-metric-title">Месячная выручка</div>
-            <div class="calc-metric-num cyan" id="calcRevenueNum">125,000 ₽</div>
-            <div class="calc-metric-sub">прогнозируемый профит</div>
-          </div>
-          <div class="calc-metric-box">
-            <div class="calc-metric-title">Окупаемость (ROI)</div>
-            <div class="calc-metric-num gold" id="calcRoiNum">250%</div>
-            <div class="calc-metric-sub">годовая доходность</div>
-          </div>
-          <div class="calc-metric-box">
-            <div class="calc-metric-title">Срок окупаемости</div>
-            <div class="calc-metric-num purple" id="calcPaybackNum">12 дней</div>
-            <div class="calc-metric-sub">полный возврат средств</div>
-          </div>
-          <div class="calc-metric-box">
-            <div class="calc-metric-title">Сопровождение</div>
-            <div class="calc-metric-num">100%</div>
-            <div class="calc-metric-sub">поддержка 24/7 под ключ</div>
-          </div>
-        </div>
-
-        <button id="calcCtaBtn" class="btn btn-white" style="margin-top:28px;width:100%;justify-content:center;background:#ffffff;color:#000;font-family:'Unbounded',sans-serif;font-weight:700;font-size:13.5px;letter-spacing:-0.01em;border:none;">
-  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-  Подобрать готовый проект за 50,000 ₽
-</button>
-      </div>
-    </div>
-  </div>
 </section>
 
 <section class="section" id="about">
@@ -1451,49 +914,82 @@ footer .flinks a:hover{color:var(--white);}
       <p>Мы не экспериментируем над клиентами, а применяем готовые работающие связки</p>
     </div>
     <div class="grid-3" id="projectsGrid">
-      
-      <article class="tilt-card" data-project="vieto">
-        <div class="proj-top">
-          <div class="proj-icon i1" style="overflow:hidden;padding:0;border-radius:14px;background:transparent;">
-            <img src="images/projects/vieto.png" alt="Vieto Store" style="width:100%;height:100%;object-fit:cover;border-radius:14px;">
+
+      <article class="tilt-card flip-card" data-project="vieto">
+        <div class="flip-inner">
+          <div class="flip-face flip-front">
+            <div class="flip-front-bg" style="background-image:url('images/projects/vieto.png');"></div>
+            <div class="flip-front-overlay">
+              <h3>Проект<br>Hustlify</h3>
+              <button class="flip-open-btn" type="button" data-nomodal>Открыть проект</button>
+            </div>
           </div>
-          <h3>Vieto<br>Store</h3>
-        </div>
-        <p class="desc">Магазин цифровых продуктов. От верификаций до накрутки в любые соц-сети. <b>Автовыдача 24/7</b></p>
-        <div class="proj-actions">
-          <button class="pbtn b1" onclick="openProjectModal('vieto')" style="background:var(--white);color:var(--bg);">Подробнее</button>
-          <a href="#" class="tg-btn" data-tg data-nomodal><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 3.3 2.8 11c-1.3.5-1.3 1.2-.2 1.5l4.9 1.5 1.9 5.8c.2.6.4.8.8.8.4 0 .6-.2.9-.5l2.2-2.1 4.6 3.4c.8.5 1.4.2 1.6-.7l3-14c.3-1.1-.4-1.6-1.6-1.4Z"/></svg></a>
+          <div class="flip-face flip-back">
+            <div class="proj-top">
+              <div class="proj-icon i1" style="overflow:hidden;padding:0;border-radius:14px;background:transparent;">
+                <img src="images/projects/vieto.png" alt="Vieto Store" style="width:100%;height:100%;object-fit:cover;border-radius:14px;">
+              </div>
+              <h3>Vieto<br>Store</h3>
+            </div>
+            <p class="desc">Магазин цифровых продуктов. От верификаций до накрутки в любые соц-сети. <b>Автовыдача 24/7</b></p>
+            <div class="proj-actions">
+              <button class="pbtn b1" onclick="openProjectModal('vieto')" style="background:var(--white);color:var(--bg);">Подробнее</button>
+              <a href="#" class="tg-btn" data-tg data-nomodal><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 3.3 2.8 11c-1.3.5-1.3 1.2-.2 1.5l4.9 1.5 1.9 5.8c.2.6.4.8.8.8.4 0 .6-.2.9-.5l2.2-2.1 4.6 3.4c.8.5 1.4.2 1.6-.7l3-14c.3-1.1-.4-1.6-1.6-1.4Z"/></svg></a>
+            </div>
+          </div>
         </div>
       </article>
-      
-      <article class="tilt-card" data-project="flux">
-        <div class="proj-top">
-          <div class="proj-icon i2" style="overflow:hidden;padding:0;border-radius:14px;background:transparent;">
-            <img src="images/projects/flux.jpg" alt="Flux Studio" style="width:100%;height:100%;object-fit:cover;border-radius:14px;">
+
+      <article class="tilt-card flip-card" data-project="flux">
+        <div class="flip-inner">
+          <div class="flip-face flip-front">
+            <div class="flip-front-bg" style="background-image:url('images/projects/flux.jpg');"></div>
+            <div class="flip-front-overlay">
+              <h3>Проект<br>Hustlify</h3>
+              <button class="flip-open-btn" type="button" data-nomodal>Открыть проект</button>
+            </div>
           </div>
-          <h3>Flux<br>Studio</h3>
-        </div>
-        <p class="desc">Студия дизайна. Упаковка бизнеса под ключ с 0. <b>Зацепи клиента стилем!</b></p>
-        <div class="proj-actions">
-          <button class="pbtn b2" onclick="openProjectModal('flux')" style="background:var(--white);color:var(--bg);">Подробнее</button>
-          <a href="#" class="tg-btn" data-tg data-nomodal><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 3.3 2.8 11c-1.3.5-1.3 1.2-.2 1.5l4.9 1.5 1.9 5.8c.2.6.4.8.8.8.4 0 .6-.2.9-.5l2.2-2.1 4.6 3.4c.8.5 1.4.2 1.6-.7l3-14c.3-1.1-.4-1.6-1.6-1.4Z"/></svg></a>
+          <div class="flip-face flip-back">
+            <div class="proj-top">
+              <div class="proj-icon i2" style="overflow:hidden;padding:0;border-radius:14px;background:transparent;">
+                <img src="images/projects/flux.jpg" alt="Flux Studio" style="width:100%;height:100%;object-fit:cover;border-radius:14px;">
+              </div>
+              <h3>Flux<br>Studio</h3>
+            </div>
+            <p class="desc">Студия дизайна. Упаковка бизнеса под ключ с 0. <b>Зацепи клиента стилем!</b></p>
+            <div class="proj-actions">
+              <button class="pbtn b2" onclick="openProjectModal('flux')" style="background:var(--white);color:var(--bg);">Подробнее</button>
+              <a href="#" class="tg-btn" data-tg data-nomodal><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 3.3 2.8 11c-1.3.5-1.3 1.2-.2 1.5l4.9 1.5 1.9 5.8c.2.6.4.8.8.8.4 0 .6-.2.9-.5l2.2-2.1 4.6 3.4c.8.5 1.4.2 1.6-.7l3-14c.3-1.1-.4-1.6-1.6-1.4Z"/></svg></a>
+            </div>
+          </div>
         </div>
       </article>
-      
-      <article class="tilt-card" data-project="cursor">
-        <div class="proj-top">
-          <div class="proj-icon i3" style="overflow:hidden;padding:0;border-radius:14px;background:transparent;">
-            <img src="images/projects/cursor.png" alt="Cursor Market" style="width:100%;height:100%;object-fit:cover;border-radius:14px;">
+
+      <article class="tilt-card flip-card" data-project="cursor">
+        <div class="flip-inner">
+          <div class="flip-face flip-front">
+            <div class="flip-front-bg" style="background-image:url('images/projects/cursor.png');"></div>
+            <div class="flip-front-overlay">
+              <h3>Проект<br>Hustlify</h3>
+              <button class="flip-open-btn" type="button" data-nomodal>Открыть проект</button>
+            </div>
           </div>
-          <h3>Cursor<br>Market</h3>
-        </div>
-        <p class="desc">Витрина, которая поможет вашему оформлению. Премиум/NFT/Звёзды. <b>Стань привлекательнее в Telegram</b></p>
-        <div class="proj-actions">
-          <button class="pbtn b3" onclick="openProjectModal('cursor')" style="background:var(--white);color:var(--bg);">Подробнее</button>
-          <a href="#" class="tg-btn" data-tg data-nomodal><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 3.3 2.8 11c-1.3.5-1.3 1.2-.2 1.5l4.9 1.5 1.9 5.8c.2.6.4.8.8.8.4 0 .6-.2.9-.5l2.2-2.1 4.6 3.4c.8.5 1.4.2 1.6-.7l3-14c.3-1.1-.4-1.6-1.6-1.4Z"/></svg></a>
+          <div class="flip-face flip-back">
+            <div class="proj-top">
+              <div class="proj-icon i3" style="overflow:hidden;padding:0;border-radius:14px;background:transparent;">
+                <img src="images/projects/cursor.png" alt="Cursor Market" style="width:100%;height:100%;object-fit:cover;border-radius:14px;">
+              </div>
+              <h3>Cursor<br>Market</h3>
+            </div>
+            <p class="desc">Витрина, которая поможет вашему оформлению. Премиум/NFT/Звёзды. <b>Стань привлекательнее в Telegram</b></p>
+            <div class="proj-actions">
+              <button class="pbtn b3" onclick="openProjectModal('cursor')" style="background:var(--white);color:var(--bg);">Подробнее</button>
+              <a href="#" class="tg-btn" data-tg data-nomodal><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 3.3 2.8 11c-1.3.5-1.3 1.2-.2 1.5l4.9 1.5 1.9 5.8c.2.6.4.8.8.8.4 0 .6-.2.9-.5l2.2-2.1 4.6 3.4c.8.5 1.4.2 1.6-.7l3-14c.3-1.1-.4-1.6-1.6-1.4Z"/></svg></a>
+            </div>
+          </div>
         </div>
       </article>
-      
+
     </div>
   </div>
 </section>
@@ -1519,11 +1015,6 @@ footer .flinks a:hover{color:var(--white);}
       <p>По самой вкусной цене</p>
     </div>
     <div class="pgrid reveal" id="casesGrid"></div>
-    <div class="reveal" style="text-align:center;margin-top:44px;">
-  <a href="/cases" target="_blank" rel="noopener" class="btn btn-white" style="display:inline-flex;align-items:center;gap:10px;padding:16px 44px;font-weight:700;">
-    Смотреть закрытые кейсы →
-  </a>
-</div>
   </div>
 </section>
 
@@ -1535,12 +1026,6 @@ footer .flinks a:hover{color:var(--white);}
     </div>
     <div class="filter-row reveal" id="filterRow"></div>
     <div class="pgrid reveal" id="catalogGrid"></div>
-    <div class="reveal" style="text-align:center;margin-top:44px;">
-      <button class="btn btn-outline" id="catalogMoreBtn" style="padding:14px 36px;font-size:14.5px;font-weight:600;">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" style="display:inline-block;vertical-align:-2px;margin-right:8px;"><path d="M12 5v14M5 12h14"/></svg>
-        Показать ещё
-      </button>
-    </div>
   </div>
 </section>
 
@@ -1608,7 +1093,7 @@ footer .flinks a:hover{color:var(--white);}
     <div class="rev-track reveal">
       <article class="rev-card">
         <div class="rev-top"><div class="rev-avatar a1">D</div><div><h4>Demirov</h4><div class="proj">Flux Studio</div></div></div>
-        <p>Hustlify превосходно дизайнят. Без скама сделали мне аватарку и пару баннеров для проектов. Управились за 2 дня, все прекрасно</p>
+        <p>Hustlify превосходно дизайнят. Без скама сделали мне аватарку и пару баннеров для проектов. Управились за 2 дня, все прекрасно 🤙</p>
       </article>
       <article class="rev-card">
         <div class="rev-top"><div class="rev-avatar a2">S</div><div><h4>stuff | верифай</h4><div class="proj">Vieto Store</div></div></div>
@@ -1622,200 +1107,17 @@ footer .flinks a:hover{color:var(--white);}
   </div>
 </section>
 
-<section class="section" id="faq">
+<footer id="contact">
   <div class="wrap">
-    <div class="section-head reveal">
-      <div class="eyebrow cyan-text">Вопросы и Ответы</div>
-      <h2>Гарантии и безопасность сделки</h2>
-      <p>Ответы на самые часто задаваемые вопросы инвесторов и покупателей</p>
-    </div>
-    <div class="faq-grid reveal">
-      <div class="faq-item active">
-        <div class="faq-q">
-          <span> Как сделать заказ?</span>
-          <div class="faq-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg></div>
-        </div>
-        <div class="faq-a">
-          Процесс покупки максимально прост и занимает всего пару минут:
-
-Шаг 1: Выберите понравившийся товар и нажмите кнопку «В корзину».
-
-Шаг 2: Перейдите в корзину, проверьте состав заказа и итоговую сумму.
-
-Шаг 3: Заполните все обязательные поля: контактный email, номер телефона (для связи с доставкой) и точный адрес.
-
-Шаг 4: Выберите удобный способ оплаты и завершите транзакцию.
-
-Шаг 5: После успешной оплаты вы получите письмо с подтверждением и деталями заказа.
-
-
-        </div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-q">
-          <span>Какие способы оплаты доступны?</span>
-          <div class="faq-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg></div>
-        </div>
-        <div class="faq-a">
-          Мы заботимся о вашем комфорте и предлагаем два варианта расчета:
-
-Банковские карты (МИР): Быстрая и привычная оплата. Все платежи проходят через защищенный протокол шифрования.
-
-Криптовалюта (BTC / ETH / USDT): Для тех, кто ценит анонимность и скорость международных переводов. Реквизиты для перевода генерируются автоматически при выборе этого метода.
-
-Обратите внимание: валюту платежа вы выбираете на этапе оформления. Комиссия сети при переводе криптовалюты оплачивается покупателем.
-        </div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-q">
-          <span>Когда и как можно крутить рулетку скидок?</span>
-          <div class="faq-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg></div>
-        </div>
-        <div class="faq-a">
-          Наша дисконтная рулетка — это способ получить приятный бонус!
-
-Доступность: Функция доступна для каждого авторизованного пользователя.
-
-Периодичность: Вы можете вращать рулетку 1 раз в 24 часа. Отсчет времени начинается с момента последнего вращения.
-
-Как активировать: Найдите виджет с рулеткой на главной странице или в карточке товара. Нажмите «Крутить», чтобы узнать свой персональный промокод на скидку.
-        </div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-q">
-          <span>Возможен ли возврат товара?</span>
-          <div class="faq-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg></div>
-        </div>
-        <div class="faq-a">
-          Согласно нашей политике, возврат товара недоступен.
-
-После подтверждения и оплаты заказа все права на товар переходят к покупателю, и сделка считается окончательной.
-
-В нашей сети действует принцип "товар становится бесценным" — это означает, что каждая позиция проходит многоступенчатую проверку качества перед отправкой, а стоимость списания средств технически невозможна после активации сделки.
-
-Мы настоятельно рекомендуем внимательно проверять состав корзины, размеры и характеристики товара перед оплатой.
-        </div>
-        </div>
-      <div class="faq-item">
-        <div class="faq-q">
-          <span>Где отслеживать статус заказа?</span>
-          <div class="faq-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg></div>
-        </div>
-        <div class="faq-a">
-          Для получения актуальной информации по вашему заказу обращайтесь к менеджеру службы поддержки:
-
-Telegram: Напишите в личные сообщения на аккаунт @HustlifyHelp.
-        </div>
-
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- CONTACT SECTION -->
-<section class="section" id="contacts" style="padding:100px 0 80px;">
-  <div class="wrap">
-    <div class="reveal" style="display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;max-width:1000px;margin:0 auto;">
-      <div>
-        <h2 style="font-family:'Unbounded',sans-serif;font-size:clamp(32px,4vw,52px);font-weight:800;line-height:1.05;letter-spacing:-0.03em;margin-bottom:16px;">Мы на связи<br>24/7</h2>
-        <p style="color:var(--gray);font-size:15px;line-height:1.65;max-width:320px;">Ответим за пару минут. Работаем без выходных и праздников.</p>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:10px;">
-        <a href="https://t.me/HustlifyHelp" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:space-between;padding:20px 28px;border-radius:16px;background:#fff;color:#000;font-weight:700;font-size:15px;text-decoration:none;transition:all 0.3s var(--ease);" 
-           onmouseover="this.style.transform='translateX(6px)';this.style.boxShadow='0 12px 40px rgba(255,255,255,0.08)'" 
-           onmouseout="this.style.transform='translateX(0)';this.style.boxShadow='none'">
-          <span style="display:flex;align-items:center;gap:12px;">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-            Написать в Telegram
-          </span>
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-        </a>
-        <a href="mailto:hustlify@mail.ru" style="display:flex;align-items:center;justify-content:space-between;padding:20px 28px;border-radius:16px;border:1px solid rgba(255,255,255,0.12);color:#fff;font-weight:600;font-size:15px;text-decoration:none;transition:all 0.3s var(--ease);"
-           onmouseover="this.style.borderColor='rgba(255,255,255,0.3)';this.style.background='rgba(255,255,255,0.03)';this.style.transform='translateX(6px)'" 
-           onmouseout="this.style.borderColor='rgba(255,255,255,0.12)';this.style.background='transparent';this.style.transform='translateX(0)'">
-          <span style="display:flex;align-items:center;gap:12px;">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-8.97 5.7a1.94 1.94 0 01-2.06 0L2 7"/></svg>
-            Написать на почту
-          </span>
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-        </a>
-        <a href="https://t.me/HustlifyBot" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:space-between;padding:20px 28px;border-radius:16px;border:1px solid rgba(255,255,255,0.12);color:#fff;font-weight:600;font-size:15px;text-decoration:none;transition:all 0.3s var(--ease);"
-           onmouseover="this.style.borderColor='rgba(255,255,255,0.3)';this.style.background='rgba(255,255,255,0.03)';this.style.transform='translateX(6px)'" 
-           onmouseout="this.style.borderColor='rgba(255,255,255,0.12)';this.style.background='transparent';this.style.transform='translateX(0)'">
-          <span style="display:flex;align-items:center;gap:12px;">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-            Открыть MiniApp
-          </span>
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-        </a>
-      </div>
-    </div>
-  </div>
-</section>
-
-<footer>
-  <div class="wrap">
-    <div class="fbrand">
-      <div class="logo" style="width:32px;height:32px;"><img src="images/logo.png" alt="Hustlify" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>
-      <span>Hustlify</span>
-    </div>
-    <div class="fcopy">© 2026 Hustlify. Все права защищены. Платформа готовых IT-бизнесов.</div>
+    <div class="fbrand"><img src="images/logo.png" alt="Hustlify" style="width:34px;height:34px;object-fit:cover;border-radius:50%;">
     <div class="flinks">
+      <a href="#" data-tg>Telegram</a>
+      <a href="#reviews">Отзывы</a>
       <a href="#catalog">Каталог</a>
-      <a href="#calculator">Калькулятор</a>
-      <a href="#about">О нас</a>
-      <a href="#faq">FAQ</a>
     </div>
+    <div class="fcopy">© 2026 Hustlify. Место успешных решений.</div>
   </div>
 </footer>
-
-<!-- SOCIAL PROOF LIVE SALES TOAST -->
-<div class="social-proof-toast" id="socialProofToast">
-  <div class="sp-avatar" id="spAvatar">
-    <img id="spAvatarImg" src="/images/avatars/alexey.jpg" alt="Avatar">
-  </div>
-  <div class="sp-info">
-    <h5 id="spName">Алексей П. (Москва)</h5>
-    <p id="spAction">Купил 'AI Telegram Bot v3.4'</p>
-    <div class="sp-tag" id="spTag">Окупаемость: 12 дней</div>
-  </div>
-  <div class="sp-close" id="spClose">✕</div>
-</div>
-
-<!-- AI MATCHMAKER WIZARD MODAL -->
-<div class="ai-wizard-modal" id="aiWizardModal">
-  <div class="wizard-box">
-    <div class="wizard-close" id="aiWizardClose">✕</div>
-    
-    <div class="wizard-step active" id="wizStep1">
-      <div class="eyebrow cyan-text">Шаг 1 из 3</div>
-      <h3 style="font-family:'Unbounded';font-size:22px;font-weight:800;margin:10px 0 8px;">Какой у вас бюджет на запуск?</h3>
-      <p style="color:var(--gray);font-size:14px;">Мы подберем идеальную связку с гарантией окупаемости</p>
-      <div class="wizard-options">
-        <button class="wizard-opt" data-budget="15000"><span>До 15,000 ₽</span> <span style="color:var(--white)">Быстрый старт</span></button>
-        <button class="wizard-opt" data-budget="50000"><span>15,000 – 50,000 ₽</span> <span style="color:var(--white)">Оптимальный выбор</span></button>
-        <button class="wizard-opt" data-budget="150000"><span>От 50,000 ₽</span> <span style="color:var(--white)">Масштабный бизнес</span></button>
-      </div>
-    </div>
-
-    <div class="wizard-step" id="wizStep2">
-      <div class="eyebrow cyan-text">Шаг 2 из 3</div>
-      <h3 style="font-family:'Unbounded';font-size:22px;font-weight:800;margin:10px 0 8px;">Какая ниша вам ближе?</h3>
-      <p style="color:var(--gray);font-size:14px;">Выберите направление, которое вам интересно развивать</p>
-      <div class="wizard-options">
-        <button class="wizard-opt" data-format="ai"><span>AI Боты & ИИ Модели</span> <span>Высокий тренд</span></button>
-        <button class="wizard-opt" data-format="saas"><span>SaaS Сервисы & Подписки</span> <span>Регулярный доход</span></button>
-        <button class="wizard-opt" data-format="shop"><span>Готовые Магазины & Маркетплейсы</span> <span>Простые продажи</span></button>
-      </div>
-    </div>
-
-    <div class="wizard-step" id="wizStep3">
-      <div class="eyebrow cyan-text">Результат AI Анализа</div>
-      <h3 style="font-family:'Unbounded';font-size:22px;font-weight:800;margin:10px 0 8px;">Идеальные проекты под ваши критерии:</h3>
-      <div id="wizResultsGrid" style="display:grid;gap:12px;margin-top:20px;"></div>
-    </div>
-  </div>
-</div>
 
 <div class="overlay" id="overlay"></div>
 <div class="search-modal" id="searchModal">
@@ -1867,14 +1169,8 @@ Telegram: Напишите в личные сообщения на аккаун�
   <div style="padding:22px 24px 26px;display:flex;flex-direction:column;gap:12px;">
     <div id="payDiscountLine" style="color:var(--white);font-weight:600;font-size:12.5px;display:none;"></div>
     <div style="color:var(--gray);font-size:13.5px;margin-bottom:6px;">К оплате: <b id="payTotal" style="color:var(--white);"></b></div>
-    <button class="btn btn-white" id="payCryptoBot" style="justify-content:center;">
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12l4 6-10 12L2 9l4-6z"/></svg>
-      Оплатить через CryptoBot
-    </button>
-    <button class="btn btn-outline" id="payRequisites" style="justify-content:center;">
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-      Оплатить по реквизитам
-    </button>
+    <button class="btn btn-white" id="payCryptoBot" style="justify-content:center;"><span style="filter:grayscale(1);">💎</span> Оплатить через CryptoBot</button>
+    <button class="btn btn-outline" id="payRequisites" style="justify-content:center;"><span style="filter:grayscale(1);">🧾</span> Оплатить по реквизитам</button>
     <div id="payHint" style="color:var(--gray-dim);font-size:12px;margin-top:4px;"></div>
   </div>
 </div>
@@ -1899,9 +1195,7 @@ Telegram: Напишите в личные сообщения на аккаун�
 
 <div class="search-modal" id="receiptSentModal" style="top:50%;transform:translate(-50%,calc(-50% - 16px));">
   <div style="padding:36px 30px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px;">
-    <div style="width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;color:#ffffff;">
-      <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-    </div>
+    <div style="width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:26px;">⏳</div>
     <h3 style="font-size:18px;">Отправлено на модерацию</h3>
     <p style="color:var(--gray);font-size:14px;line-height:1.6;margin:0;">Ожидайте, с вами свяжутся в ближайшее время для подтверждения оплаты.</p>
     <button class="btn btn-white" id="receiptSentClose" style="justify-content:center;margin-top:6px;">Понятно</button>
@@ -1944,39 +1238,6 @@ Telegram: Напишите в личные сообщения на аккаун�
   </div>
 </div>
 
-<!-- SURVEY PROMPT BOTTOM TOAST -->
-<div class="survey-prompt-toast" id="surveyPromptToast">
-  <div class="spt-icon">
-    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-  </div>
-  <div class="spt-content">
-    <div class="spt-title">Пройдите опрос и получите подарок </div>
-    <div class="spt-sub">Ответьте на 8 быстрых вопросов и получите промокод на скидку 20%</div>
-  </div>
-  <button class="spt-btn" id="sptOpenBtn">Перейти</button>
-  <button class="spt-close" id="sptCloseBtn"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-</div>
-
-<!-- 8-QUESTION SURVEY MODAL -->
-<div class="search-modal" id="surveyModal" style="top:50%;transform:translate(-50%,calc(-50% - 16px));max-width:540px;width:92%;">
-  <div class="search-input-row" style="justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:14px;">
-    <div style="display:flex;align-items:center;gap:10px;">
-      <span style="font-size:20px;"></span>
-      <div>
-        <h3 style="font-size:16px;font-weight:700;line-height:1.2;">Опрос клиентов Hustlify</h3>
-        <span style="font-size:11px;color:var(--gray-dim);text-transform:uppercase;letter-spacing:1px;" id="surveyProgressLabel">Вопрос 1 из 8</span>
-      </div>
-    </div>
-    <button class="close-x" id="surveyModalClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-  </div>
-  
-  <div style="width:100%;height:3px;background:rgba(255,255,255,0.08);position:relative;overflow:hidden;">
-    <div id="surveyProgressBar" style="height:100%;background:#ffffff;width:12.5%;transition:width 0.3s ease;"></div>
-  </div>
-
-  <div style="padding:22px 24px 28px;" id="surveyBody"></div>
-</div>
-
 <div class="toast" id="toast"></div>
 
 <script>
@@ -2003,25 +1264,7 @@ let cart = [];
 let wishlist = [];
 let activeFilter = 'Все';
 
-function getCategorySvg(cat){
-  if(!cat) return '<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg>';
-  const c = String(cat).toLowerCase();
-  if(c.includes('ai') || c.includes('бот') || c.includes('ии')) {
-    return '<svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4M8 15h.01M16 15h.01"/></svg>';
-  }
-  if(c.includes('saas') || c.includes('crm') || c.includes('сервис')) {
-    return '<svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>';
-  }
-  if(c.includes('крипто') || c.includes('обмен') || c.includes('fintech')) {
-    return '<svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h12l4 6-10 12L2 9l4-6z"/><path d="M11 3l-4 6 5 12M13 3l4 6-5 12M2 9h20"/></svg>';
-  }
-  if(c.includes('маркет') || c.includes('shop') || c.includes('дизайн') || c.includes('стор')) {
-    return '<svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>';
-  }
-  return '<svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>';
-}
-
-function thumbHtml(p){ return p.img ? `<img src="${p.img}" alt="${p.name}" style="width:100%;height:100%;object-fit:contain;border-radius:10px;">` : getCategorySvg(p.cat); }
+function thumbHtml(p){ return p.img ? `<img src="${p.img}" alt="${p.name}" style="width:100%;height:100%;object-fit:contain;border-radius:10px;">` : (p.icon||'📦'); }
 function money(n){ return n.toLocaleString('ru-RU') + ' ₽'; }
 
 function productCard(p, isCase){
@@ -2029,11 +1272,11 @@ function productCard(p, isCase){
   return `
   <div class="product" data-id="${p.id}">
     <div class="product-media">
-      ${isCase && p.hit ? '<div class="tag-hit">Хит продаж</div>' : ''}
+      ${isCase && p.hit ? '<div class="tag-hit">🔥 Хит продаж</div>' : ''}
       <button class="wish ${inWish?'active':''}" data-wish="${p.id}" aria-label="В избранное">
-        <svg viewBox="0 0 24 24" fill="${inWish?'#ffffff':'none'}" stroke="${inWish?'#ffffff':'currentColor'}" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+        <svg viewBox="0 0 24 24" fill="${inWish?'#f5f5f4':'none'}" stroke="${inWish?'#f5f5f4':'currentColor'}" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
       </button>
-      <div class="obj${p.img?' has-photo':''}" style="font-size:64px;display:flex;align-items:center;justify-content:center;">${p.img ? `<img src="${p.img}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;">` : getCategorySvg(p.cat)}</div>
+      <div class="obj${p.img?' has-photo':''}" style="font-size:64px;display:flex;align-items:center;justify-content:center;">${p.img ? `<img src="${p.img}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;">` : (p.icon||'📦')}</div>
     </div>
     <div class="product-info">
       <h4>${p.name}</h4>
@@ -2057,23 +1300,9 @@ function renderFilters(){
   ).join('');
 }
 
-let catalogVisibleCount = 8;
-let catalogExpanded = false;
-
 function renderCatalog(){
   const items = activeFilter==='Все' ? catalogData : catalogData.filter(p=>p.cat===activeFilter);
-  const visibleItems = catalogExpanded ? items : items.slice(0, catalogVisibleCount);
-  document.getElementById('catalogGrid').innerHTML = visibleItems.map(p=>productCard(p,false)).join('');
-
-  const moreBtn = document.getElementById('catalogMoreBtn');
-  if(moreBtn){
-    if(items.length <= catalogVisibleCount || catalogExpanded){
-      moreBtn.style.display = 'none';
-    } else {
-      moreBtn.style.display = 'inline-flex';
-      moreBtn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" style="display:inline-block;vertical-align:-2px;margin-right:8px;"><path d="M12 5v14M5 12h14"/></svg> Показать ещё (' + (items.length - catalogVisibleCount) + ')';
-    }
-  }
+  document.getElementById('catalogGrid').innerHTML = items.map(p=>productCard(p,false)).join('');
 }
 
 function renderAll(){ renderCases(); renderFilters(); renderCatalog(); bindProductEvents(); }
@@ -2130,11 +1359,7 @@ function toggleWish(id){
   const idx = wishlist.indexOf(id);
   const p = ALL_PRODUCTS.find(x=>x.id===id);
   if(idx>-1){ wishlist.splice(idx,1); showToast(`Удалено из избранного: ${p.name}`); }
-  else {
-    wishlist.push(id);
-    showToast(`Добавлено в избранное: ${p.name}`);
-    if(window.triggerSurveyPrompt) window.triggerSurveyPrompt();
-  }
+  else { wishlist.push(id); showToast(`Добавлено в избранное: ${p.name}`); }
   updateBadges();
   renderCases(); renderCatalog(); bindProductEvents();
   renderWishDrawer();
@@ -2156,7 +1381,6 @@ function addToCart(id){
   renderCartDrawer();
   const p = ALL_PRODUCTS.find(x=>x.id===id);
   showToast(`В корзину: ${p.name}`);
-  if(window.triggerSurveyPrompt) window.triggerSurveyPrompt();
 }
 function removeFromCart(id){
   cart = cart.filter(c=>c.id!==id);
@@ -2198,8 +1422,6 @@ function closeAll(){
   document.getElementById('projectModal').classList.remove('open');
   document.getElementById('requisitesModal').classList.remove('open');
   document.getElementById('receiptSentModal').classList.remove('open');
-  const sm = document.getElementById('surveyModal');
-  if(sm) sm.classList.remove('open');
 }
 
 document.getElementById('cartBtn').onclick = ()=>{ renderCartDrawer(); openDrawer(cartDrawer); };
@@ -2354,18 +1576,7 @@ document.getElementById('filterRow').addEventListener('click', e=>{
   const btn = e.target.closest('[data-filter]');
   if(!btn) return;
   activeFilter = btn.dataset.filter;
-  catalogExpanded = false;
-  catalogVisibleCount = 8;
   renderFilters(); renderCatalog(); bindProductEvents();
-});
-
-document.getElementById('catalogMoreBtn').addEventListener('click', ()=>{
-  catalogExpanded = true;
-  renderCatalog();
-  bindProductEvents();
-  // Smooth scroll to show new items
-  const btn = document.getElementById('catalogMoreBtn');
-  if(btn) btn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 });
 
 async function loadNews(){
@@ -2439,7 +1650,7 @@ document.getElementById('spinBtn').addEventListener('click', async ()=>{
   const candidates = wheelValues.map((v,i)=>i).filter(i => wheelValues[i]===discount && i>=10 && i<=17);
   const winnerIndex = candidates.length ? candidates[Math.floor(Math.random()*candidates.length)] : 12;
   const offset = SEG_W*winnerIndex + SEG_W/2 - 240;
-  wheelTrack.style.transition = 'transform 8.5s cubic-bezier(.12,.7,.1,1)';
+  wheelTrack.style.transition = 'transform 5.5s cubic-bezier(.12,.7,.1,1)';
   wheelTrack.style.transform = `translateX(-${offset}px)`;
 
  setTimeout(()=>{
@@ -2450,7 +1661,7 @@ document.getElementById('spinBtn').addEventListener('click', async ()=>{
     spinning = false;
     setSpinLock(Date.now());
     refreshSpinLock();
-  }, 8600);
+  }, 5600);
 });
 
 const SPIN_KEY = 'hs_last_spin_ts';
@@ -2512,7 +1723,7 @@ function bindTilt(selector){
     card.addEventListener('mouseleave', ()=>{ card.style.transform = 'perspective(900px) rotateY(0) rotateX(0) translateY(0)'; });
   });
 }
-bindTilt('.tilt-card');
+bindTilt('.tilt-card:not(.flip-card)');
 
 const TELEGRAM_LINK = 'https://t.me/HustlifyBot';
 document.getElementById('mbMiniAppBtn').href = TELEGRAM_LINK;
@@ -2566,7 +1777,15 @@ document.getElementById('projectModalClose').onclick = closeAll;
 document.querySelectorAll('.tilt-card[data-project]').forEach(card=>{
   card.addEventListener('click', (e)=>{
     if(e.target.closest('[data-nomodal]')) return;
+    if(!card.classList.contains('flipped')) return;
     openProjectModal(card.dataset.project);
+  });
+});
+
+document.querySelectorAll('.flip-open-btn').forEach(btn=>{
+  btn.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    btn.closest('.flip-card').classList.add('flipped');
   });
 });
 
@@ -2893,545 +2112,11 @@ document.querySelectorAll('[data-tg]').forEach(el=>{
   el.addEventListener('click', e=>{ e.preventDefault(); showToast('Открываем Telegram...'); });
 });
 
-/* === 1. URGENCY BANNER & LIVE USERS COUNTER === */
-(function initUrgency(){
-  let seconds = 3 * 3600 + 42 * 60 + 18;
-  const timerEl = document.getElementById('urgencyTimer');
-  const userEl = document.getElementById('liveUserCount');
-  
-  setInterval(()=>{
-    seconds = Math.max(0, seconds - 1);
-    const h = String(Math.floor(seconds / 3600)).padStart(2,'0');
-    const m = String(Math.floor((seconds % 3600) / 60)).padStart(2,'0');
-    const s = String(seconds % 60).padStart(2,'0');
-    if(timerEl) timerEl.textContent = `${h}:${m}:${s}`;
-  }, 1000);
-
-  setInterval(()=>{
-    if(userEl){
-      const current = parseInt(userEl.textContent) || 24;
-      const delta = Math.floor(Math.random() * 5) - 2;
-      userEl.textContent = Math.max(18, Math.min(42, current + delta));
-    }
-  }, 4000);
-})();
-
-
-
-/* === 3. INTERACTIVE ROI & PROFIT CALCULATOR === */
-(function initRoiCalculator(){
-  const slider = document.getElementById('calcSlider');
-  const budgetVal = document.getElementById('calcBudgetValue');
-  const revNum = document.getElementById('calcRevenueNum');
-  const roiNum = document.getElementById('calcRoiNum');
-  const paybackNum = document.getElementById('calcPaybackNum');
-  const ctaBtn = document.getElementById('calcCtaBtn');
-  const catBtns = document.querySelectorAll('.calc-cat-btn');
-
-  if(!slider) return;
-
-  let currentCat = 'ai';
-  const catMultipliers = {
-    ai: { rev: 2.5, roi: 280, payback: 12 },
-    saas: { rev: 2.2, roi: 240, payback: 16 },
-    crypto: { rev: 3.1, roi: 350, payback: 9 },
-    shop: { rev: 1.8, roi: 190, payback: 21 }
-  };
-
-  function updateCalc(){
-    const budget = parseInt(slider.value);
-    const m = catMultipliers[currentCat];
-    
-    // Fill slider gradient
-    const min = parseFloat(slider.min) || 10000;
-    const max = parseFloat(slider.max) || 500000;
-    const pct = ((budget - min) / (max - min)) * 100;
-    slider.style.background = `linear-gradient(90deg, #ffffff ${pct}%, rgba(255,255,255,0.1) ${pct}%)`;
-
-    const monthlyRev = Math.round(budget * m.rev);
-    const roi = Math.round(m.roi);
-    const paybackDays = Math.max(7, Math.round(m.payback * (50000 / budget)));
-
-    if(budgetVal) budgetVal.textContent = budget.toLocaleString('ru-RU') + ' ₽';
-    if(revNum) revNum.textContent = monthlyRev.toLocaleString('ru-RU') + ' ₽';
-    if(roiNum) roiNum.textContent = roi + '%';
-    if(paybackNum) paybackNum.textContent = paybackDays + ' дней';
-    if(ctaBtn) ctaBtn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" style="display:inline-block;vertical-align:-2px;margin-right:6px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Подобрать готовый проект за ${budget.toLocaleString('ru-RU')} ₽`;
-  }
-
-  slider.addEventListener('input', updateCalc);
-
-  catBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      catBtns.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      currentCat = btn.dataset.cat;
-      playCyberSound('click');
-      updateCalc();
-    });
-  });
-
-  if(ctaBtn){
-  ctaBtn.addEventListener('click', () => {
-    window.open('https://t.me/hustlify_support', '_blank');
-  });
-}
-
-  updateCalc();
-})();
-
-/* === 4. LIVE SOCIAL PROOF SALES TOAST === */
-(function initSocialProof(){
-  const toast = document.getElementById('socialProofToast');
-  const avatarImg = document.getElementById('spAvatarImg');
-  const avatar = document.getElementById('spAvatar');
-  const nameEl = document.getElementById('spName');
-  const actionEl = document.getElementById('spAction');
-  const tagEl = document.getElementById('spTag');
-  const closeBtn = document.getElementById('spClose');
-
-  if(!toast) return;
-
-  const purchases = [
-    { name: "Алексей П. (Москва)", img: "/images/avatars/alexey.jpg", item: "Запустил Музыкальный сервис", price: "", roi: "Окупаемость: 27 дней" },
-    { name: "SummitStudio (СПб)", img: "/images/avatars/dmitry.jpg", item: "Запустили Нейросеть", price: "", roi: "Окупаемость: 9 дней" },
-    { name: "Максим Р. (Казань)", img: "/images/avatars/maxim.jpg", item: "Запустил CryptoКошелек в TG", price: "", roi: "Окупаемость: 15 дней" },
-    { name: "Артем Е. (Минск)", img: "/images/avatars/artem.jpg", item: "Запустил Студию дизайна", price: "", roi: "Окупаемость: 10 дней" },
-    { name: "Даниил Л. (Екатеринбург)", img: "/images/avatars/sergey.jpg", item: "Запустил агенство по WEB", price: "", roi: "Чистая прибыль: +110k/мес" }
-  ];
-
-  let index = 0;
-
-  function showNext(){
-    const p = purchases[index % purchases.length];
-    if(avatarImg) avatarImg.src = p.img;
-    if(nameEl) nameEl.textContent = p.name;
-    if(actionEl) actionEl.textContent = p.item;
-    if(tagEl) tagEl.textContent = p.roi;
-
-    toast.classList.add('show');
-    playCyberSound('hover');
-
-    setTimeout(() => {
-      toast.classList.remove('show');
-    }, 5500);
-
-    index++;
-  }
-
-  setTimeout(showNext, 4000);
-  setInterval(showNext, 16000);
-
-  if(closeBtn){
-    closeBtn.addEventListener('click', () => toast.classList.remove('show'));
-  }
-})();
-
-/* === 5. AI MATCHMAKER WIZARD LOGIC === */
-(function initAiWizard(){
-  const modal = document.getElementById('aiWizardModal');
-  const openBtn = document.getElementById('openAiWizardBtn');
-  const closeBtn = document.getElementById('aiWizardClose');
-  const step1 = document.getElementById('wizStep1');
-  const step2 = document.getElementById('wizStep2');
-  const step3 = document.getElementById('wizStep3');
-  const grid = document.getElementById('wizResultsGrid');
-
-  if(!modal) return;
-
-  let selectedBudget = 50000;
-  let selectedFormat = 'ai';
-
-  function resetWizard(){
-    step1.classList.add('active');
-    step2.classList.remove('active');
-    step3.classList.remove('active');
-  }
-
-  document.querySelectorAll('#openAiWizardBtn, .open-ai-wizard-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      resetWizard();
-      modal.classList.add('show');
-      playCyberSound('click');
-    });
-  });
-
-  if(closeBtn){
-    closeBtn.addEventListener('click', () => modal.classList.remove('show'));
-  }
-
-  document.querySelectorAll('[data-budget]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      selectedBudget = parseInt(btn.dataset.budget);
-      step1.classList.remove('active');
-      step2.classList.add('active');
-      playCyberSound('click');
-    });
-  });
-
-  document.querySelectorAll('[data-format]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      selectedFormat = btn.dataset.format;
-      step2.classList.remove('active');
-      step3.classList.add('active');
-      playCyberSound('success');
-      renderResults();
-    });
-  });
-
-  function renderResults(){
-    if(!grid) return;
-    const matches = (ALL_PRODUCTS || []).slice(0, 2);
-    grid.innerHTML = matches.map(p => `
-      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.2);padding:16px;border-radius:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
-        <div>
-          <div style="font-weight:700;color:#fff;font-size:15px;">${p.name || p.title}</div>
-          <div style="font-size:12px;color:var(--gray);margin-top:2px;">Окупаемость: 10-14 дней | Прибыль: от 90k ₽</div>
-          <div style="font-size:14px;font-weight:800;color:#ffffff;margin-top:6px;">${(p.price || 18900).toLocaleString('ru-RU')} ₽</div>
-        </div>
-        <button class="btn btn-white" onclick="addToCart('${p.id}'); document.getElementById('aiWizardModal').classList.remove('show');" style="padding:10px 18px;font-size:12px;">Заказать</button>
-      </div>
-    `).join('');
-  }
-})();
-
-/* === 6. FAQ ACCORDION HANDLER === */
-document.querySelectorAll('.faq-q').forEach(q => {
-  q.addEventListener('click', () => {
-    const item = q.parentElement;
-    const isActive = item.classList.contains('active');
-    document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('active'));
-    if(!isActive) item.classList.add('active');
-    playCyberSound('click');
-  });
-});
-
-/* === 7. WEB AUDIO API SOUND SYNTHESIZER === */
-let soundEnabled = true;
-const soundBtn = document.getElementById('soundToggleBtn');
-
-if(soundBtn){
-  soundBtn.addEventListener('click', () => {
-    soundEnabled = !soundEnabled;
-    soundBtn.style.opacity = soundEnabled ? '1' : '0.4';
-    showToast(soundEnabled ? 'Звуковые эффекты включены' : 'Звуковые эффекты выключены');
-  });
-}
-
-function playCyberSound(type){
-  if(!soundEnabled) return;
-  try{
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    if(type === 'hover'){
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(580, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.08);
-      gain.gain.setValueAtTime(0.04, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.08);
-    } else if(type === 'click'){
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(320, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(120, ctx.currentTime + 0.1);
-      gain.gain.setValueAtTime(0.08, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.1);
-    } else if(type === 'success'){
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(440, ctx.currentTime);
-      osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.08);
-      osc.frequency.setValueAtTime(880, ctx.currentTime + 0.16);
-      gain.gain.setValueAtTime(0.06, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.28);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.28);
-    }
-  } catch(e){}
-}
-
-/* === SURVEY MODULE LOGIC === */
-(function initSurveyModule(){
-  const promptToast = document.getElementById('surveyPromptToast');
-  const sptOpenBtn = document.getElementById('sptOpenBtn');
-  const sptCloseBtn = document.getElementById('sptCloseBtn');
-  const modal = document.getElementById('surveyModal');
-  const modalClose = document.getElementById('surveyModalClose');
-  const progressLabel = document.getElementById('surveyProgressLabel');
-  const progressBar = document.getElementById('surveyProgressBar');
-  const surveyBody = document.getElementById('surveyBody');
-
-  const QUESTIONS = [
-    {
-      q: "Откуда вы впервые узнали о проекте Hustlify?",
-      opts: [
-        { text: "Telegram-каналы и паблики", badge: "TG" },
-        { text: "Поиск Google / Яндекс", badge: "Search" },
-        { text: "YouTube / Соцсети", badge: "Media" },
-        { text: "Рекомендация друзей / партнеров", badge: "Word of mouth" },
-        { text: "Прямая реклама", badge: "Ads" }
-      ]
-    },
-    {
-      q: "Какая сфера IT-бизнеса вас больше всего привлекает?",
-      opts: [
-        { text: "AI & Telegram Боты", badge: "Тренд 2026" },
-        { text: "SaaS Платформы и CRM", badge: "Подписки" },
-        { text: "Крипто Обменники & Web3", badge: "Высокий ROI" },
-        { text: "E-commerce и Маркетплейсы", badge: "Продажи" },
-        { text: "Другое", badge: "Other" }
-      ]
-    },
-    {
-      q: "Укажите ваш возраст",
-      opts: [
-        { text: "До 22 лет", badge: "Старт" },
-        { text: "22 – 30 лет", badge: "Прогресс" },
-        { text: "31 – 42 года", badge: "Опыт" },
-        { text: "43+ лет", badge: "Инвестор" }
-      ]
-    },
-    {
-      q: "Какой у вас опыт в управлении готовым IT-бизнесом?",
-      opts: [
-        { text: "Новичок — это мой первый проект", badge: "С нуля" },
-        { text: "Есть небольшой опыт (1-2 года)", badge: "Практик" },
-        { text: "Опытный предприниматель", badge: "Профи" },
-        { text: "Серийный инвестор", badge: "Капитал" }
-      ]
-    },
-    {
-      q: "Какой ваш планируемый бюджет на покупку проекта?",
-      opts: [
-        { text: "До 30 000 ₽", badge: "Микро" },
-        { text: "30 000 – 70 000 ₽", badge: "Стандарт" },
-        { text: "70 000 – 150 000 ₽", badge: "Бизнес" },
-        { text: "Свыше 150 000 ₽", badge: "VIP" }
-      ]
-    },
-    {
-      q: "Главная цель покупки готового бизнеса?",
-      opts: [
-        { text: "Запуск основного источника дохода", badge: "Главный доход" },
-        { text: "Пассивный доход без затрат времени", badge: "Пассив" },
-        { text: "Диверсификация капитала", badge: "Защита" },
-        { text: "Перепродажа и масштабирование", badge: "Флиппинг" }
-      ]
-    },
-    {
-      q: "Желаемый срок окупаемости инвестиций?",
-      opts: [
-        { text: "Меньше 1 месяца", badge: "Быстрый старт" },
-        { text: "1 – 3 месяца", badge: "Оптимально" },
-        { text: "3 – 6 месяцев", badge: "Устойчиво" },
-        { text: "Главное — минимальные риски", badge: "Надёжно" }
-      ]
-    },
-    {
-      q: "Нужна ли вам помощь с маркетингом и запуском под ключ?",
-      opts: [
-        { text: "Да, нужен полный запуск под ключ + реклама", badge: "Full Service" },
-        { text: "Нужна консультация на старте", badge: "Mentoring" },
-        { text: "Справлюсь самостоятельно", badge: "Self" }
-      ]
-    }
-  ];
-
-  let currentStep = 0;
-  let answers = [];
-  let surveyCompleted = false;
-
-  window.triggerSurveyPrompt = function(){
-    if(surveyCompleted || !promptToast) return;
-    promptToast.classList.add('show');
-    playCyberSound('hover');
-  };
-
-  if(sptCloseBtn){
-    sptCloseBtn.addEventListener('click', () => promptToast.classList.remove('show'));
-  }
-
-  if(sptOpenBtn){
-    sptOpenBtn.addEventListener('click', () => {
-      promptToast.classList.remove('show');
-      openSurveyModal();
-    });
-  }
-
-  if(modalClose){
-    modalClose.addEventListener('click', () => {
-      modal.classList.remove('open');
-      overlay.classList.remove('open');
-    });
-  }
-
-  function openSurveyModal(){
-    currentStep = 0;
-    answers = [];
-    renderStep();
-    openDrawer(modal);
-    playCyberSound('click');
-  }
-
-  function renderStep(){
-    if(currentStep >= QUESTIONS.length){
-      finishSurvey();
-      return;
-    }
-
-    const qData = QUESTIONS[currentStep];
-    const total = QUESTIONS.length;
-    
-    if(progressLabel) progressLabel.textContent = `Вопрос ${currentStep + 1} из ${total}`;
-    if(progressBar) progressBar.style.width = `${((currentStep + 1) / total) * 100}%`;
-
-    surveyBody.innerHTML = `
-      <div class="survey-q-title">${currentStep + 1}. ${qData.q}</div>
-      <div class="survey-options-grid">
-        ${qData.opts.map((opt, i) => `
-          <button class="survey-opt-btn" data-opt-idx="${i}">
-            <span>${opt.text}</span>
-            <span class="survey-opt-badge">${opt.badge}</span>
-          </button>
-        `).join('')}
-      </div>
-      <div class="survey-nav-row">
-        ${currentStep > 0 ? `<button class="btn btn-outline" id="surveyPrevBtn" style="padding:8px 16px;font-size:12px;">← Назад</button>` : '<div></div>'}
-        <span style="font-size:12px;color:var(--gray-dim);">Выберите один вариант</span>
-      </div>
-    `;
-
-    surveyBody.querySelectorAll('.survey-opt-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const idx = parseInt(btn.dataset.optIdx);
-        answers[currentStep] = qData.opts[idx].text;
-        playCyberSound('click');
-        currentStep++;
-        renderStep();
-      });
-    });
-
-    const prevBtn = document.getElementById('surveyPrevBtn');
-    if(prevBtn){
-      prevBtn.addEventListener('click', () => {
-        currentStep = Math.max(0, currentStep - 1);
-        playCyberSound('click');
-        renderStep();
-      });
-    }
-  }
-
-  async function finishSurvey(){
-    if(progressLabel) progressLabel.textContent = `Готово! `;
-    if(progressBar) progressBar.style.width = `100%`;
-
-    surveyBody.innerHTML = `
-      <div style="text-align:center;padding:20px 10px;">
-        <div style="width:40px;height:40px;border-radius:50%;border:2px solid #ffffff;border-top-color:transparent;animation:spin 1s linear infinite;margin:0 auto 16px;"></div>
-        <h3 style="font-family:'Unbounded';font-size:18px;font-weight:700;margin-bottom:8px;">Генерируем ваш личный промокод...</h3>
-        <p style="color:var(--gray);font-size:13px;">Анализируем ваши ответы и применяем скидку 20%</p>
-      </div>
-    `;
-
-    try {
-      const res = await fetch('/api/survey/submit', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ answers })
-});
-      const data = await res.json();
-      const code = data.code || 'SURVEY20-HUSTLIFY';
-
-      surveyCompleted = true;
-      playCyberSound('success');
-
-      surveyBody.innerHTML = `
-        <div style="text-align:center;padding:10px 0;">
-          <div style="font-size:40px;margin-bottom:10px;"></div>
-          <h3 style="font-family:'Unbounded',sans-serif;font-size:20px;font-weight:800;color:#ffffff;margin-bottom:8px;">Вам начислена скидка -20%!</h3>
-          <p style="color:var(--gray);font-size:13.5px;margin-bottom:20px;">Спасибо за прохождение опроса. Ваш персональный промокод сформирован:</p>
-          
-          <div style="background:rgba(255,255,255,0.06);border:1px dashed rgba(255,255,255,0.4);border-radius:16px;padding:18px;margin-bottom:20px;box-shadow:0 0 25px rgba(255,255,255,0.15);">
-            <div style="font-size:11px;color:var(--gray-dim);text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;">Промокод на скидку 20%</div>
-            <div style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:800;color:#ffffff;letter-spacing:2px;user-select:all;" id="surveyPromoValue">${code}</div>
-          </div>
-
-          <div style="display:flex;flex-direction:column;gap:10px;">
-            <button class="btn btn-white" id="applySurveyPromoBtn" style="justify-content:center;font-weight:700;background:#ffffff;color:#000000;font-family:'Unbounded',sans-serif;">
-              Применить к корзине
-            </button>
-            <button class="btn btn-outline" id="copySurveyPromoBtn" style="justify-content:center;font-size:13px;">
-              Скопировать промокод
-            </button>
-          </div>
-        </div>
-      `;
-
-      const applyBtn = document.getElementById('applySurveyPromoBtn');
-      if(applyBtn){
-        applyBtn.addEventListener('click', () => {
-          lastPromoCode = code;
-          const checkoutPromoInput = document.getElementById('checkoutPromo');
-          if(checkoutPromoInput) checkoutPromoInput.value = code;
-          
-          modal.classList.remove('open');
-          overlay.classList.remove('open');
-          showToast(`🎟 Промокод ${code} (-20%) применён!`);
-
-          renderCartDrawer();
-          openDrawer(cartDrawer);
-          playCyberSound('success');
-        });
-      }
-
-      const copyBtn = document.getElementById('copySurveyPromoBtn');
-      if(copyBtn){
-        copyBtn.addEventListener('click', () => {
-          navigator.clipboard.writeText(code);
-          copyBtn.textContent = 'Скопировано в буфер! ✓';
-          playCyberSound('click');
-          setTimeout(() => copyBtn.textContent = 'Скопировать промокод', 2000);
-        });
-      }
-
-    } catch(e) {
-      surveyBody.innerHTML = `
-        <div style="text-align:center;padding:20px;">
-          <h3 style="font-size:16px;color:#ffffff;">Ваш промокод: <b>SURVEY20-SPECIAL</b></h3>
-          <p style="color:var(--gray);font-size:13px;margin:10px 0;">Скидка 20% действительна в течение 30 дней.</p>
-          <button class="btn btn-white" onclick="document.getElementById('surveyModal').classList.remove('open');document.getElementById('overlay').classList.remove('open');" style="margin-top:10px;justify-content:center;width:100%;">Закрыть</button>
-        </div>
-      `;
-    }
-  }
-})();
-
 loadProducts();
 loadNews();
 updateBadges();
 renderCartDrawer();
 renderWishDrawer();
-
-// Smooth scroll for anchor links
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-  anchor.addEventListener('click', function(e) {
-    const href = this.getAttribute('href');
-    if (href === '#') return; // Skip empty anchors
-    const target = document.querySelector(href);
-    if (target) {
-      e.preventDefault();
-      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  });
-});
-
 </script>
 </body>
 </html>
