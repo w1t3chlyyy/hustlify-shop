@@ -1535,6 +1535,12 @@ footer .flinks a:hover{color:var(--white);}
     </div>
     <div class="filter-row reveal" id="filterRow"></div>
     <div class="pgrid reveal" id="catalogGrid"></div>
+    <div class="reveal" style="text-align:center;margin-top:44px;">
+      <button class="btn btn-outline" id="catalogMoreBtn" style="padding:14px 36px;font-size:14.5px;font-weight:600;">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" style="display:inline-block;vertical-align:-2px;margin-right:8px;"><path d="M12 5v14M5 12h14"/></svg>
+        Показать ещё
+      </button>
+    </div>
   </div>
 </section>
 
@@ -2051,9 +2057,23 @@ function renderFilters(){
   ).join('');
 }
 
+let catalogVisibleCount = 8;
+let catalogExpanded = false;
+
 function renderCatalog(){
   const items = activeFilter==='Все' ? catalogData : catalogData.filter(p=>p.cat===activeFilter);
-  document.getElementById('catalogGrid').innerHTML = items.map(p=>productCard(p,false)).join('');
+  const visibleItems = catalogExpanded ? items : items.slice(0, catalogVisibleCount);
+  document.getElementById('catalogGrid').innerHTML = visibleItems.map(p=>productCard(p,false)).join('');
+
+  const moreBtn = document.getElementById('catalogMoreBtn');
+  if(moreBtn){
+    if(items.length <= catalogVisibleCount || catalogExpanded){
+      moreBtn.style.display = 'none';
+    } else {
+      moreBtn.style.display = 'inline-flex';
+      moreBtn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" style="display:inline-block;vertical-align:-2px;margin-right:8px;"><path d="M12 5v14M5 12h14"/></svg> Показать ещё (' + (items.length - catalogVisibleCount) + ')';
+    }
+  }
 }
 
 function renderAll(){ renderCases(); renderFilters(); renderCatalog(); bindProductEvents(); }
@@ -2334,7 +2354,18 @@ document.getElementById('filterRow').addEventListener('click', e=>{
   const btn = e.target.closest('[data-filter]');
   if(!btn) return;
   activeFilter = btn.dataset.filter;
+  catalogExpanded = false;
+  catalogVisibleCount = 8;
   renderFilters(); renderCatalog(); bindProductEvents();
+});
+
+document.getElementById('catalogMoreBtn').addEventListener('click', ()=>{
+  catalogExpanded = true;
+  renderCatalog();
+  bindProductEvents();
+  // Smooth scroll to show new items
+  const btn = document.getElementById('catalogMoreBtn');
+  if(btn) btn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 });
 
 async function loadNews(){
