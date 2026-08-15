@@ -2549,7 +2549,7 @@ function renderSearch(q){
   q = q.trim().toLowerCase();
   const matches = q ? ALL_PRODUCTS.filter(p=> p.name.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q) || (p.cat||'').toLowerCase().includes(q)) : [];
   if(!q){ results.innerHTML = '<div class="sr-empty">Начните вводить название товара или услуги</div>'; return; }
-  if(matches.length===0){ results.innerHTML = '<div class="sr-empty">Ничего не найдено 🤔</div>'; return; }
+  if(matches.length===0){ results.innerHTML = '<div class="sr-empty">Ничего не найдено</div>'; return; }
   results.innerHTML = matches.map(p=>`
     <div class="sr-item" data-goto="${p.id}">
       <div class="sr-ic">${thumbHtml(p)}</div>
