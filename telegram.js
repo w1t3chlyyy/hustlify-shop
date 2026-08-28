@@ -6,7 +6,11 @@
  * основного сервера и шлёт сообщения через Telegram Bot API (метод
  * sendMessage), когда появляется новый заказ или когда заказ оплачен.
  *
- * НАСТРОЙКА (займёт 2 минуты):
+ * Поддерживает ДВА независимых бота одновременно (у каждого свой токен
+ * от BotFather) — уведомления уходят в оба, если оба настроены. Если
+ * настроен только первый — второй просто молча пропускается.
+ *
+ * НАСТРОЙКА ОСНОВНОГО БОТА (займёт 2 минуты):
  * 1) В Telegram напишите @BotFather → команда /newbot → придумайте имя
  *    и username бота. BotFather пришлёт токен вида
  *    123456789:AAExxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -20,72 +24,103 @@
  *    (можно указать несколько через запятую — например, себе и партнёру).
  * 5) Перезапустите сервер — уведомления начнут приходить автоматически.
  *
- * Ничего дополнительно ставить не нужно: бот не принимает команды,
- * не требует long polling — он только отправляет сообщения.
+ * НАСТРОЙКА ВТОРОГО БОТА (те же 5 шагов, только для другого бота):
+ * 1) У @BotFather → /newbot ещё раз → получите ВТОРОЙ токен.
+ *    Впишите его в .env как TELEGRAM_BOT_TOKEN_2.
+ * 2) Напишите этому второму боту любое сообщение.
+ * 3) Узнайте chat_id тем же способом (через getUpdates, но с ВТОРЫМ
+ *    токеном в URL).
+ * 4) Впишите в .env как TELEGRAM_ADMIN_CHAT_IDS_2 (тоже можно несколько
+ *    через запятую).
+ * 5) Перезапустите сервер.
+ *
+ * Второй бот полностью необязателен: если TELEGRAM_BOT_TOKEN_2 не задан
+ * в .env — уведомления просто продолжат уходить только в первый бот,
+ * ничего не сломается.
  */
 
-async function sendTelegramMessage(text) {
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chatIds = (process.env.TELEGRAM_ADMIN_CHAT_IDS || '')
+// Список "целей" отправки — каждая цель это пара (токен бота, список chat_id).
+// Первая цель — основной бот (как было раньше), вторая — новый, доп. бот.
+function getTargets() {
+  const targets = [];
+
+  const token1 = process.env.TELEGRAM_BOT_TOKEN;
+  const chatIds1 = (process.env.TELEGRAM_ADMIN_CHAT_IDS || '')
     .split(',')
     .map(s => s.trim())
     .filter(Boolean);
-
-  if (!token || chatIds.length === 0) {
-    return; // бот не настроен в .env — молча пропускаем, сайт продолжает работать
+  if (token1 && chatIds1.length > 0) {
+    targets.push({ token: token1, chatIds: chatIds1 });
   }
 
-  for (const chatId of chatIds) {
-    try {
-      const resp = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: chatId,
-          text,
-          parse_mode: 'HTML',
-          disable_web_page_preview: true
-        })
-      });
-      const data = await resp.json();
-      if (!data.ok) {
-        console.error('Telegram API отказал:', data.description);
+  const token2 = process.env.TELEGRAM_BOT_TOKEN_2;
+  const chatIds2 = (process.env.TELEGRAM_ADMIN_CHAT_IDS_2 || '')
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean);
+  if (token2 && chatIds2.length > 0) {
+    targets.push({ token: token2, chatIds: chatIds2 });
+  }
+
+  return targets;
+}
+
+async function sendTelegramMessage(text) {
+  const targets = getTargets();
+  if (targets.length === 0) {
+    return; // ни один бот не настроен в .env — молча пропускаем, сайт продолжает работать
+  }
+
+  for (const { token, chatIds } of targets) {
+    for (const chatId of chatIds) {
+      try {
+        const resp = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: chatId,
+            text,
+            parse_mode: 'HTML',
+            disable_web_page_preview: true
+          })
+        });
+        const data = await resp.json();
+        if (!data.ok) {
+          console.error('Telegram API отказал:', data.description);
+        }
+      } catch (e) {
+        console.error('Не удалось отправить уведомление в Telegram:', e.message);
       }
-    } catch (e) {
-      console.error('Не удалось отправить уведомление в Telegram:', e.message);
     }
   }
 }
 
 async function sendTelegramDocument(documentUrl, caption) {
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chatIds = (process.env.TELEGRAM_ADMIN_CHAT_IDS || '')
-    .split(',')
-    .map(s => s.trim())
-    .filter(Boolean);
-
-  if (!token || chatIds.length === 0) {
-    return; // бот не настроен в .env — молча пропускаем, сайт продолжает работать
+  const targets = getTargets();
+  if (targets.length === 0) {
+    return; // ни один бот не настроен в .env — молча пропускаем, сайт продолжает работать
   }
 
-  for (const chatId of chatIds) {
-    try {
-      const resp = await fetch(`https://api.telegram.org/bot${token}/sendDocument`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: chatId,
-          document: documentUrl,
-          caption,
-          parse_mode: 'HTML'
-        })
-      });
-      const data = await resp.json();
-      if (!data.ok) {
-        console.error('Telegram API отказал (документ):', data.description);
+  for (const { token, chatIds } of targets) {
+    for (const chatId of chatIds) {
+      try {
+        const resp = await fetch(`https://api.telegram.org/bot${token}/sendDocument`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: chatId,
+            document: documentUrl,
+            caption,
+            parse_mode: 'HTML'
+          })
+        });
+        const data = await resp.json();
+        if (!data.ok) {
+          console.error('Telegram API отказал (документ):', data.description);
+        }
+      } catch (e) {
+        console.error('Не удалось отправить чек в Telegram:', e.message);
       }
-    } catch (e) {
-      console.error('Не удалось отправить чек в Telegram:', e.message);
     }
   }
 }
@@ -126,12 +161,9 @@ function notifyReceiptUploaded(order) {
 
 function notifySurveyCompleted(answers, promoCode) {
   const answersText = answers.map((a, i) => `${i + 1}. ${a}`).join('\n');
-  const text = 
+  const text =
     `📋 <b>Новый пройденный опрос</b>\n\n` +
     `🎟 Промокод: <code>${promoCode}</code> (-20%)\n\n` +
     `<b>Ответы:</b>\n${answersText}\n\n` +
     `🕐 Время: ${new Date().toLocaleString('ru-RU')}`;
   return sendTelegramMessage(text);
-}
-
-module.exports = { notifyNewOrder, notifyOrderPaid, notifyReceiptUploaded, notifySurveyCompleted, sendTelegramMessage };
