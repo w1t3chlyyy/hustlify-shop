@@ -8,6 +8,19 @@
  *   3) npm start
  */
 require('dotenv').config();
+
+// Подавление предупреждения DEP0169 (url.parse() из внутренних зависимостей Express 4/parseurl в Node 22+)
+const originalEmitWarning = process.emitWarning;
+process.emitWarning = function(warning, ...args) {
+  if (typeof warning === 'string' && (warning.includes('DEP0169') || warning.includes('url.parse'))) {
+    return;
+  }
+  if (warning && typeof warning === 'object' && (warning.code === 'DEP0169' || (warning.message && warning.message.includes('url.parse')))) {
+    return;
+  }
+  return originalEmitWarning.call(process, warning, ...args);
+};
+
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
