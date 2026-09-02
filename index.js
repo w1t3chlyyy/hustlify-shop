@@ -989,7 +989,7 @@ app.get('/cases/*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'cases.html'));
 });
 
-/* ================= AI AGENT (GEMINI) ROUTES ================= */
+/* ================= AI AGENT (GEMINI) WITH MULTI-TIER FALLBACKS ================= */
 let genAIClient = null;
 function getGenAI() {
   const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
@@ -1003,6 +1003,14 @@ function getGenAI() {
     }
   }
   return genAIClient;
+}
+
+// Timeout wrapper helper to guarantee Vercel serverless calls never exceed bounds
+function withTimeout(promise, ms = 7000) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error(`AI Request Timeout after ${ms}ms`)), ms))
+  ]);
 }
 
 function buildSystemPrompt(products) {
@@ -1047,9 +1055,100 @@ ${productListStr}
 - Ты можешь предложить клиенту перейти в Каталог, воспользоваться Калькулятором бюджета на главной странице или крутануть рулетку скидок.`;
 }
 
+// Smart Offline Knowledge Engine fallback generator
+function generateFallbackResponse(message, products) {
+  const lower = (message || '').toLowerCase();
+  let reply = '';
+  let matchedProducts = [];
+
+  // Extract budget digits if any
+  const budgetMatch = lower.match(/(\d+[\d\s]*)/);
+  let parsedBudget = null;
+  if (budgetMatch) {
+    parsedBudget = parseInt(budgetMatch[1].replace(/\s+/g, ''), 10);
+  }
+
+  if (parsedBudget && (lower.includes('бюджет') || lower.includes('руб') || lower.includes('₽') || lower.includes('тыс') || lower.includes('к '))) {
+    if (parsedBudget < 4000) {
+      reply = `**План запуска бизнеса при бюджете до ${parsedBudget.toLocaleString('ru-RU')} ₽:**\n\n` +
+        `Для данного бюджета оптимально подходят стартовые решения с быстрой окупаемостью:\n` +
+        `1. **Кейс "Стандарт" (2 589 ₽)** — готовая упакованная ниша с базовой воронкой и инструкциями.\n` +
+        `2. **Верификации (CryptoBot / Fragment от 250 ₽)** — техническая база для безопасного приема платежей.\n\n` +
+        `📊 **Окупаемость:** 3–7 дней при правильной настройке стартового трафика.\n` +
+        `⏱ **Срок передачи:** до 24 часов.\n\n` +
+        `Для оформления перейдите в каталог или напишите менеджеру: **@HustlifyHelp**.`;
+      matchedProducts = products.filter(p => ['k2', 'c3', 'c1'].includes(p.id));
+    } else if (parsedBudget <= 10000) {
+      reply = `**План запуска бизнеса при бюджете ${parsedBudget.toLocaleString('ru-RU')} ₽:**\n\n` +
+        `Отличный бюджет для запуска прибыльного Telegram-направления:\n` +
+        `1. **Telegram Mini App (8 990 ₽)** или **Автовыдача 24/7 (5 990 ₽)** — автоматизированный канал продаж прямо внутри Telegram.\n` +
+        `2. **Кейс "Hustlify & TeleStore" (3 889 ₽)** — проверенная товарная матрица и готовая витрина.\n` +
+        `3. **Комплект верификаций** для бесперебойного приема оплат.\n\n` +
+        `📈 **Ожидаемая доходность:** от 35 000 ₽/мес со второго месяца.\n` +
+        `⏱ **Срок развертывания:** от 24 часов до 3 дней.\n\n` +
+        `Вы можете оформить заказ в каталоге или обсудить проект с архитектором: **@HustlifyHelp**.`;
+      matchedProducts = products.filter(p => ['c10', 'c12', 'k1'].includes(p.id));
+    } else {
+      reply = `**Премиальный план запуска под ключ (${parsedBudget.toLocaleString('ru-RU')} ₽):**\n\n` +
+        `С таким бюджетом вы получаете полноценную автономную IT-экосистему:\n` +
+        `1. **Готовый магазин под ключ (12 990 ₽)** — настроенный сервис с подключенным эквайрингом и базой поставщиков.\n` +
+        `2. **Telegram Mini App (8 990 ₽)** — интеграция с Telegram для конверсии до 40% выше обычных сайтов.\n` +
+        `3. **Индивидуальный Landing Page + Трафик** — прогретая аудитория и упаковка бренда.\n\n` +
+        `🚀 **Потенциал:** масштабируемый проект с выходом на стабильный доход от 80 000+ ₽/мес.\n` +
+        `Свяжитесь с главным архитектором платформы для индивидуального брифа: **@HustlifyHelp**.`;
+      matchedProducts = products.filter(p => ['c11', 'c10', 'c9'].includes(p.id));
+    }
+  } else if (lower.includes('mini app') || lower.includes('мини апп') || lower.includes('тг') || lower.includes('telegram') || lower.includes('бот') || lower.includes('bot')) {
+    reply = `**Разработка и запуск в Telegram (Hustlify):**\n\n` +
+      `Мы создаем Telegram-инфраструктуру любой сложности:\n` +
+      `• **Telegram Mini Apps (8 990 ₽)** — полноценные веб-приложения внутри Telegram (оплата, каталоги, геймификация).\n` +
+      `• **Бот автовыдачи 24/7 (5 990 ₽)** — автоматическая продажа цифровых товаров без вашего присутствия.\n` +
+      `• **Кейс TeleStore (3 889 ₽)** — готовый интернет-магазин в Telegram.\n\n` +
+      `⚡ **Срок сдачи:** 24–72 часа для типовых решений, до 10 дней для сложных проектов.\n` +
+      `Все решения передаются с исходниками и инструкциями. Поддержка: **@HustlifyHelp**.`;
+    matchedProducts = products.filter(p => ['c10', 'c12', 'k1'].includes(p.id));
+  } else if (lower.includes('вериф') || lower.includes('bybit') || lower.includes('cryptobot') || lower.includes('кошел') || lower.includes('fragment') || lower.includes('kyc')) {
+    reply = `**Верификации и безопасность платежей:**\n\n` +
+      `Подключаем официальные аккаунты и кошельки с гарантией:\n` +
+      `• **CryptoBot** (880 ₽) — быстрый прием криптовалюты без комиссий\n` +
+      `• **Fragment** (250 ₽) — подтверждение юзернеймов и номеров\n` +
+      `• **Telegram Wallet** (789 ₽) — встроенный P2P кошелек\n` +
+      `• **ByBit** (889 ₽) — верифицированный биржевой профиль\n\n` +
+      `Все данные передаются безопасно. По вопросам оформления: **@HustlifyHelp**.`;
+    matchedProducts = products.filter(p => p.cat === 'Верификации' || (p.category && p.category.includes('Вериф')));
+  } else if (lower.includes('оплат') || lower.includes('купить') || lower.includes('заказ') || lower.includes('карт') || lower.includes('крипт')) {
+    reply = `**Условия оплаты и получения:**\n\n` +
+      `1. **Способы оплаты:** Банковские карты (МИР, СБП по реквизитам с проверкой чека) и Криптовалюта (CryptoBot: USDT, TON, BTC).\n` +
+      `2. **Сроки передачи:** От 24 часов после подтверждения оплаты.\n` +
+      `3. **Сопровождение:** Предоставляем техническую документацию, видеоинструкции и консультации специалистов.\n\n` +
+      `Менеджер на связи в Telegram 24/7: **@HustlifyHelp**.`;
+    matchedProducts = products.slice(0, 3);
+  } else if (lower.includes('гарант') || lower.includes('отзыв') || lower.includes('безопасн')) {
+    reply = `**Гарантии и надежность Hustlify:**\n\n` +
+      `• **Репутация:** Сотни реальных запусков и отзывов в нашем канале **@HustlifyReviews**.\n` +
+      `• **Прозрачность:** Фиксация условий сделки перед оплатой и передача прав на все созданные материалы.\n` +
+      `• **Техническая поддержка:** Консультируем и помогаем на каждом этапе внедрения.\n\n` +
+      `Свяжитесь с нами в Telegram: **@HustlifyHelp**.`;
+    matchedProducts = products.slice(0, 3);
+  } else {
+    reply = `Здравствуйте! Я — **Hustlify AI Ассистент**, ваш бизнес-архитектор.\n\n` +
+      `Я могу рассчитать проект, предложить решение под ваш бюджет или помочь с выбором:\n` +
+      `• **Бюджет:** Напишите сумму, и я составлю план запуска с точной сметой.\n` +
+      `• **Telegram-бизнес:** Расскажу про Mini Apps, ботов автовыдачи и магазины.\n` +
+      `• **Готовые кейсы:** Помогу выбрать нишу с окупаемостью за 2 недели.\n\n` +
+      `Задайте вопрос или обратитесь к менеджеру: **@HustlifyHelp**.`;
+    matchedProducts = products.slice(0, 3);
+  }
+
+  return {
+    reply,
+    recommended: matchedProducts.slice(0, 3)
+  };
+}
+
 app.post('/api/ai/chat', async (req, res) => {
   try {
-    const { message, history = [] } = req.body;
+    const { message, history = [] } = req.body || {};
     if (!message || typeof message !== 'string') {
       return res.status(400).json({ error: 'Сообщение не может быть пустым' });
     }
@@ -1065,112 +1164,117 @@ app.post('/api/ai/chat', async (req, res) => {
       products = readJsonFile('products.json');
     }
 
+    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
     const systemPrompt = buildSystemPrompt(products);
-    const ai = getGenAI();
 
+    // Prepare contents
+    const contents = [];
+    for (const item of (history || []).slice(-6)) {
+      if (item && item.role && item.content) {
+        contents.push({
+          role: item.role === 'assistant' || item.role === 'model' ? 'model' : 'user',
+          parts: [{ text: String(item.content) }]
+        });
+      }
+    }
+    contents.push({
+      role: 'user',
+      parts: [{ text: message }]
+    });
+
+    // Tier 1: Try Google GenAI SDK (with strict 6.5s timeout)
+    const ai = getGenAI();
     if (ai) {
       try {
-        // Prepare conversation contents
-        const contents = [];
-        for (const item of history.slice(-8)) {
-          if (item && item.role && item.content) {
-            contents.push({
-              role: item.role === 'assistant' || item.role === 'model' ? 'model' : 'user',
-              parts: [{ text: item.content }]
-            });
-          }
-        }
-        contents.push({
-          role: 'user',
-          parts: [{ text: message }]
-        });
-
-        const response = await ai.models.generateContent({
-          model: 'gemini-3.7-flash',
+        const geminiCall = ai.models.generateContent({
+          model: 'gemini-2.5-flash',
           contents: contents,
           config: {
             systemInstruction: systemPrompt,
             temperature: 0.7,
-            maxOutputTokens: 1200
+            maxOutputTokens: 1000
           }
         });
 
-        const replyText = response.text || 'Извините, не удалось сформировать ответ. Попробуйте еще раз или напишите менеджеру @HustlifyHelp.';
+        const response = await withTimeout(geminiCall, 6500);
+        const replyText = response && response.text ? response.text.trim() : '';
 
-        // Find relevant product recommendations based on message context
-        const msgLower = (message + ' ' + replyText).toLowerCase();
-        const recommended = products.filter(p => {
-          return msgLower.includes(p.name.toLowerCase()) || 
-                 (p.cat && msgLower.includes(p.cat.toLowerCase())) ||
-                 (msgLower.includes('кейс') && p.section === 'case');
-        }).slice(0, 3);
+        if (replyText) {
+          const msgLower = (message + ' ' + replyText).toLowerCase();
+          const recommended = products.filter(p => {
+            return msgLower.includes((p.name || '').toLowerCase()) || 
+                   (p.cat && msgLower.includes(p.cat.toLowerCase())) ||
+                   (msgLower.includes('кейс') && p.section === 'case');
+          }).slice(0, 3);
 
-        return res.json({
-          reply: replyText,
-          provider: 'gemini-3.7-flash',
-          recommended
-        });
-      } catch (geminiError) {
-        console.error('Ошибка Gemini API:', geminiError.message);
-        // Fallback to intelligent local rule engine if API fails or key is quota limited
+          return res.json({
+            reply: replyText,
+            provider: 'gemini-2.5-flash',
+            recommended: recommended.length ? recommended : products.slice(0, 3)
+          });
+        }
+      } catch (tier1Error) {
+        console.warn('[AI Tier 1 Fallback triggered]:', tier1Error.message);
       }
     }
 
-    // Smart Local Knowledge Base Fallback if Gemini key is not configured or temporary error
-    const lower = message.toLowerCase();
-    let reply = '';
-    let matchedProducts = [];
+    // Tier 2: Try Direct REST call to Gemini 1.5 Flash (with strict 4.5s timeout)
+    if (apiKey) {
+      try {
+        const restUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+        const restCall = fetch(restUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: contents.map(c => ({
+              role: c.role,
+              parts: c.parts
+            })),
+            systemInstruction: { parts: [{ text: systemPrompt }] },
+            generationConfig: { maxOutputTokens: 1000, temperature: 0.7 }
+          })
+        }).then(async r => {
+          if (!r.ok) throw new Error(`HTTP ${r.status}`);
+          return r.json();
+        });
 
-    if (lower.includes('бюджет') || lower.includes('руб') || lower.includes('₽') || lower.includes('стоит') || lower.includes('цена') || lower.includes('сколько')) {
-      reply = `**Подбор решений по бюджету в Hustlify:**\n\n` +
-        `• **До 5 000 ₽:** Рекомендуем кейс *Hustlify & TeleStore* (3 889 ₽) или кейс *Стандарт* (2 589 ₽) — отличный старт для Telegram-коммерции с готовой структурой.\n` +
-        `• **5 000 – 15 000 ₽:** Идеален *Telegram Mini App* (8 990 ₽) или *Готовый магазин* (12 990 ₽) с настроенной автовыдачей и воронкой продаж.\n` +
-        `• **Индивидуальный проект:** Создадим индивидуальную архитектуру под ваш бизнес. Воспользуйтесь нашим интерактивным калькулятором на главной странице или напишите в Telegram: **@HustlifyHelp**.\n\n` +
-        `Не забудьте покрутить рулетку скидок на главной — можно получить промокод до **-30%**!`;
-      matchedProducts = products.filter(p => ['k1', 'k2', 'c10', 'c11'].includes(p.id));
-    } else if (lower.includes('mini app') || lower.includes('мини апп') || lower.includes('тг') || lower.includes('telegram') || lower.includes('бот')) {
-      reply = `**Разработка и запуск в Telegram:**\n\n` +
-        `В Hustlify мы специализируемся на Telegram-инфраструктуре:\n` +
-        `1. **Telegram Mini Apps (8 990 ₽)** — современные веб-приложения внутри Telegram с оплатой в 1 клик, каталогами и бесшовным UX.\n` +
-        `2. **Автовыдача 24/7 (5 990 ₽)** — бот для продажи цифровых товаров без вашего участия.\n` +
-        `3. **Кейс TeleStore (3 889 ₽)** — готовый интернет-магазин в Telegram.\n\n` +
-        `Срок запуска типовых решений — **24 часа**, индивидуальной разработки — **до 14 дней**. Для старта оформите заказ в каталоге или свяжитесь с нами: **@HustlifyHelp**.`;
-      matchedProducts = products.filter(p => ['c10', 'c12', 'k1'].includes(p.id));
-    } else if (lower.includes('вериф') || lower.includes('bybit') || lower.includes('cryptobot') || lower.includes('кошел') || lower.includes('fragment')) {
-      reply = `**Верификации и безопасность:**\n\n` +
-        `Мы подключаем и верифицируем все ключевые криптосервисы:\n` +
-        `• **CryptoBot** (880 ₽) — быстрая верификация кошелька\n` +
-        `• **Fragment** (250 ₽) — верификация юзернеймов и NFT\n` +
-        `• **Telegram Wallet** (789 ₽) — подключение и KYC\n` +
-        `• **ByBit** (889 ₽) — биржевой аккаунт\n\n` +
-        `Все верификации выполняются безопасно и с гарантией работоспособности.`;
-      matchedProducts = products.filter(p => p.cat === 'Верификации');
-    } else if (lower.includes('оплат') || lower.includes('купить') || lower.includes('заказ') || lower.includes('гарант')) {
-      reply = `**Как оплатить и получить заказ:**\n\n` +
-        `1. **Способы оплаты:** Банковские карты (МИР/СБП по реквизитам) и Криптовалюта через CryptoBot (USDT, TON, BTC, ETH).\n` +
-        `2. **Сроки:** Типовые решения передаются в течение 24 часов после оплаты, сложные проекты — от 3 до 14 дней.\n` +
-        `3. **Сопровождение:** Наш специалист свяжется с вами по указанному контакту и передаст все доступы и инструкции.\n\n` +
-        `По любым вопросам менеджер на связи 24/7: **@HustlifyHelp** в Telegram.`;
-    } else {
-      reply = `Здравствуйте! Я — **Hustlify AI Ассистент**, ваш проводник в мир готовых IT-бизнесов, стартапов под ключ и Telegram-разработки.\n\n` +
-        `Чем я могу вам помочь сегодня?\n` +
-        `• **Подобрать готовый бизнес** под ваш бюджет и цели\n` +
-        `• **Рассказать про Telegram Mini Apps** и ботов автовыдачи\n` +
-        `• **Помочь с упаковкой, дизайном** и запуском трафика\n` +
-        `• **Проконсультировать по верификациям** и безопасной оплате\n\n` +
-        `Напишите ваш вопрос или бюджет, и я подготовлю персональное предложение!`;
-      matchedProducts = products.slice(0, 3);
+        const restData = await withTimeout(restCall, 4500);
+        const restText = restData?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (restText && restText.trim()) {
+          const msgLower = (message + ' ' + restText).toLowerCase();
+          const recommended = products.filter(p => {
+            return msgLower.includes((p.name || '').toLowerCase()) || 
+                   (p.cat && msgLower.includes(p.cat.toLowerCase())) ||
+                   (msgLower.includes('кейс') && p.section === 'case');
+          }).slice(0, 3);
+
+          return res.json({
+            reply: restText.trim(),
+            provider: 'gemini-1.5-flash-rest',
+            recommended: recommended.length ? recommended : products.slice(0, 3)
+          });
+        }
+      } catch (tier2Error) {
+        console.warn('[AI Tier 2 Fallback triggered]:', tier2Error.message);
+      }
     }
 
-    res.json({
-      reply,
-      provider: 'knowledge-base',
-      recommended: matchedProducts.slice(0, 3)
+    // Tier 3: Deterministic Intelligent Knowledge Base (Instant 1ms, 100% Reliable Guaranteed)
+    const fallbackResult = generateFallbackResponse(message, products);
+    return res.json({
+      reply: fallbackResult.reply,
+      provider: 'knowledge-engine-fallback',
+      recommended: fallbackResult.recommended
     });
 
   } catch (err) {
-    console.error('Ошибка AI Chat:', err);
-    res.status(500).json({ error: 'Ошибка обработки запроса ИИ ассистента' });
+    console.error('Critical AI Chat Error (Returning Safe Fallback):', err.message);
+    const safeFallback = generateFallbackResponse(req.body?.message || '', readJsonFile('products.json'));
+    return res.json({
+      reply: safeFallback.reply,
+      provider: 'safe-error-fallback',
+      recommended: safeFallback.recommended
+    });
   }
 });
 

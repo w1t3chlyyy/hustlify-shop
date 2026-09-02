@@ -403,14 +403,6 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
 .chat-textarea::placeholder{color:var(--gray-dim);}
 
 .input-btns{display:flex;align-items:center;gap:6px;}
-.mic-btn{
-  width:38px;height:38px;border-radius:50%;
-  background:rgba(255,255,255,0.06);color:var(--gray);
-  display:flex;align-items:center;justify-content:center;
-  transition:all .2s;
-}
-.mic-btn:hover{color:#fff;background:rgba(255,255,255,0.15);}
-.mic-btn.recording{background:#ffffff;color:#000000;animation:pulse 1s infinite;}
 
 .send-btn{
   width:40px;height:40px;border-radius:50%;
@@ -534,9 +526,6 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
         </div>
       </div>
       <div class="topbar-actions">
-        <button class="action-icon-btn" id="ttsToggleBtn" title="Озвучивать ответы (TTS)">
-          <svg id="ttsIcon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
-        </button>
         <button class="action-icon-btn" id="clearChatBtn" title="Очистить диалог">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
         </button>
@@ -603,9 +592,6 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
       <div class="input-wrap">
         <textarea id="chatInput" class="chat-textarea" placeholder="Задайте любой вопрос или укажите ваш бюджет..." rows="1"></textarea>
         <div class="input-btns">
-          <button id="micBtn" class="mic-btn" title="Голосовой ввод" type="button">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-          </button>
           <button id="sendBtn" class="send-btn" title="Отправить сообщение" type="button">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
           </button>
@@ -711,10 +697,7 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
   const chatMessages = document.getElementById('chatMessages');
   const chatInput = document.getElementById('chatInput');
   const sendBtn = document.getElementById('sendBtn');
-  const micBtn = document.getElementById('micBtn');
   const clearChatBtn = document.getElementById('clearChatBtn');
-  const ttsToggleBtn = document.getElementById('ttsToggleBtn');
-  const ttsIcon = document.getElementById('ttsIcon');
   const chipsBar = document.getElementById('chipsBar');
   const quickBudgetSlider = document.getElementById('quickBudgetSlider');
   const calcValText = document.getElementById('calcValText');
@@ -723,7 +706,6 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
 
   let history = [];
   let isGenerating = false;
-  let isTTSEnabled = false;
 
   // Auto-resize textarea
   chatInput.addEventListener('input', function(){
@@ -778,21 +760,6 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
     submitUserMessage(`У меня бюджет ${val.toLocaleString('ru-RU')} рублей. Составь подробный план запуска IT-бизнеса в Hustlify под этот бюджет.`);
   });
 
-  // TTS Toggle
-  ttsToggleBtn.addEventListener('click', function(){
-    isTTSEnabled = !isTTSEnabled;
-    if (isTTSEnabled) {
-      ttsToggleBtn.style.background = 'rgba(255,255,255,0.2)';
-      ttsToggleBtn.style.color = '#fff';
-      showToast('Озвучивание ответов включено');
-    } else {
-      ttsToggleBtn.style.background = '';
-      ttsToggleBtn.style.color = '';
-      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-      showToast('Озвучивание ответов выключено');
-    }
-  });
-
   // Clear Chat
   clearChatBtn.addEventListener('click', function(){
     if (confirm('Очистить историю диалога?')) {
@@ -809,51 +776,6 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
       `;
     }
   });
-
-  // Speech Recognition (Voice Input)
-  if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'ru-RU';
-    recognition.interimResults = false;
-    let isRecording = false;
-
-    micBtn.addEventListener('click', function(){
-      if (isRecording) {
-        recognition.stop();
-        micBtn.classList.remove('recording');
-        isRecording = false;
-      } else {
-        try {
-          recognition.start();
-          micBtn.classList.add('recording');
-          isRecording = true;
-        } catch (err) {
-          console.error(err);
-        }
-      }
-    });
-
-    recognition.onresult = function(event) {
-      const transcript = event.results[0][0].transcript;
-      chatInput.value = (chatInput.value ? chatInput.value + ' ' : '') + transcript;
-      chatInput.dispatchEvent(new Event('input'));
-      micBtn.classList.remove('recording');
-      isRecording = false;
-    };
-
-    recognition.onerror = function() {
-      micBtn.classList.remove('recording');
-      isRecording = false;
-    };
-
-    recognition.onend = function() {
-      micBtn.classList.remove('recording');
-      isRecording = false;
-    };
-  } else {
-    micBtn.style.display = 'none';
-  }
 
   // Submit User Message
   async function submitUserMessage(text) {
@@ -884,12 +806,19 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
     chatMessages.appendChild(typingRow);
     scrollChat();
 
+    // Client-side AbortController with 10s timeout to prevent hanging on network drops
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
     try {
       const res = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, history })
+        body: JSON.stringify({ message: text, history }),
+        signal: controller.signal
       });
+
+      clearTimeout(timeoutId);
 
       const data = await res.json();
       const typingEl = document.getElementById(typingId);
@@ -899,18 +828,24 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
         appendMessage('bot', data.reply, data.recommended);
         history.push({ role: 'user', content: text });
         history.push({ role: 'model', content: data.reply });
-
-        if (isTTSEnabled) {
-          speakText(data.reply);
-        }
       } else {
-        appendMessage('bot', 'Произошла непредвиденная ошибка. Пожалуйста, обратитесь напрямую в поддержку @HustlifyHelp.');
+        appendMessage('bot', 'Извините, не удалось получить ответ. Вы можете связаться с нашим специалистом напрямую в Telegram: **@HustlifyHelp**.');
       }
     } catch (err) {
-      console.error(err);
+      clearTimeout(timeoutId);
+      console.warn('AI Client Fetch Error:', err.message);
       const typingEl = document.getElementById(typingId);
       if (typingEl) typingEl.remove();
-      appendMessage('bot', 'Не удалось связаться с сервером ИИ. Проверьте подключение или обратитесь в Telegram: @HustlifyHelp.');
+
+      // Rich client-side fallback if server completely unavailable
+      appendMessage('bot', 
+        `**Временные трудности со связью**\n\n` +
+        `Ответ сервера задержался, но мы всегда готовы помочь вам оперативно:\n` +
+        `• **Связь с поддержкой 24/7:** Telegram **[@HustlifyHelp](https://t.me/HustlifyHelp)**\n` +
+        `• **Каталог готовых решений:** перейдите в [Каталог](/#catalog) для выбора пакетов и услуг\n` +
+        `• **Калькулятор бюджета:** используйте [Калькулятор](/#calculator) на главной странице\n\n` +
+        `Попробуйте повторить запрос через пару секунд!`
+      );
     } finally {
       isGenerating = false;
       sendBtn.disabled = !chatInput.value.trim();
@@ -1008,17 +943,6 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
     }
     if (inList) out += '</ul>';
     return out;
-  }
-
-  // TTS Speech Synthesis
-  function speakText(text) {
-    if (!('speechSynthesis' in window)) return;
-    window.speechSynthesis.cancel();
-    const cleanText = text.replace(/[*_`#•-]/g, ' ');
-    const utter = new SpeechSynthesisUtterance(cleanText);
-    utter.lang = 'ru-RU';
-    utter.rate = 1.05;
-    window.speechSynthesis.speak(utter);
   }
 
   // Global helper: Copy Text
