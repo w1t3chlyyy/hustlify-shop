@@ -1,0 +1,6 @@
+{
+  "name": "Hustlify",
+  "description": "Платформа и маркетплейс готовых IT-бизнесов и стартапов с витриной товаров, ИИ-агентом на Gemini, корзиной, рулеткой скидок, калькулятором и панелью администратора",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

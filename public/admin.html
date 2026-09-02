@@ -188,14 +188,14 @@ td.num{font-family:'Unbounded';font-weight:600;}
         </select>
       </div>
       <div class="field"><label>Категория</label><input id="f_cat" placeholder="Дизайн, Верификации..."></div>
-      <div class="field"><label>Иконка (emoji)</label><input id="f_icon" placeholder="🎨"></div>
+      <div class="field"><label>Иконка</label><input id="f_icon" placeholder="Категория или SVG"></div>
       <div class="field"><label>Цена, ₽</label><input id="f_price" type="number"></div>
       <div class="field"><label>Старая цена, ₽</label><input id="f_old" type="number"></div>
     </div>
     <div class="field"><label>Ссылка на фото (необязательно)</label><input id="f_img" placeholder="/images/product.png или https://..."></div>
     <div class="field"><label>Описание</label><input id="f_desc"></div>
     <div id="productErr" style="color:var(--red);font-size:13px;min-height:18px;"></div>
-    <div class="hint">Фото можно положить в папку <b>public/images/</b> проекта и указать путь вида <code>/images/имя-файла.png</code>. Если поле пустое — используется emoji-иконка.</div>
+    <div class="hint">Фото можно положить в папку <b>public/images/</b> проекта и указать путь вида <code>/images/имя-файла.png</code>.</div>
   </div>
   <div class="modal-foot">
     <button class="cancel-btn" id="cancelModal">Отмена</button>
@@ -303,15 +303,15 @@ function renderProductsTable(){
   if(filtered.length===0){ tbody.innerHTML = '<tr><td colspan="6"><div class="empty">Ничего нет в этом разделе</div></td></tr>'; return; }
   tbody.innerHTML = filtered.map(p=>`
     <tr>
-      <td><div class="thumb">${p.img?`<img src="${p.img}">`:(p.icon||'📦')}</div></td>
+      <td><div class="thumb">${p.img?`<img src="${p.img}">`:`<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>`}</div></td>
       <td>${p.name}</td>
       <td>${p.section==='case'?'Кейс':'Каталог'}</td>
       <td>${p.cat||'—'}</td>
       <td class="num">${money(p.price)}</td>
       <td>
         <div class="row-actions">
-          <button class="icon-btn-sm" data-edit="${p.id}" title="Изменить">✎</button>
-          <button class="icon-btn-sm danger" data-del="${p.id}" title="Удалить">✕</button>
+          <button class="icon-btn-sm" data-edit="${p.id}" title="Изменить"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
+          <button class="icon-btn-sm danger" data-del="${p.id}" title="Удалить"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
         </div>
       </td>
     </tr>`).join('');
@@ -408,8 +408,8 @@ async function loadNews(){
       <td style="color:var(--gray);font-size:12.5px;">${n.created_at ? new Date(n.created_at).toLocaleDateString('ru-RU') : '—'}</td>
       <td>
         <div class="row-actions">
-          <button class="icon-btn-sm" data-nedit="${n.id}" title="Изменить">✎</button>
-          <button class="icon-btn-sm danger" data-ndel="${n.id}" title="Удалить">✕</button>
+          <button class="icon-btn-sm" data-nedit="${n.id}" title="Изменить"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
+          <button class="icon-btn-sm danger" data-ndel="${n.id}" title="Удалить"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
         </div>
       </td>
     </tr>`).join('');
@@ -501,8 +501,8 @@ async function loadOrders(){
       <td style="color:var(--gray);font-size:12.5px;">${new Date(o.created_at).toLocaleString('ru-RU')}</td>
       <td>
         <div class="row-actions">
-          ${o.status!=='paid' ? `<button class="icon-btn-sm" data-mark="${o.id}" title="Подтвердить оплату">✓</button>` : ''}
-          ${o.status!=='canceled' ? `<button class="icon-btn-sm danger" data-cancel="${o.id}" title="Отклонить">✕</button>` : ''}
+          ${o.status!=='paid' ? `<button class="icon-btn-sm" data-mark="${o.id}" title="Подтвердить оплату"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></button>` : ''}
+          ${o.status!=='canceled' ? `<button class="icon-btn-sm danger" data-cancel="${o.id}" title="Отклонить"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>` : ''}
         </div>
       </td>
     </tr>`).join('');
@@ -551,7 +551,7 @@ document.getElementById('saveRequisites').onclick = async ()=>{
   try{
     const res = await adminFetch('/api/admin/requisites', { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
     if(!res.ok){ const d = await res.json().catch(()=>({})); saved.style.color='var(--red)'; saved.textContent = d.error || 'Не удалось сохранить'; }
-    else { saved.style.color='var(--green)'; saved.textContent = 'Сохранено ✓'; }
+    else { saved.style.color='var(--green)'; saved.textContent = 'Сохранено'; }
   }catch(e){
     saved.style.color='var(--red)'; saved.textContent = 'Сервер недоступен';
   }

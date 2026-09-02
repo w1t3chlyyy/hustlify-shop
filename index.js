@@ -85,12 +85,12 @@ let supabase = null;
 if (supabaseUrl && supabaseKey) {
   try {
     supabase = createClient(supabaseUrl, supabaseKey);
-    console.log('✅ Supabase подключён');
+    console.log('[Supabase] Подключён');
   } catch (e) {
-    console.error('⚠️ Ошибка подключения Supabase:', e.message);
+    console.error('[Supabase] Ошибка подключения:', e.message);
   }
 } else {
-  console.log('ℹ️ SUPABASE_URL не заданы в .env. Сервер работает в автономном режиме с /data/*.json');
+  console.log('[Supabase] SUPABASE_URL не заданы в .env. Сервер работает в автономном режиме с /data/*.json');
 }
 
 /* ================= TELEGRAM ================= */
@@ -253,7 +253,7 @@ app.post('/api/admin/products', requireAdmin, async (req, res) => {
     desc: p.desc || '',
     section: p.section || 'catalog',
     img: p.img || '',
-    icon: p.icon || '🚀',
+    icon: p.icon || 'star',
     hit: Boolean(p.hit)
   };
   products.unshift(newProduct);
@@ -666,13 +666,24 @@ app.put('/api/admin/orders/:id', requireAdmin, async (req, res) => {
 app.post('/api/payments/cryptobot/create', async (req, res) => {
   try {
     const { orderId } = req.body;
-    const { data: order, error } = await supabase
-      .from('orders')
-      .select('*')
-      .eq('id', orderId)
-      .single();
+    let order = null;
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('orders')
+          .select('*')
+          .eq('id', orderId)
+          .single();
+        if (!error && data) order = data;
+      } catch (e) {}
+    }
+
+    if (!order) {
+      const orders = readJsonFile('orders.json');
+      order = orders.find(x => x.id === orderId);
+    }
     
-    if (error || !order) return res.status(404).json({ error: 'Заказ не найден' });
+    if (!order) return res.status(404).json({ error: 'Заказ не найден' });
     if (!process.env.CRYPTOBOT_TOKEN) {
       return res.status(500).json({ error: 'CRYPTOBOT_TOKEN не настроен на сервере' });
     }
@@ -697,12 +708,23 @@ app.post('/api/payments/cryptobot/create', async (req, res) => {
     if (!data.ok) return res.status(502).json({ error: 'Ошибка CryptoBot', details: data });
 
     // Обновляем заказ с payment-информацией
-    await supabase
-      .from('orders')
-      .update({
-        payment: { provider: 'cryptobot', invoiceId: data.result.invoice_id, payUrl: data.result.pay_url }
-      })
-      .eq('id', orderId);
+    if (supabase) {
+      try {
+        await supabase
+          .from('orders')
+          .update({
+            payment: { provider: 'cryptobot', invoiceId: data.result.invoice_id, payUrl: data.result.pay_url }
+          })
+          .eq('id', orderId);
+      } catch (e) {}
+    }
+
+    const orders = readJsonFile('orders.json');
+    const idx = orders.findIndex(x => x.id === orderId);
+    if (idx !== -1) {
+      orders[idx].payment = { provider: 'cryptobot', invoiceId: data.result.invoice_id, payUrl: data.result.pay_url };
+      writeJsonFile('orders.json', orders);
+    }
 
     res.json({ payUrl: data.result.pay_url });
   } catch (e) {
@@ -727,21 +749,39 @@ app.post('/api/webhooks/cryptobot', express.raw({ type: '*/*' }), async (req, re
     if (update.update_type === 'invoice_paid') {
       const orderId = update.payload && update.payload.payload;
       if (orderId) {
-        await supabase
-          .from('orders')
-          .update({ 
-            status: 'paid', 
-            payment: { provider: 'cryptobot', raw: update.payload },
-            paid_at: new Date().toISOString()
-          })
-          .eq('id', orderId);
-        
-        // Уведомление в Telegram
-        const { data: order } = await supabase
-          .from('orders')
-          .select('*')
-          .eq('id', orderId)
-          .single();
+        let order = null;
+        if (supabase) {
+          try {
+            await supabase
+              .from('orders')
+              .update({ 
+                status: 'paid', 
+                payment: { provider: 'cryptobot', raw: update.payload },
+                paid_at: new Date().toISOString()
+              })
+              .eq('id', orderId);
+            
+            const { data } = await supabase
+              .from('orders')
+              .select('*')
+              .eq('id', orderId)
+              .single();
+            if (data) order = data;
+          } catch (e) {}
+        }
+
+        if (!order) {
+          const orders = readJsonFile('orders.json');
+          const idx = orders.findIndex(x => x.id === orderId);
+          if (idx !== -1) {
+            orders[idx].status = 'paid';
+            orders[idx].payment = { provider: 'cryptobot', raw: update.payload };
+            orders[idx].paid_at = new Date().toISOString();
+            writeJsonFile('orders.json', orders);
+            order = orders[idx];
+          }
+        }
+
         if (order) await notifyOrderPaid(order);
       }
     }
@@ -902,13 +942,13 @@ app.post('/api/calculator', async (req, res) => {
 
   try {
     await sendTelegramMessage(
-      `📊 <b>Новый расчёт бюджета</b>\n\n` +
-      `💰 Бюджет: <b>${budget} ₽</b>\n` +
-      `📧 Email: <b>${email}</b>\n` +
-      `🕐 Время: ${new Date().toLocaleString('ru-RU')}`
+      `<b>[BUDGET] Новый расчёт бюджета</b>\n\n` +
+      `Бюджет: <b>${budget} ₽</b>\n` +
+      `Email: <b>${email}</b>\n` +
+      `Время: ${new Date().toLocaleString('ru-RU')}`
     );
   } catch (e) {
-    console.log('⚠️ Telegram уведомление не отправлено:', e.message);
+    console.log('[Telegram] Уведомление не отправлено:', e.message);
   }
   
   res.json({ 
@@ -927,6 +967,208 @@ app.get('/api/admin/calculator', requireAdmin, async (req, res) => {
   res.json(readJsonFile('calculator.json'));
 });
 
+/* ================= CASES ROUTES ================= */
+app.get('/cases', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'cases.html'));
+});
+
+app.get('/cases/*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'cases.html'));
+});
+
+/* ================= AI AGENT (GEMINI) ROUTES ================= */
+let genAIClient = null;
+function getGenAI() {
+  const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+  if (!apiKey) return null;
+  if (!genAIClient) {
+    try {
+      const { GoogleGenAI } = require('@google/genai');
+      genAIClient = new GoogleGenAI({ apiKey });
+    } catch (e) {
+      console.error('Ошибка инициализации GoogleGenAI:', e.message);
+    }
+  }
+  return genAIClient;
+}
+
+function buildSystemPrompt(products) {
+  const productListStr = (products || []).map(p => 
+    `- [${p.id}] ${p.name} (Категория: ${p.cat || p.section}, Цена: ${p.price} ₽, Старая цена: ${p.old || p.price} ₽, Описание: "${p.desc}")`
+  ).join('\n');
+
+  return `Ты — официальный ИИ-ассистент и бизнес-архитектор платформы Hustlify (https://hustlify.ru).
+Твоя задача — консультировать клиентов, подбирать готовые IT-бизнесы, рассчитывать бюджеты, отвечать на вопросы по услугам, кейсам, срокам запуска и окупаемости.
+
+ИНФОРМАЦИЯ О СЕРВИСЕ HUSTLIFY:
+- Hustlify — премиальный маркетплейс и студия запуска готовых IT-бизнесов, стартапов под ключ, Telegram Mini Apps, Telegram-ботов, дизайна и верификаций.
+- Мы помогаем перейти "От голой идеи до монетизации за 2 недели".
+- Быстрый старт: готовые типовые решения разворачиваются за 24 часа, разработка под ключ — от 1 до 2 недель.
+- Поддержка: 24/7 в Telegram @HustlifyHelp, Telegram Bot: @HustlifyBot, канал отзывов: @HustlifyReviews.
+- Способы оплаты:
+  1. Банковские карты (МИР, СБП по реквизитам с подтверждением чека).
+  2. Криптовалюта (CryptoBot, USDT, BTC, ETH) с моментальной автоматической фиксацией.
+- Рулетка скидок: доступна 1 раз в 24 часа, можно выиграть промокод на скидку до -30%.
+- Гарантии: полная техническая передача, инструкции, консультация специалистов перед и после сделки. Согласно регламенту, сделки окончательны после передачи исходников/прав.
+
+АКТУАЛЬНЫЙ КАТАЛОГ ТОВАРОВ И КЕЙСОВ HUSTLIFY:
+${productListStr}
+
+ОСНОВНЫЕ ПАКЕТЫ И НАПРАВЛЕНИЯ:
+1. Кейс "Hustlify & TeleStore" (3 889 ₽): готовый бизнес в Telegram с товарной матрицей и витриной.
+2. Кейс "Стандарт" (2 589 ₽): базовая упаковка и стартовое продвижение.
+3. Кейс "Расширенный" (3 289 ₽): полное оформление и помощь в продвижении.
+4. Кейс "Премиум" (4 289 ₽): полное выстраивание системы, выход на крупные платформы.
+5. Готовый магазин (12 990 ₽): полноценный бизнес под ключ с настроенным трафиком.
+6. Telegram Mini App (8 990 ₽): веб-приложение внутри мессенджера Telegram.
+7. Landing Page (4 990 ₽): конверсионный одностраничник под ключ.
+8. Автовыдача 24/7 (5 990 ₽): бот автоматических продаж без участия человека.
+9. Верификации (CryptoBot 880 ₽, Fragment 250 ₽, Telegram Wallet 789 ₽, ByBit 889 ₽ и др.).
+10. Услуги дизайна и продвижения (баннеры, аватарки, живые подписчики, прогрев).
+
+ПРАВИЛА ОТВЕТА:
+- Отвечай вежливо, четко, экспертно и структурированно.
+- Если клиент указывает бюджет (например, "у меня 15 000 руб" или "хочу бизнес до 5 000 руб"), подбери подходящие продукты из каталога Hustlify, распиши план запуска, потенциальную окупаемость и шаги.
+- Выделяй важные моменты жирным шрифтом, используй удобные списки.
+- Если клиенту нужна индивидуальная разработка или связь с человеком, рекомендуй написать в поддержку @HustlifyHelp.
+- Ты можешь предложить клиенту перейти в Каталог, воспользоваться Калькулятором бюджета на главной странице или крутануть рулетку скидок.`;
+}
+
+app.post('/api/ai/chat', async (req, res) => {
+  try {
+    const { message, history = [] } = req.body;
+    if (!message || typeof message !== 'string') {
+      return res.status(400).json({ error: 'Сообщение не может быть пустым' });
+    }
+
+    let products = [];
+    if (supabase) {
+      try {
+        const { data } = await supabase.from('products').select('*');
+        if (data && data.length) products = data;
+      } catch (e) {}
+    }
+    if (!products.length) {
+      products = readJsonFile('products.json');
+    }
+
+    const systemPrompt = buildSystemPrompt(products);
+    const ai = getGenAI();
+
+    if (ai) {
+      try {
+        // Prepare conversation contents
+        const contents = [];
+        for (const item of history.slice(-8)) {
+          if (item && item.role && item.content) {
+            contents.push({
+              role: item.role === 'assistant' || item.role === 'model' ? 'model' : 'user',
+              parts: [{ text: item.content }]
+            });
+          }
+        }
+        contents.push({
+          role: 'user',
+          parts: [{ text: message }]
+        });
+
+        const response = await ai.models.generateContent({
+          model: 'gemini-3.7-flash',
+          contents: contents,
+          config: {
+            systemInstruction: systemPrompt,
+            temperature: 0.7,
+            maxOutputTokens: 1200
+          }
+        });
+
+        const replyText = response.text || 'Извините, не удалось сформировать ответ. Попробуйте еще раз или напишите менеджеру @HustlifyHelp.';
+
+        // Find relevant product recommendations based on message context
+        const msgLower = (message + ' ' + replyText).toLowerCase();
+        const recommended = products.filter(p => {
+          return msgLower.includes(p.name.toLowerCase()) || 
+                 (p.cat && msgLower.includes(p.cat.toLowerCase())) ||
+                 (msgLower.includes('кейс') && p.section === 'case');
+        }).slice(0, 3);
+
+        return res.json({
+          reply: replyText,
+          provider: 'gemini-3.7-flash',
+          recommended
+        });
+      } catch (geminiError) {
+        console.error('Ошибка Gemini API:', geminiError.message);
+        // Fallback to intelligent local rule engine if API fails or key is quota limited
+      }
+    }
+
+    // Smart Local Knowledge Base Fallback if Gemini key is not configured or temporary error
+    const lower = message.toLowerCase();
+    let reply = '';
+    let matchedProducts = [];
+
+    if (lower.includes('бюджет') || lower.includes('руб') || lower.includes('₽') || lower.includes('стоит') || lower.includes('цена') || lower.includes('сколько')) {
+      reply = `**Подбор решений по бюджету в Hustlify:**\n\n` +
+        `• **До 5 000 ₽:** Рекомендуем кейс *Hustlify & TeleStore* (3 889 ₽) или кейс *Стандарт* (2 589 ₽) — отличный старт для Telegram-коммерции с готовой структурой.\n` +
+        `• **5 000 – 15 000 ₽:** Идеален *Telegram Mini App* (8 990 ₽) или *Готовый магазин* (12 990 ₽) с настроенной автовыдачей и воронкой продаж.\n` +
+        `• **Индивидуальный проект:** Создадим индивидуальную архитектуру под ваш бизнес. Воспользуйтесь нашим интерактивным калькулятором на главной странице или напишите в Telegram: **@HustlifyHelp**.\n\n` +
+        `Не забудьте покрутить рулетку скидок на главной — можно получить промокод до **-30%**!`;
+      matchedProducts = products.filter(p => ['k1', 'k2', 'c10', 'c11'].includes(p.id));
+    } else if (lower.includes('mini app') || lower.includes('мини апп') || lower.includes('тг') || lower.includes('telegram') || lower.includes('бот')) {
+      reply = `**Разработка и запуск в Telegram:**\n\n` +
+        `В Hustlify мы специализируемся на Telegram-инфраструктуре:\n` +
+        `1. **Telegram Mini Apps (8 990 ₽)** — современные веб-приложения внутри Telegram с оплатой в 1 клик, каталогами и бесшовным UX.\n` +
+        `2. **Автовыдача 24/7 (5 990 ₽)** — бот для продажи цифровых товаров без вашего участия.\n` +
+        `3. **Кейс TeleStore (3 889 ₽)** — готовый интернет-магазин в Telegram.\n\n` +
+        `Срок запуска типовых решений — **24 часа**, индивидуальной разработки — **до 14 дней**. Для старта оформите заказ в каталоге или свяжитесь с нами: **@HustlifyHelp**.`;
+      matchedProducts = products.filter(p => ['c10', 'c12', 'k1'].includes(p.id));
+    } else if (lower.includes('вериф') || lower.includes('bybit') || lower.includes('cryptobot') || lower.includes('кошел') || lower.includes('fragment')) {
+      reply = `**Верификации и безопасность:**\n\n` +
+        `Мы подключаем и верифицируем все ключевые криптосервисы:\n` +
+        `• **CryptoBot** (880 ₽) — быстрая верификация кошелька\n` +
+        `• **Fragment** (250 ₽) — верификация юзернеймов и NFT\n` +
+        `• **Telegram Wallet** (789 ₽) — подключение и KYC\n` +
+        `• **ByBit** (889 ₽) — биржевой аккаунт\n\n` +
+        `Все верификации выполняются безопасно и с гарантией работоспособности.`;
+      matchedProducts = products.filter(p => p.cat === 'Верификации');
+    } else if (lower.includes('оплат') || lower.includes('купить') || lower.includes('заказ') || lower.includes('гарант')) {
+      reply = `**Как оплатить и получить заказ:**\n\n` +
+        `1. **Способы оплаты:** Банковские карты (МИР/СБП по реквизитам) и Криптовалюта через CryptoBot (USDT, TON, BTC, ETH).\n` +
+        `2. **Сроки:** Типовые решения передаются в течение 24 часов после оплаты, сложные проекты — от 3 до 14 дней.\n` +
+        `3. **Сопровождение:** Наш специалист свяжется с вами по указанному контакту и передаст все доступы и инструкции.\n\n` +
+        `По любым вопросам менеджер на связи 24/7: **@HustlifyHelp** в Telegram.`;
+    } else {
+      reply = `Здравствуйте! Я — **Hustlify AI Ассистент**, ваш проводник в мир готовых IT-бизнесов, стартапов под ключ и Telegram-разработки.\n\n` +
+        `Чем я могу вам помочь сегодня?\n` +
+        `• **Подобрать готовый бизнес** под ваш бюджет и цели\n` +
+        `• **Рассказать про Telegram Mini Apps** и ботов автовыдачи\n` +
+        `• **Помочь с упаковкой, дизайном** и запуском трафика\n` +
+        `• **Проконсультировать по верификациям** и безопасной оплате\n\n` +
+        `Напишите ваш вопрос или бюджет, и я подготовлю персональное предложение!`;
+      matchedProducts = products.slice(0, 3);
+    }
+
+    res.json({
+      reply,
+      provider: 'knowledge-base',
+      recommended: matchedProducts.slice(0, 3)
+    });
+
+  } catch (err) {
+    console.error('Ошибка AI Chat:', err);
+    res.status(500).json({ error: 'Ошибка обработки запроса ИИ ассистента' });
+  }
+});
+
+app.get('/ai-agent', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'ai-agent.html'));
+});
+
+app.get('/ai', (req, res) => {
+  res.redirect('/ai-agent');
+});
+
 /* ================= ОБРАБОТКА ОШИБОК ЗАГРУЗКИ ФАЙЛА ================= */
 app.use((err, req, res, next) => {
   if (err instanceof multer.MulterError || (err && /Разрешены только/.test(err.message))) {
@@ -937,19 +1179,11 @@ app.use((err, req, res, next) => {
 
 /* ================= ЗАПУСК ================= */
 if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`🚀 Hustlify запущен: http://localhost:${PORT}`);
-    console.log(`📋 Админка: http://localhost:${PORT}/admin.html`);
-    console.log(`🗄️  База данных: Supabase`);
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`[Hustlify] Сервер запущен: http://localhost:${PORT}`);
+    console.log(`[Hustlify] Админка: http://localhost:${PORT}/admin.html`);
+    console.log(`[Hustlify] База данных: Supabase`);
   });
 }
 
 module.exports = (req, res) => app(req, res);
-
-app.get('/cases', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'cases.html'));
-});
-
-app.get('/cases/*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'cases.html'));
-});

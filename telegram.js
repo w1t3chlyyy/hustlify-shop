@@ -109,19 +109,19 @@ async function sendTelegramDocument(documentUrl, caption) {
   }
 }
 
-function formatOrderMessage(order, emoji, title) {
+function formatOrderMessage(order, prefix, title) {
   const itemsList = order.items
     .map(i => `• ${i.name}${i.qty > 1 ? ' × ' + i.qty : ''} — ${i.price * i.qty} ₽`)
     .join('\n');
   const promoLine = order.promo_code
-    ? `\n🎟 Промокод: <b>${order.promo_code}</b> (-${order.discount_percent}%)`
+    ? `\nПромокод: <b>${order.promo_code}</b> (-${order.discount_percent}%)`
     : '';
   const contactLine = order.contact
-    ? `\n👤 Контакт: <b>${order.contact}</b>`
-    : '\n👤 Контакт: не указан';
+    ? `\nКонтакт: <b>${order.contact}</b>`
+    : '\nКонтакт: не указан';
 
   return (
-    `${emoji} <b>${title}</b>\n` +
+    `[${prefix}] <b>${title}</b>\n` +
     `Заказ: <code>${order.id}</code>\n\n` +
     `${itemsList}\n\n` +
     `Сумма: <b>${order.total} ₽</b>${promoLine}${contactLine}\n` +
@@ -130,15 +130,15 @@ function formatOrderMessage(order, emoji, title) {
 }
 
 function notifyNewOrder(order) {
-  return sendTelegramMessage(formatOrderMessage(order, '🆕', 'Новый заказ (ожидает оплаты)'));
+  return sendTelegramMessage(formatOrderMessage(order, 'NEW', 'Новый заказ (ожидает оплаты)'));
 }
 
 function notifyOrderPaid(order) {
-  return sendTelegramMessage(formatOrderMessage(order, '✅', 'Заказ оплачен!'));
+  return sendTelegramMessage(formatOrderMessage(order, 'PAID', 'Заказ оплачен!'));
 }
 
 function notifyReceiptUploaded(order) {
-  const caption = formatOrderMessage(order, '🧾', 'Загружен чек — заказ на модерации');
+  const caption = formatOrderMessage(order, 'RECEIPT', 'Загружен чек — заказ на модерации');
   // caption у sendDocument ограничен 1024 символами — на всякий случай подрежем
   return sendTelegramDocument(order.payment?.receiptUrl, caption.slice(0, 1000));
 }
@@ -146,10 +146,10 @@ function notifyReceiptUploaded(order) {
 function notifySurveyCompleted(answers, promoCode) {
   const answersText = answers.map((a, i) => `${i + 1}. ${a}`).join('\n');
   const text =
-    `📋 <b>Новый пройденный опрос</b>\n\n` +
-    `🎟 Промокод: <code>${promoCode}</code> (-20%)\n\n` +
+    `<b>[SURVEY] Новый пройденный опрос</b>\n\n` +
+    `Промокод: <code>${promoCode}</code> (-20%)\n\n` +
     `<b>Ответы:</b>\n${answersText}\n\n` +
-    `🕐 Время: ${new Date().toLocaleString('ru-RU')}`;
+    `Время: ${new Date().toLocaleString('ru-RU')}`;
   return sendTelegramMessage(text);
 }
 

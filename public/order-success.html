@@ -19,7 +19,9 @@
 </head>
 <body>
   <div class="card">
-    <div class="icon pending" id="icon">⏳</div>
+    <div class="icon pending" id="icon">
+      <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    </div>
     <h1 id="title">Проверяем оплату…</h1>
     <p id="text">Подождите пару секунд — мы уточняем статус вашего заказа у платёжной системы.</p>
     <a href="/">Вернуться в магазин</a>
@@ -37,7 +39,7 @@ async function poll(){
     const order = await res.json();
     if(order.status === 'paid'){
       document.getElementById('icon').className = 'icon paid';
-      document.getElementById('icon').textContent = '✓';
+      document.getElementById('icon').innerHTML = '<svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>';
       document.getElementById('title').textContent = 'Оплата получена!';
       document.getElementById('text').textContent = 'Спасибо за заказ. Мы уже начали его обработку и скоро свяжемся с вами.';
       return;
