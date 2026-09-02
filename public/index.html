@@ -1423,12 +1423,77 @@ footer .flinks a:hover{color:var(--white);}
 
 @keyframes fadeInUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
 
+/* === SMOOTH PAGE TRANSITION === */
+.page-transition-laser {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: 0%;
+  background: #ffffff;
+  box-shadow: 0 0 14px #ffffff, 0 0 28px rgba(255,255,255,0.7);
+  z-index: 100000;
+  pointer-events: none;
+  transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.page-transition-curtain {
+  position: fixed;
+  inset: 0;
+  background: #000000;
+  z-index: 99999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.page-transition-curtain.active {
+  opacity: 1;
+  pointer-events: all;
+}
+.page-transition-curtain .pt-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+.page-transition-curtain .pt-spinner {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  border-top-color: #ffffff;
+  animation: ptSpin 0.7s linear infinite;
+  box-shadow: 0 0 20px rgba(255,255,255,0.15);
+}
+.page-transition-curtain .pt-text {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #a1a1aa;
+}
+@keyframes ptSpin { to { transform: rotate(360deg); } }
+
+body.page-leaving {
+  opacity: 0;
+  transform: translateY(-8px) scale(0.992);
+  filter: blur(4px);
+  transition: opacity 0.28s var(--ease), transform 0.28s var(--ease), filter 0.28s var(--ease);
+}
 </style>
-<base target="_blank">
-<base target="_blank">
-<base target="_blank">
 </head>
 <body>
+
+<div id="pageTransitionLaser" class="page-transition-laser"></div>
+<div id="pageTransitionCurtain" class="page-transition-curtain">
+  <div class="pt-loader">
+    <div class="pt-spinner"></div>
+    <div class="pt-text">Загрузка агента...</div>
+  </div>
+</div>
 
 <div class="ambient"></div>
 <div class="noise"></div>
@@ -3658,6 +3723,34 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
       e.preventDefault();
       target.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+  });
+});
+
+// Smooth page transition to AI Agent
+document.querySelectorAll('a[href="/ai-agent"], a[href^="/ai-agent"]').forEach(link => {
+  link.addEventListener('click', function(e) {
+    if (e.metaKey || e.ctrlKey || e.shiftKey) return;
+    e.preventDefault();
+    const destUrl = this.getAttribute('href');
+    const laser = document.getElementById('pageTransitionLaser');
+    const curtain = document.getElementById('pageTransitionCurtain');
+    
+    if (laser) {
+      laser.style.width = '70%';
+    }
+    if (typeof playCyberSound === 'function') {
+      try { playCyberSound('open'); } catch(err){}
+    }
+    
+    setTimeout(() => {
+      if (curtain) curtain.classList.add('active');
+      if (laser) laser.style.width = '100%';
+      document.body.classList.add('page-leaving');
+    }, 60);
+
+    setTimeout(() => {
+      window.location.href = destUrl;
+    }, 280);
   });
 });
 

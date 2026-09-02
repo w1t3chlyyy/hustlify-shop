@@ -21,7 +21,6 @@
   --gray:#a1a1aa;
   --gray-dim:#71717a;
   --accent:#ffffff;
-  --emerald:#10b981;
   --radius-lg:24px;
   --radius-md:16px;
   --radius-sm:10px;
@@ -61,6 +60,64 @@ header{
   backdrop-filter:blur(20px) saturate(140%);
   border-bottom:1px solid var(--line);
 }
+
+/* Page Transition & Enter Effects */
+.page-transition-laser {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: 100%;
+  background: #ffffff;
+  box-shadow: 0 0 14px #ffffff, 0 0 28px rgba(255,255,255,0.7);
+  z-index: 100000;
+  pointer-events: none;
+  animation: laserSweep 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes laserSweep {
+  0% { width: 0%; opacity: 1; }
+  70% { width: 100%; opacity: 1; }
+  100% { width: 100%; opacity: 0; }
+}
+
+body {
+  animation: pageEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes pageEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.995);
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+.chat-main {
+  animation: paneEnter 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both;
+}
+.ai-sidebar {
+  animation: paneEnter 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+}
+@keyframes paneEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+body.page-leaving {
+  opacity: 0;
+  transform: translateY(-8px) scale(0.992);
+  filter: blur(4px);
+  transition: opacity 0.28s var(--ease), transform 0.28s var(--ease), filter 0.28s var(--ease);
+}
 .wrap{max-width:1380px;margin:0 auto;padding:0 24px;}
 header .wrap{display:flex;align-items:center;justify-content:space-between;gap:20px;}
 .nav-left{display:flex;align-items:center;gap:28px;}
@@ -78,10 +135,10 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
   font-size:11.5px;font-weight:600;letter-spacing:0.3px;color:#fff;
 }
 .pulse-dot{
-  width:7px;height:7px;border-radius:50%;background:#10b981;
-  box-shadow:0 0 8px #10b981;animation:pulse 2s infinite;
+  width:7px;height:7px;border-radius:50%;background:#ffffff;
+  box-shadow:0 0 8px rgba(255,255,255,0.8);animation:pulse 2s infinite;
 }
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(0.8);}}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(0.8);}}
 
 .nav-right{display:flex;align-items:center;gap:14px;}
 .btn-back-home{
@@ -146,7 +203,8 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
 }
 .bot-avatar .online-indicator{
   position:absolute;bottom:0;right:0;width:12px;height:12px;
-  border-radius:50%;background:#10b981;border:2px solid #000;
+  border-radius:50%;background:#ffffff;border:2px solid #000;
+  box-shadow:0 0 6px rgba(255,255,255,0.8);
 }
 .bot-meta h2{font-size:16px;font-weight:700;margin-bottom:2px;display:flex;align-items:center;gap:8px;}
 .bot-meta p{font-size:12.5px;color:var(--gray);}
@@ -352,7 +410,7 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
   transition:all .2s;
 }
 .mic-btn:hover{color:#fff;background:rgba(255,255,255,0.15);}
-.mic-btn.recording{background:#ef4444;color:#fff;animation:pulse 1s infinite;}
+.mic-btn.recording{background:#ffffff;color:#000000;animation:pulse 1s infinite;}
 
 .send-btn{
   width:40px;height:40px;border-radius:50%;
@@ -426,6 +484,7 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
 </head>
 <body>
 
+<div class="page-transition-laser"></div>
 <div class="ambient"></div>
 <div class="noise"></div>
 
@@ -433,10 +492,6 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
 <header>
   <div class="wrap">
     <div class="nav-left">
-      <a href="/" class="logo-container">
-        <img src="/images/logo.png" alt="Hustlify Logo" class="logo-img">
-        <span class="logo-text">HUSTLIFY</span>
-      </a>
       <a href="/#catalog">Каталог</a>
       <a href="/#calculator">Калькулятор</a>
       <a href="/cases">Кейсы</a>
@@ -448,10 +503,6 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
     </div>
 
     <div class="nav-right">
-      <div class="ai-badge-header">
-        <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M12 2L15 9L22 12L15 15L12 22L9 15L2 12L9 9L12 2Z"/></svg>
-        Gemini 3.7 Flash
-      </div>
       <a href="/" class="btn-back-home">
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
         В магазин
@@ -478,7 +529,7 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
           <span class="online-indicator"></span>
         </div>
         <div class="bot-meta">
-          <h2>Hustlify AI Агент <span style="font-size:11px;font-weight:500;color:#10b981;padding:2px 8px;border-radius:100px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);">Online</span></h2>
+          <h2>Агент поддержки <span style="font-size:11px;font-weight:500;color:#ffffff;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);">Online</span></h2>
           <p>Интеллектуальный бизнес-архитектор и консультант платформы</p>
         </div>
       </div>
@@ -995,6 +1046,20 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
     t.style.opacity = '1';
     setTimeout(()=>{ t.style.opacity = '0'; }, 2200);
   }
+
+  // Smooth exit transition when navigating back to store
+  document.querySelectorAll('a[href^="/"]:not([href^="https://"]):not([target="_blank"])').forEach(link => {
+    link.addEventListener('click', function(e) {
+      const dest = this.getAttribute('href');
+      if (dest === '/ai-agent' || dest.startsWith('#')) return;
+      if (e.metaKey || e.ctrlKey || e.shiftKey) return;
+      e.preventDefault();
+      document.body.classList.add('page-leaving');
+      setTimeout(() => {
+        window.location.href = dest;
+      }, 250);
+    });
+  });
 
 })();
 </script>
