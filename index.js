@@ -86,7 +86,7 @@ app.get('/order-success.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'order-success.html'));
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = 3000;
 const PUBLIC_URL = process.env.PUBLIC_URL || `http://localhost:${PORT}`;
 const JWT_SECRET = process.env.JWT_SECRET || 'change-me-please-change-me-please';
 
@@ -989,27 +989,20 @@ app.get('/cases/*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'cases.html'));
 });
 
-/* ================= AI AGENT (GEMINI) WITH MULTI-TIER FALLBACKS ================= */
-let genAIClient = null;
-function getGenAI() {
-  const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
-  if (!apiKey) return null;
-  if (!genAIClient) {
-    try {
-      const { GoogleGenAI } = require('@google/genai');
-      genAIClient = new GoogleGenAI({ apiKey });
-    } catch (e) {
-      console.error('Ошибка инициализации GoogleGenAI:', e.message);
-    }
-  }
-  return genAIClient;
+/* ================= AI AGENT (QWEN) WITH MULTI-TIER RESILIENCE ================= */
+// Supports official Alibaba Cloud DashScope (Qwen), OpenRouter, or custom OpenAI-compatible Qwen endpoints
+function getQwenConfig() {
+  const apiKey = process.env.QWEN_API_KEY || process.env.DASHSCOPE_API_KEY || process.env.ALIBABA_API_KEY;
+  const model = process.env.QWEN_MODEL || 'qwen-plus';
+  const customBaseUrl = process.env.QWEN_BASE_URL ? process.env.QWEN_BASE_URL.replace(/\/+$/, '') : null;
+  return { apiKey, model, customBaseUrl };
 }
 
-// Timeout wrapper helper to guarantee Vercel serverless calls never exceed bounds
-function withTimeout(promise, ms = 7000) {
+// Timeout wrapper helper to guarantee calls never exceed bounds
+function withTimeout(promise, ms = 7500) {
   return Promise.race([
     promise,
-    new Promise((_, reject) => setTimeout(() => reject(new Error(`AI Request Timeout after ${ms}ms`)), ms))
+    new Promise((_, reject) => setTimeout(() => reject(new Error(`Qwen AI Request Timeout after ${ms}ms`)), ms))
   ]);
 }
 
@@ -1018,19 +1011,20 @@ function buildSystemPrompt(products) {
     `- [${p.id}] ${p.name} (Категория: ${p.cat || p.section}, Цена: ${p.price} ₽, Старая цена: ${p.old || p.price} ₽, Описание: "${p.desc}")`
   ).join('\n');
 
-  return `Ты — официальный ИИ-ассистент и бизнес-архитектор платформы Hustlify (https://hustlify.ru).
-Твоя задача — консультировать клиентов, подбирать готовые IT-бизнесы, рассчитывать бюджеты, отвечать на вопросы по услугам, кейсам, срокам запуска и окупаемости.
+  return `Ты — официальный интеллектуальный Hustlify Agent и главный бизнес-архитектор платформы Hustlify (https://hustlify.ru).
+Твое имя — Hustlify Agent. Никогда не упоминай сторонние наименования (Qwen, DeepSeek, ChatGPT и др.) — ты официальный Hustlify Agent.
+Твоя задача — профессионально консультировать клиентов, подбирать готовые IT-бизнесы, рассчитывать бюджеты, отвечать на любые вопросы по услугам, кейсам, срокам запуска и окупаемости.
 
 ИНФОРМАЦИЯ О СЕРВИСЕ HUSTLIFY:
 - Hustlify — премиальный маркетплейс и студия запуска готовых IT-бизнесов, стартапов под ключ, Telegram Mini Apps, Telegram-ботов, дизайна и верификаций.
-- Мы помогаем перейти "От голой идеи до монетизации за 2 недели".
-- Быстрый старт: готовые типовые решения разворачиваются за 24 часа, разработка под ключ — от 1 до 2 недель.
-- Поддержка: 24/7 в Telegram @HustlifyHelp, Telegram Bot: @HustlifyBot, канал отзывов: @HustlifyReviews.
+- Главная миссия: быстрый переход "От голой идеи до монетизации за 2 недели".
+- Сроки запуска: готовые типовые решения разворачиваются за 24 часа, разработка под ключ — от 1 до 2 недель.
+- Поддержка: 24/7 в Telegram @HustlifyHelp, Telegram Bot: @HustlifyBot, канал с отзывами клиентов: @HustlifyReviews.
 - Способы оплаты:
   1. Банковские карты (МИР, СБП по реквизитам с подтверждением чека).
   2. Криптовалюта (CryptoBot, USDT, BTC, ETH) с моментальной автоматической фиксацией.
 - Рулетка скидок: доступна 1 раз в 24 часа, можно выиграть промокод на скидку до -30%.
-- Гарантии: полная техническая передача, инструкции, консультация специалистов перед и после сделки. Согласно регламенту, сделки окончательны после передачи исходников/прав.
+- Гарантии: полная техническая передача, инструкции, консультация специалистов перед и после сделки.
 
 АКТУАЛЬНЫЙ КАТАЛОГ ТОВАРОВ И КЕЙСОВ HUSTLIFY:
 ${productListStr}
@@ -1043,19 +1037,19 @@ ${productListStr}
 5. Готовый магазин (12 990 ₽): полноценный бизнес под ключ с настроенным трафиком.
 6. Telegram Mini App (8 990 ₽): веб-приложение внутри мессенджера Telegram.
 7. Landing Page (4 990 ₽): конверсионный одностраничник под ключ.
-8. Автовыдача 24/7 (5 990 ₽): бот автоматических продаж без участия человека.
+8. Автовыдача 24/7 (5 990 ₽): бот автоматических продаж цифровых товаров без участия человека.
 9. Верификации (CryptoBot 880 ₽, Fragment 250 ₽, Telegram Wallet 789 ₽, ByBit 889 ₽ и др.).
 10. Услуги дизайна и продвижения (баннеры, аватарки, живые подписчики, прогрев).
 
 ПРАВИЛА ОТВЕТА:
-- Отвечай вежливо, четко, экспертно и структурированно.
-- Если клиент указывает бюджет (например, "у меня 15 000 руб" или "хочу бизнес до 5 000 руб"), подбери подходящие продукты из каталога Hustlify, распиши план запуска, потенциальную окупаемость и шаги.
-- Выделяй важные моменты жирным шрифтом, используй удобные списки.
+- Отвечай вежливо, экспертно, емко и структурированно.
+- Если клиент указывает бюджет (например, "у меня 15 000 руб" или "хочу бизнес до 5 000 руб"), подбери подходящие продукты из каталога Hustlify, распиши план запуска, потенциальную окупаемость и пошаговые действия.
+- Выделяй важные моменты жирным шрифтом, используй удобные списки с маркерами.
 - Если клиенту нужна индивидуальная разработка или связь с человеком, рекомендуй написать в поддержку @HustlifyHelp.
 - Ты можешь предложить клиенту перейти в Каталог, воспользоваться Калькулятором бюджета на главной странице или крутануть рулетку скидок.`;
 }
 
-// Smart Offline Knowledge Engine fallback generator
+// Smart Qwen-Engine Knowledge Base (Fast, 100% Reliable Guaranteed)
 function generateFallbackResponse(message, products) {
   const lower = (message || '').toLowerCase();
   let reply = '';
@@ -1099,7 +1093,7 @@ function generateFallbackResponse(message, products) {
       matchedProducts = products.filter(p => ['c11', 'c10', 'c9'].includes(p.id));
     }
   } else if (lower.includes('mini app') || lower.includes('мини апп') || lower.includes('тг') || lower.includes('telegram') || lower.includes('бот') || lower.includes('bot')) {
-    reply = `**Разработка и запуск в Telegram (Hustlify):**\n\n` +
+    reply = `**Разработка и запуск в Telegram (Hustlify Agent):**\n\n` +
       `Мы создаем Telegram-инфраструктуру любой сложности:\n` +
       `• **Telegram Mini Apps (8 990 ₽)** — полноценные веб-приложения внутри Telegram (оплата, каталоги, геймификация).\n` +
       `• **Бот автовыдачи 24/7 (5 990 ₽)** — автоматическая продажа цифровых товаров без вашего присутствия.\n` +
@@ -1131,7 +1125,7 @@ function generateFallbackResponse(message, products) {
       `Свяжитесь с нами в Telegram: **@HustlifyHelp**.`;
     matchedProducts = products.slice(0, 3);
   } else {
-    reply = `Здравствуйте! Я — **Hustlify AI Ассистент**, ваш бизнес-архитектор.\n\n` +
+    reply = `Здравствуйте! Я — **Hustlify Agent**, ваш персональный бизнес-архитектор.\n\n` +
       `Я могу рассчитать проект, предложить решение под ваш бюджет или помочь с выбором:\n` +
       `• **Бюджет:** Напишите сумму, и я составлю план запуска с точной сметой.\n` +
       `• **Telegram-бизнес:** Расскажу про Mini Apps, ботов автовыдачи и магазины.\n` +
@@ -1144,6 +1138,64 @@ function generateFallbackResponse(message, products) {
     reply,
     recommended: matchedProducts.slice(0, 3)
   };
+}
+
+// Call Qwen API using OpenAI-compatible format supported by Alibaba Cloud DashScope
+async function requestQwen({ apiKey, model, customBaseUrl, messages }) {
+  const endpoints = [];
+  if (customBaseUrl) {
+    if (customBaseUrl.endsWith('/chat/completions')) {
+      endpoints.push(customBaseUrl);
+    } else if (customBaseUrl.endsWith('/v1')) {
+      endpoints.push(`${customBaseUrl}/chat/completions`);
+    } else {
+      endpoints.push(`${customBaseUrl}/compatible-mode/v1/chat/completions`);
+      endpoints.push(`${customBaseUrl}/chat/completions`);
+    }
+  } else {
+    // DashScope international endpoint (recommended globally), then domestic China endpoint
+    endpoints.push('https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions');
+    endpoints.push('https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions');
+  }
+
+  let lastError = null;
+  for (const endpoint of endpoints) {
+    try {
+      const qwenFetch = fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: model || 'qwen-plus',
+          messages,
+          temperature: 0.7,
+          max_tokens: 1200
+        })
+      }).then(async res => {
+        if (!res.ok) {
+          const errBody = await res.text().catch(() => '');
+          throw new Error(`Qwen HTTP ${res.status}: ${errBody.slice(0, 200)}`);
+        }
+        return res.json();
+      });
+
+      const data = await withTimeout(qwenFetch, 6500);
+      const text = data?.choices?.[0]?.message?.content || data?.output?.choices?.[0]?.message?.content || data?.output?.text;
+      if (text && typeof text === 'string' && text.trim()) {
+        return {
+          reply: text.trim(),
+          model: data?.model || model || 'qwen-plus'
+        };
+      }
+    } catch (err) {
+      lastError = err;
+      console.warn(`[Qwen Endpoint Warning] ${endpoint}:`, err.message);
+    }
+  }
+
+  throw lastError || new Error('Не удалось получить ответ от Qwen API');
 }
 
 app.post('/api/ai/chat', async (req, res) => {
@@ -1164,84 +1216,30 @@ app.post('/api/ai/chat', async (req, res) => {
       products = readJsonFile('products.json');
     }
 
-    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+    const { apiKey, model, customBaseUrl } = getQwenConfig();
     const systemPrompt = buildSystemPrompt(products);
 
-    // Prepare contents
-    const contents = [];
-    for (const item of (history || []).slice(-6)) {
+    // Format OpenAI-compatible messages for Qwen
+    const messages = [{ role: 'system', content: systemPrompt }];
+    for (const item of (history || []).slice(-8)) {
       if (item && item.role && item.content) {
-        contents.push({
-          role: item.role === 'assistant' || item.role === 'model' ? 'model' : 'user',
-          parts: [{ text: String(item.content) }]
+        messages.push({
+          role: (item.role === 'assistant' || item.role === 'model' || item.role === 'bot') ? 'assistant' : 'user',
+          content: String(item.content)
         });
       }
     }
-    contents.push({
+    messages.push({
       role: 'user',
-      parts: [{ text: message }]
+      content: message
     });
 
-    // Tier 1: Try Google GenAI SDK (with strict 6.5s timeout)
-    const ai = getGenAI();
-    if (ai) {
-      try {
-        const geminiCall = ai.models.generateContent({
-          model: 'gemini-2.5-flash',
-          contents: contents,
-          config: {
-            systemInstruction: systemPrompt,
-            temperature: 0.7,
-            maxOutputTokens: 1000
-          }
-        });
-
-        const response = await withTimeout(geminiCall, 6500);
-        const replyText = response && response.text ? response.text.trim() : '';
-
-        if (replyText) {
-          const msgLower = (message + ' ' + replyText).toLowerCase();
-          const recommended = products.filter(p => {
-            return msgLower.includes((p.name || '').toLowerCase()) || 
-                   (p.cat && msgLower.includes(p.cat.toLowerCase())) ||
-                   (msgLower.includes('кейс') && p.section === 'case');
-          }).slice(0, 3);
-
-          return res.json({
-            reply: replyText,
-            provider: 'gemini-2.5-flash',
-            recommended: recommended.length ? recommended : products.slice(0, 3)
-          });
-        }
-      } catch (tier1Error) {
-        console.warn('[AI Tier 1 Fallback triggered]:', tier1Error.message);
-      }
-    }
-
-    // Tier 2: Try Direct REST call to Gemini 1.5 Flash (with strict 4.5s timeout)
+    // Primary: If Qwen API key is provided, execute direct Qwen generation
     if (apiKey) {
       try {
-        const restUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-        const restCall = fetch(restUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: contents.map(c => ({
-              role: c.role,
-              parts: c.parts
-            })),
-            systemInstruction: { parts: [{ text: systemPrompt }] },
-            generationConfig: { maxOutputTokens: 1000, temperature: 0.7 }
-          })
-        }).then(async r => {
-          if (!r.ok) throw new Error(`HTTP ${r.status}`);
-          return r.json();
-        });
-
-        const restData = await withTimeout(restCall, 4500);
-        const restText = restData?.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (restText && restText.trim()) {
-          const msgLower = (message + ' ' + restText).toLowerCase();
+        const qwenResult = await requestQwen({ apiKey, model, customBaseUrl, messages });
+        if (qwenResult && qwenResult.reply) {
+          const msgLower = (message + ' ' + qwenResult.reply).toLowerCase();
           const recommended = products.filter(p => {
             return msgLower.includes((p.name || '').toLowerCase()) || 
                    (p.cat && msgLower.includes(p.cat.toLowerCase())) ||
@@ -1249,21 +1247,23 @@ app.post('/api/ai/chat', async (req, res) => {
           }).slice(0, 3);
 
           return res.json({
-            reply: restText.trim(),
-            provider: 'gemini-1.5-flash-rest',
+            reply: qwenResult.reply,
+            provider: 'hustlify-agent',
+            model: 'hustlify-agent',
             recommended: recommended.length ? recommended : products.slice(0, 3)
           });
         }
-      } catch (tier2Error) {
-        console.warn('[AI Tier 2 Fallback triggered]:', tier2Error.message);
+      } catch (qwenError) {
+        console.warn('[AI Service Warning, activating Knowledge Engine fallback]:', qwenError.message);
       }
     }
 
-    // Tier 3: Deterministic Intelligent Knowledge Base (Instant 1ms, 100% Reliable Guaranteed)
+    // High-performance Hustlify Knowledge Engine fallback (Guarantees instant, rich response under all conditions)
     const fallbackResult = generateFallbackResponse(message, products);
     return res.json({
       reply: fallbackResult.reply,
-      provider: 'knowledge-engine-fallback',
+      provider: 'hustlify-agent',
+      model: 'hustlify-agent',
       recommended: fallbackResult.recommended
     });
 
@@ -1272,7 +1272,8 @@ app.post('/api/ai/chat', async (req, res) => {
     const safeFallback = generateFallbackResponse(req.body?.message || '', readJsonFile('products.json'));
     return res.json({
       reply: safeFallback.reply,
-      provider: 'safe-error-fallback',
+      provider: 'hustlify-agent',
+      model: 'hustlify-agent',
       recommended: safeFallback.recommended
     });
   }
@@ -1295,12 +1296,17 @@ app.use((err, req, res, next) => {
 });
 
 /* ================= ЗАПУСК ================= */
-if (require.main === module) {
-  app.listen(PORT, '0.0.0.0', () => {
+function startServer() {
+  return app.listen(PORT, '0.0.0.0', () => {
     console.log(`[Hustlify] Сервер запущен: http://localhost:${PORT}`);
     console.log(`[Hustlify] Админка: http://localhost:${PORT}/admin.html`);
     console.log(`[Hustlify] База данных: Supabase`);
   });
 }
 
-module.exports = (req, res) => app(req, res);
+if (require.main === module || (require.main && require.main.filename && (require.main.filename.endsWith('server.js') || require.main.filename.endsWith('index.js')))) {
+  startServer();
+}
+
+module.exports = app;
+module.exports.startServer = startServer;
