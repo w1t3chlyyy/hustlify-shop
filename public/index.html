@@ -391,42 +391,80 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
 
 .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;}
 @media(max-width:900px){.grid-3{grid-template-columns:1fr;}}
+
+#projectsGrid{
+  display:grid;
+  grid-template-columns:repeat(4, minmax(0, 1fr));
+  gap:16px;
+  width:100%;
+}
+@media(max-width:768px){
+  #projectsGrid{
+    display:flex;
+    flex-wrap:nowrap;
+    overflow-x:auto;
+    scroll-snap-type:x mandatory;
+    gap:14px;
+    padding-bottom:12px;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:thin;
+    scrollbar-color:rgba(255,255,255,.2) transparent;
+  }
+  #projectsGrid::-webkit-scrollbar{
+    height:5px;
+  }
+  #projectsGrid::-webkit-scrollbar-track{
+    background:rgba(255,255,255,.04);
+    border-radius:10px;
+  }
+  #projectsGrid::-webkit-scrollbar-thumb{
+    background:rgba(255,255,255,.2);
+    border-radius:10px;
+  }
+  #projectsGrid .flip-card{
+    flex:0 0 270px;
+    min-width:270px;
+    scroll-snap-align:start;
+  }
+}
 .tilt-card{
   background:var(--card);
   border:1px solid var(--line);
   border-radius:var(--radius-lg);
-  padding:32px 28px;
+  padding:24px 20px;
   transform-style:preserve-3d;
   transition:transform .18s ease-out, border-color .3s, box-shadow .3s;
   will-change:transform;
 }
 .tilt-card:hover{border-color:rgba(255,255,255,.18);box-shadow:0 30px 60px -20px rgba(0,0,0,.7);}
-.proj-top{display:flex;align-items:center;gap:14px;margin-bottom:18px;}
+.proj-top{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
 .proj-icon{
-  width:52px;height:52px;border-radius:14px;
+  width:46px;height:46px;min-width:46px;border-radius:12px;
   display:flex;align-items:center;justify-content:center;
-  font-family:'Unbounded';font-weight:700;font-size:17px;
+  font-family:'Unbounded';font-weight:700;font-size:16px;
   transform:translateZ(28px);
 }
 .proj-icon.i1{background:linear-gradient(135deg,#e6e6e8,#a6a7ab);color:#111;}
 .proj-icon.i2{background:linear-gradient(135deg,#b7b8bc,#78797d);color:#111;}
 .proj-icon.i3{background:linear-gradient(135deg,#87888c,#3f4043);color:#f5f5f4;}
-.tilt-card h3{font-size:19px;font-weight:700;line-height:1.25;transform:translateZ(20px);}
-.tilt-card .desc{color:var(--gray);font-size:14px;line-height:1.6;margin:16px 0 22px;transform:translateZ(14px);min-height:80px;}
+.proj-icon.i4{background:linear-gradient(135deg,#d4d4d8,#52525b);color:#111;}
+.tilt-card h3{font-size:16.5px;font-weight:700;line-height:1.24;transform:translateZ(20px);}
+.tilt-card .desc{color:var(--gray);font-size:12.5px;line-height:1.5;margin:10px 0 16px;transform:translateZ(14px);min-height:72px;}
 .tilt-card .desc b{color:var(--white);font-weight:600;}
-.proj-actions{display:flex;gap:10px;transform:translateZ(24px);}
-.pbtn{flex:1;padding:13px;border-radius:100px;font-size:13.5px;font-weight:600;text-align:center;transition:transform .25s var(--ease),filter .25s;}
+.proj-actions{display:flex;gap:8px;transform:translateZ(24px);margin-top:auto;}
+.pbtn{flex:1;padding:11px 10px;border-radius:100px;font-size:12.5px;font-weight:600;text-align:center;transition:transform .25s var(--ease),filter .25s;white-space:nowrap;}
 .pbtn:hover{transform:translateY(-2px);filter:brightness(1.15);}
 .pbtn.b1{background:var(--blue);color:#111;}
 .pbtn.b2{background:#a9aaae;color:#0a0a0a;}
 .pbtn.b3{background:var(--purple);color:#f5f5f4;}
+.pbtn.b4{background:var(--white);color:var(--bg);}
 .tg-btn{
-  width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.08);
+  width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.08);
   display:flex;align-items:center;justify-content:center;flex-shrink:0;
   transition:transform .25s var(--ease), background .25s;
 }
 .tg-btn:hover{transform:translateY(-2px) rotate(-8deg);background:rgba(255,255,255,.14);}
-.tg-btn svg{width:18px;height:18px;}
+.tg-btn svg{width:17px;height:17px;}
 
 /* ---- flip cards (О нас) ---- */
 .flip-card{
@@ -458,18 +496,18 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
   background-size:cover;background-position:center;
   filter:blur(20px) brightness(.45);
 }
-.flip-front-overlay{position:relative;z-index:2;text-align:center;padding:0 26px;}
+.flip-front-overlay{position:relative;z-index:2;text-align:center;padding:0 18px;}
 .flip-front-overlay h3{
-  font-family:'Unbounded';font-size:22px;font-weight:800;line-height:1.25;margin-bottom:24px;
+  font-family:'Unbounded';font-size:19px;font-weight:800;line-height:1.25;margin-bottom:20px;
 }
 .flip-open-btn{
   background:var(--white);color:var(--bg);
-  padding:13px 28px;border-radius:100px;
-  font-size:13.5px;font-weight:600;border:none;cursor:pointer;
+  padding:11px 22px;border-radius:100px;
+  font-size:13px;font-weight:600;border:none;cursor:pointer;
   transition:transform .25s var(--ease);
 }
 .flip-open-btn:hover{transform:translateY(-2px);}
-.flip-back{transform:rotateY(180deg);background:var(--card);padding:32px 28px;display:flex;flex-direction:column;}
+.flip-back{transform:rotateY(180deg);background:var(--card);padding:24px 20px;display:flex;flex-direction:column;}
 
 .news-wrap{
   position:relative;
@@ -1692,7 +1730,7 @@ body.page-leaving {
       <h2>За нашими плечами — 2 года работы и<br>500+ завершённых проектов</h2>
       <p>Мы не экспериментируем над клиентами, а применяем готовые работающие связки</p>
     </div>
-    <div class="grid-3" id="projectsGrid">
+    <div class="projects-grid" id="projectsGrid">
 
       <article class="tilt-card flip-card" data-project="vieto">
         <div class="flip-inner">
@@ -1722,7 +1760,7 @@ body.page-leaving {
       <article class="tilt-card flip-card" data-project="flux">
         <div class="flip-inner">
           <div class="flip-face flip-front">
-            <div class="flip-front-bg" style="background-image:url('images/projects/flux.jpg');"></div>
+            <div class="flip-front-bg" style="background-image:url('images/projects/flux.png');"></div>
             <div class="flip-front-overlay">
               <h3>Проект<br>Hustlify</h3>
               <button class="flip-open-btn" type="button" data-nomodal>Открыть проект</button>
@@ -1731,7 +1769,7 @@ body.page-leaving {
           <div class="flip-face flip-back">
             <div class="proj-top">
               <div class="proj-icon i2" style="overflow:hidden;padding:0;border-radius:14px;background:transparent;">
-                <img src="images/projects/flux.jpg" alt="Flux Studio" style="width:100%;height:100%;object-fit:cover;border-radius:14px;">
+                <img src="images/projects/flux.png" alt="Flux Studio" style="width:100%;height:100%;object-fit:cover;border-radius:14px;">
               </div>
               <h3>Flux<br>Studio</h3>
             </div>
@@ -1764,6 +1802,31 @@ body.page-leaving {
             <div class="proj-actions">
               <button class="pbtn b3" onclick="openProjectModal('cursor')" style="background:var(--white);color:var(--bg);">Подробнее</button>
               <a href="#" class="tg-btn" data-tg data-nomodal><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 3.3 2.8 11c-1.3.5-1.3 1.2-.2 1.5l4.9 1.5 1.9 5.8c.2.6.4.8.8.8.4 0 .6-.2.9-.5l2.2-2.1 4.6 3.4c.8.5 1.4.2 1.6-.7l3-14c.3-1.1-.4-1.6-1.6-1.4Z"/></svg></a>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="tilt-card flip-card" data-project="apex">
+        <div class="flip-inner">
+          <div class="flip-face flip-front">
+            <div class="flip-front-bg" style="background-image:url('images/projects/apex.png');"></div>
+            <div class="flip-front-overlay">
+              <h3>Проект<br>Hustlify</h3>
+              <button class="flip-open-btn" type="button" data-nomodal>Открыть проект</button>
+            </div>
+          </div>
+          <div class="flip-face flip-back">
+            <div class="proj-top">
+              <div class="proj-icon i4" style="overflow:hidden;padding:0;border-radius:14px;background:transparent;">
+                <img src="images/projects/apex.png" alt="Apex" style="width:100%;height:100%;object-fit:cover;border-radius:14px;">
+              </div>
+              <h3>Apex<br>Core</h3>
+            </div>
+            <p class="desc">Сервис AI агентов для вашего бизнеса <b>Продажи будут идти даже когда ты спишь</b></p>
+            <div class="proj-actions">
+              <button class="pbtn b4" onclick="openProjectModal('apex')" style="background:var(--white);color:var(--bg);">Подробнее</button>
+              <a href="https://apex-core.site" target="_blank" rel="noopener noreferrer" class="tg-btn" title="apex-core.site" data-nomodal><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>
             </div>
           </div>
         </div>
@@ -2812,7 +2875,7 @@ const projectDetails = {
   },
   flux: {
     iconSvg: '<svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>',
-    img: 'images/projects/flux.jpg',
+    img: 'images/projects/flux.png',
     title: 'Flux Studio',
     desc: 'Студия визуального оформления: аватарки, баннеры, полная упаковка бренда с нуля. Помогаем каналу или проекту выглядеть узнаваемо и профессионально с первого касания.',
     portfolioLink: 'https://t.me/+0Bd2iyw1aOU4NDEy'
@@ -2822,6 +2885,14 @@ const projectDetails = {
     img: 'images/projects/cursor.png',
     title: 'Cursor Market',
     desc: 'Витрина премиум-атрибутики Telegram: юзернеймы, NFT, подарки и звёзды. Помогаем собрать заметный, статусный профиль.'
+  },
+  apex: {
+    iconSvg: '<svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="12 2 2 22 22 22 12 2"/><line x1="12" y1="9" x2="12" y2="15"/></svg>',
+    img: 'images/projects/apex.png',
+    title: 'Apex Core',
+    desc: 'Сервис для быстрого внедрения автономных AI-агентов в ваш бизнес. Автоматизирует консультации, продажи и обработку входящих заявок 24/7. Процесс подключения максимально упрощен и занимает около 5 минут без сложного кода.',
+    siteLink: 'https://apex-core.site',
+    siteButtonText: 'Перейти на сайт'
   }
 };
 const projectModal = document.getElementById('projectModal');
@@ -2835,7 +2906,15 @@ function openProjectModal(key){
     : `<div class="dobj">${d.iconSvg || '<svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="3"/></svg>'}</div>`;
 
   document.getElementById('prDesc').textContent = d.desc;
-  document.getElementById('prMoreBtn').href = TELEGRAM_LINK;
+
+  const moreBtn = document.getElementById('prMoreBtn');
+  if(d.siteLink){
+    moreBtn.href = d.siteLink;
+    moreBtn.innerHTML = `${d.siteButtonText || 'Перейти на сайт'} <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" style="margin-left:6px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>`;
+  } else {
+    moreBtn.href = TELEGRAM_LINK;
+    moreBtn.innerHTML = `Подробнее в Telegram <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="margin-left:6px;"><path d="M21.9 3.3 2.8 11c-1.3.5-1.3 1.2-.2 1.5l4.9 1.5 1.9 5.8c.2.6.4.8.8.8.4 0 .6-.2.9-.5l2.2-2.1 4.6 3.4c.8.5 1.4.2 1.6-.7l3-14c.3-1.1-.4-1.6-1.6-1.4Z"/></svg>`;
+  }
 
   const portfolioBtn = document.getElementById('prPortfolioBtn');
   if(d.portfolioLink){

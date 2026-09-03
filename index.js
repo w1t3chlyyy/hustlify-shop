@@ -998,6 +998,22 @@ function getQwenConfig() {
   return { apiKey, model, customBaseUrl };
 }
 
+let geminiClient = null;
+function getGeminiClient() {
+  const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+  if (!apiKey) return null;
+  if (!geminiClient) {
+    try {
+      const { GoogleGenAI } = require('@google/genai');
+      geminiClient = new GoogleGenAI({ apiKey });
+    } catch (e) {
+      console.warn('Failed to initialize GoogleGenAI:', e.message);
+      return null;
+    }
+  }
+  return geminiClient;
+}
+
 // Timeout wrapper helper to guarantee calls never exceed bounds
 function withTimeout(promise, ms = 7500) {
   return Promise.race([
@@ -1281,6 +1297,54 @@ app.post('/api/ai/chat', async (req, res) => {
 
     const { apiKey, model, customBaseUrl } = getQwenConfig();
     const systemPrompt = buildSystemPrompt(products);
+
+    // 1. Try Google Gemini API if GEMINI_API_KEY or GOOGLE_API_KEY is available
+    const gemini = getGeminiClient();
+    if (gemini) {
+      try {
+        const contents = [];
+        for (const item of (history || []).slice(-6)) {
+          if (item && item.role && item.content) {
+            contents.push({
+              role: (item.role === 'assistant' || item.role === 'model' || item.role === 'bot') ? 'model' : 'user',
+              parts: [{ text: String(item.content) }]
+            });
+          }
+        }
+        contents.push({ role: 'user', parts: [{ text: message }] });
+
+        const geminiRes = await withTimeout(
+          gemini.models.generateContent({
+            model: 'gemini-3.8-flash',
+            contents,
+            config: {
+              systemInstruction: systemPrompt,
+              temperature: 0.7
+            }
+          }),
+          7500
+        );
+
+        if (geminiRes && geminiRes.text) {
+          const replyText = geminiRes.text.trim();
+          const msgLower = (message + ' ' + replyText).toLowerCase();
+          const recommended = products.filter(p => {
+            return msgLower.includes((p.name || '').toLowerCase()) || 
+                   (p.cat && msgLower.includes(p.cat.toLowerCase())) ||
+                   (msgLower.includes('кейс') && p.section === 'case');
+          }).slice(0, 3);
+
+          return res.json({
+            reply: replyText,
+            provider: 'hustlify-agent',
+            model: 'hustlify-agent',
+            recommended: recommended.length ? recommended : products.slice(0, 3)
+          });
+        }
+      } catch (geminiErr) {
+        console.warn('[Gemini AI Notice]:', geminiErr.message);
+      }
+    }
 
     let semanticMatches = [];
 
