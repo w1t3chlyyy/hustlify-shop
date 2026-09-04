@@ -308,6 +308,109 @@ app.delete('/api/admin/products/:id', requireAdmin, async (req, res) => {
   res.json({ ok: true });
 });
 
+/* ================= ADMIN: RATES (STARS & PREMIUM) ================= */
+app.get('/api/admin/rates', requireAdmin, async (req, res) => {
+  const products = readJsonFile('products.json');
+  const stars = products.find(p => p.id === 'tg_stars') || { price: 2, old: 3 };
+  const prem3 = products.find(p => p.id === 'tg_premium_3') || { price: 990, old: 1290 };
+  const prem6 = products.find(p => p.id === 'tg_premium_6') || { price: 1790, old: 2290 };
+  const prem9 = products.find(p => p.id === 'tg_premium_9') || { price: 2490, old: 3190 };
+  const prem12 = products.find(p => p.id === 'tg_premium_12') || { price: 2990, old: 3990 };
+
+  res.json({
+    stars: { price: stars.price, old: stars.old },
+    premium: {
+      3: { price: prem3.price, old: prem3.old },
+      6: { price: prem6.price, old: prem6.old },
+      9: { price: prem9.price, old: prem9.old },
+      12: { price: prem12.price, old: prem12.old }
+    }
+  });
+});
+
+app.put('/api/admin/rates', requireAdmin, async (req, res) => {
+  const { stars, premium } = req.body || {};
+  const products = readJsonFile('products.json');
+
+  function updateProd(id, newPrice, newOld) {
+    const idx = products.findIndex(p => p.id === id);
+    if (idx !== -1) {
+      if (newPrice !== undefined && !isNaN(Number(newPrice))) products[idx].price = Number(newPrice);
+      if (newOld !== undefined && !isNaN(Number(newOld))) products[idx].old = Number(newOld);
+    }
+  }
+
+  if (stars) {
+    updateProd('tg_stars', stars.price, stars.old);
+  }
+
+  if (premium) {
+    if (premium[3]) updateProd('tg_premium_3', premium[3].price, premium[3].old);
+    if (premium[6]) updateProd('tg_premium_6', premium[6].price, premium[6].old);
+    if (premium[9]) updateProd('tg_premium_9', premium[9].price, premium[9].old);
+    if (premium[12]) updateProd('tg_premium_12', premium[12].price, premium[12].old);
+  }
+
+  writeJsonFile('products.json', products);
+
+  if (supabase) {
+    try {
+      const ids = ['tg_stars', 'tg_premium_3', 'tg_premium_6', 'tg_premium_9', 'tg_premium_12'];
+      for (const id of ids) {
+        const p = products.find(x => x.id === id);
+        if (p) {
+          await supabase.from('products').update(toDbProduct(p)).eq('id', id);
+        }
+      }
+    } catch (e) {
+      console.error('Supabase update rates error:', e.message);
+    }
+  }
+
+  res.json({ ok: true, products: products.filter(p => p.cat === 'Звезды&Премиум') });
+});
+
+/* ================= PROJECTS CONFIG & LINKS ================= */
+const DEFAULT_PROJECT_LINKS = {
+  apex: {
+    title: 'Apex Core',
+    type: 'site',
+    url: 'https://apex-core.site',
+    buttonText: 'Перейти на сайт'
+  },
+  flux: {
+    title: 'Flux Studio',
+    type: 'telegram',
+    url: 'https://t.me/+zhWLLWIaVeI2Y2Yy',
+    buttonText: 'Подробнее в Telegram',
+    portfolioUrl: 'https://t.me/+0Bd2iyw1aOU4NDEy'
+  },
+  vieto: {
+    title: 'Vieto Store',
+    type: 'telegram',
+    url: 'https://t.me/VietoFullStore',
+    buttonText: 'Подробнее в Telegram'
+  },
+  cursor: {
+    title: 'Cursor Market',
+    type: 'telegram',
+    url: 'https://t.me/CursorRobot',
+    buttonText: 'Подробнее в Telegram'
+  }
+};
+
+app.get('/api/projects', (req, res) => {
+  const fileData = readJsonFile('projects.json') || {};
+  res.json({ ...DEFAULT_PROJECT_LINKS, ...fileData });
+});
+
+app.put('/api/admin/projects', requireAdmin, (req, res) => {
+  const current = readJsonFile('projects.json') || {};
+  const updated = { ...DEFAULT_PROJECT_LINKS, ...current, ...(req.body || {}) };
+  writeJsonFile('projects.json', updated);
+  res.json({ ok: true, projects: updated });
+});
+
 /* ================= NEWS ================= */
 app.get('/api/news', async (req, res) => {
   if (supabase) {
@@ -531,9 +634,45 @@ app.post('/api/orders', async (req, res) => {
   for (const it of items) {
     const p = products.find(x => x.id === it.id);
     if (!p) continue;
-    const qty = Math.max(1, parseInt(it.qty) || 1);
-    itemsTotal += p.price * qty;
-    lines.push({ id: p.id, name: p.name, price: p.price, qty });
+    const target = (it.target || it.username || '').toString().trim().slice(0, 120);
+
+    if (p.id === 'tg_stars' || it.stars) {
+      const starsCount = Math.max(25, Math.min(10000, parseInt(it.stars || it.qty) || 25));
+      const linePrice = Math.round(p.price * starsCount);
+      itemsTotal += linePrice;
+      lines.push({
+        id: p.id,
+        name: `Telegram Звёзды (${starsCount.toLocaleString('ru-RU')} шт.)`,
+        price: linePrice,
+        qty: 1,
+        stars: starsCount,
+        target: target || null,
+        details: `${starsCount} звёзд${target ? ' для ' + target : ''}`
+      });
+    } else if (p.id.startsWith('tg_premium')) {
+      const qty = Math.max(1, parseInt(it.qty) || 1);
+      const linePrice = p.price * qty;
+      itemsTotal += linePrice;
+      lines.push({
+        id: p.id,
+        name: p.name,
+        price: p.price,
+        qty,
+        target: target || null,
+        details: `${p.name}${target ? ' для ' + target : ''}`
+      });
+    } else {
+      const qty = Math.max(1, parseInt(it.qty) || 1);
+      itemsTotal += p.price * qty;
+      lines.push({
+        id: p.id,
+        name: p.name,
+        price: p.price,
+        qty,
+        target: target || null,
+        details: it.details || null
+      });
+    }
   }
   if (lines.length === 0) return res.status(400).json({ error: 'Товары не найдены' });
 
@@ -1069,45 +1208,45 @@ function generateSalesConsultationResponse(message, products, customMatched = nu
   // 1. Budget inquiries
   if (parsedBudget && (lower.includes('бюджет') || lower.includes('руб') || lower.includes('₽') || lower.includes('тыс') || lower.includes('к ') || lower.includes('до '))) {
     if (parsedBudget < 4000) {
-      reply = `🎯 **Персональный план запуска бизнеса при бюджете ${parsedBudget.toLocaleString('ru-RU')} ₽:**\n\n` +
+      reply = `**Персональный план запуска бизнеса при бюджете ${parsedBudget.toLocaleString('ru-RU')} ₽:**\n\n` +
         `Отличный стартовый бюджет для быстрого входа в IT-бизнес! Мы подобрали решения с моментальной окупаемостью:\n\n` +
         `1. **Кейс "Стандарт" (2 589 ₽)** — готовая упакованная ниша с пошаговой воронкой и инструкциями. Идеально для первого заработка.\n` +
         `2. **Кейс "Hustlify & TeleStore" (3 889 ₽)** — готовый Telegram-магазин под ключ с товарной матрицей.\n` +
         `3. **Верификации (CryptoBot / Fragment от 250 ₽)** — техническая база для безопасного приема платежей.\n\n` +
-        `📊 **Финансовая модель:**\n` +
+        `**Финансовая модель:**\n` +
         `• Средний доход в первый месяц: **от 25 000 до 40 000 ₽**.\n` +
         `• Срок полной окупаемости: **всего 7–14 дней** (достаточно 2–3 продаж!).\n` +
         `• Вам не нужно писать код: передаем готовый проект и обучающие материалы.\n\n` +
-        `🔥 **Специальное предложение:** Оформите заказ прямо сейчас по акционной цене через карточку товара ниже, либо напишите в Telegram: **@HustlifyHelp** для бронирования запуска за 24 часа!\n` +
-        `💡 *Лайфхак:* Крутаните Рулетку скидок на главной странице, чтобы получить дополнительную скидку до 30%!`;
+        `**Специальное предложение:** Оформите заказ прямо сейчас по акционной цене через карточку товара ниже, либо напишите в Telegram: **@HustlifyHelp** для бронирования запуска за 24 часа!\n` +
+        `*Лайфхак:* Крутаните Рулетку скидок на главной странице, чтобы получить дополнительную скидку до 30%!`;
       if (!matchedProducts.length) {
         matchedProducts = products.filter(p => ['k2', 'k1', 'c1', 'c3'].includes(p.id));
       }
     } else if (parsedBudget <= 10000) {
-      reply = `🚀 **План масштабирования бизнеса при бюджете ${parsedBudget.toLocaleString('ru-RU')} ₽:**\n\n` +
+      reply = `**План масштабирования бизнеса при бюджете ${parsedBudget.toLocaleString('ru-RU')} ₽:**\n\n` +
         `С таким бюджетом вы можете запустить один из самых высокомаржинальных Telegram-бизнесов:\n\n` +
         `1. **Telegram Mini App (8 990 ₽)** — современное веб-приложение прямо внутри Telegram. Конверсия на 40% выше стандартных сайтов!\n` +
         `2. **Бот Автовыдачи 24/7 (5 990 ₽)** — полностью автоматизированный сбыт цифровых товаров без вашего участия.\n` +
         `3. **Кейс "Hustlify & TeleStore" (3 889 ₽)** — проверенная витрина и готовые товары.\n\n` +
-        `📈 **Экономика проекта:**\n` +
+        `**Экономика проекта:**\n` +
         `• Потенциальная чистая прибыль: **от 45 000 до 95 000 ₽/мес**.\n` +
         `• Срок окупаемости: **10–18 дней**.\n` +
         `• Срок сдачи: **от 24 до 72 часов** с полной настройкой под вас.\n\n` +
-        `⚡ **Действуйте сейчас:** Спрос на слоты запуска высокий! Нажмите на выбранный продукт ниже, чтобы перейти к оформлению, либо свяжитесь с архитектором в Telegram: **@HustlifyHelp** для фиксации цены!`;
+        `**Действуйте сейчас:** Спрос на слоты запуска высокий! Нажмите на выбранный продукт ниже, чтобы перейти к оформлению, либо свяжитесь с архитектором в Telegram: **@HustlifyHelp** для фиксации цены!`;
       if (!matchedProducts.length) {
         matchedProducts = products.filter(p => ['c10', 'c12', 'k1'].includes(p.id));
       }
     } else {
-      reply = `💎 **Премиальный запуск IT-бизнеса под ключ (${parsedBudget.toLocaleString('ru-RU')} ₽):**\n\n` +
+      reply = `**Премиальный запуск IT-бизнеса под ключ (${parsedBudget.toLocaleString('ru-RU')} ₽):**\n\n` +
         `При таком бюджете вы запускаете полноценную автономную IT-экосистему с максимальной капитализацией:\n\n` +
         `1. **Готовый магазин под ключ (12 990 ₽)** — настроенный сервис с подключенным эквайрингом, витриной и поставщиками.\n` +
         `2. **Telegram Mini App (8 990 ₽)** — синхронизация с Telegram для взрывного мобильного трафика.\n` +
         `3. **Landing Page под ключ (4 990 ₽)** — мощный продающий сайт для привлечения премиальных клиентов.\n\n` +
-        `📊 **Финансовые показатели:**\n` +
+        `**Финансовые показатели:**\n` +
         `• Чистая маржинальность: **до 70–80%**.\n` +
         `• Прогнозируемая прибыль: **от 100 000 до 220 000 ₽ в месяц**.\n` +
         `• Полная передача всех прав, исходного кода и 24/7 сопровождение.\n\n` +
-        `👑 **Готовы начать зарабатывать?** Добавьте комплект в корзину ниже или напишите нашему старшему архитектору: **@HustlifyHelp** — сегодня согласуем персональный бриф и начнем запуск!`;
+        `**Готовы начать зарабатывать?** Добавьте комплект в корзину ниже или напишите нашему старшему архитектору: **@HustlifyHelp** — сегодня согласуем персональный бриф и начнем запуск!`;
       if (!matchedProducts.length) {
         matchedProducts = products.filter(p => ['c11', 'c10', 'c9'].includes(p.id));
       }
@@ -1115,53 +1254,53 @@ function generateSalesConsultationResponse(message, products, customMatched = nu
   } 
   // 2. Telegram Mini Apps & Bots
   else if (lower.includes('mini app') || lower.includes('мини апп') || lower.includes('тг') || lower.includes('telegram') || lower.includes('бот') || lower.includes('bot')) {
-    reply = `⚡ **Разработка и запуск в Telegram (Hustlify Agent):**\n\n` +
+    reply = `**Разработка и запуск в Telegram (Hustlify Agent):**\n\n` +
       `Telegram сегодня — главный канал монетизации с миллионной аудиторией. Мы предлагаем решения с рекордной конверсией:\n\n` +
       `• **Telegram Mini App (8 990 ₽)** — полноценное приложение внутри мессенджера (каталог, оплата в 1 клик, геймификация). Конверсия на 40% выше любых веб-сайтов!\n` +
       `• **Бот Автовыдачи 24/7 (5 990 ₽)** — ваш личный круглосуточный продавец цифровых товаров, ключей и файлов без выходных и зарплат.\n` +
       `• **Кейс TeleStore (3 889 ₽)** — готовый интернет-магазин с уже настроенной связкой.\n\n` +
-      `💰 **Окупаемость:** 7–20 дней. Вам передаются все исходники и инструкция.\n\n` +
-      `🔥 **Не откладывайте:** Закажите запуск прямо сейчас через карточку ниже или напишите нашему инженеру в Telegram: **@HustlifyHelp**!`;
+      `**Окупаемость:** 7–20 дней. Вам передаются все исходники и инструкция.\n\n` +
+      `**Не откладывайте:** Закажите запуск прямо сейчас через карточку ниже или напишите нашему инженеру в Telegram: **@HustlifyHelp**!`;
     if (!matchedProducts.length) {
       matchedProducts = products.filter(p => ['c10', 'c12', 'k1'].includes(p.id));
     }
   }
   // 3. Verifications & Wallets
   else if (lower.includes('вериф') || lower.includes('bybit') || lower.includes('cryptobot') || lower.includes('кошел') || lower.includes('fragment') || lower.includes('kyc')) {
-    reply = `🔐 **Официальные верификации для бесперебойного приема платежей:**\n\n` +
+    reply = `**Официальные верификации для бесперебойного приема платежей:**\n\n` +
       `Для успешных продаж критически важно принимать оплату без блокировок и лимитов:\n\n` +
       `• **CryptoBot (880 ₽)** — моментальный прием криптовалюты без комиссий и блокировок.\n` +
       `• **Fragment (250 ₽)** — верификация юзернеймов и номеров в Telegram.\n` +
       `• **Telegram Wallet (789 ₽)** — официальный P2P кошелек для быстрых расчетов.\n` +
       `• **ByBit (889 ₽)** — подтвержденный аккаунт для легкого вывода средств в фиат.\n\n` +
-      `🛡 **100% гарантия чистоты:** Быстрая передача в течение нескольких часов.\n` +
-      `👉 Добавьте нужную верификацию в корзину прямо сейчас или напишите специалисту: **@HustlifyHelp**!`;
+      `**100% гарантия чистоты:** Быстрая передача в течение нескольких часов.\n` +
+      `Добавьте нужную верификацию в корзину прямо сейчас или напишите специалисту: **@HustlifyHelp**!`;
     if (!matchedProducts.length) {
       matchedProducts = products.filter(p => p.cat === 'Верификации' || (p.category && p.category.includes('Вериф')));
     }
   }
   // 4. Guarantees, reviews and security
   else if (lower.includes('гарант') || lower.includes('отзыв') || lower.includes('безопасн') || lower.includes('обман') || lower.includes('риск')) {
-    reply = `🛡 **Гарантии и безопасность сделок в Hustlify:**\n\n` +
+    reply = `**Гарантии и безопасность сделок в Hustlify:**\n\n` +
       `Мы ценим ваше доверие и строим работу на полной прозрачности:\n\n` +
       `1. **Репутация:** Десятки успешных запусков и реальных отзывов в канале **@HustlifyReviews**.\n` +
       `2. **Передача прав:** Вы получаете полный доступ к исходному коду, базам данных и панелям управления.\n` +
       `3. **Официальные чеки:** При оплате картами МИР/СБП формируется электронный фискальный чек, а при криптооплате транзакция подтверждается блокчейном.\n` +
       `4. **Поддержка 24/7:** Мы не бросаем клиентов после оплаты, а ведем до первых продаж через **@HustlifyHelp**.\n\n` +
-      `🤝 Вы ничем не рискуете. Выберите подходящее решение в каталоге ниже и начните строить свой бизнес уже сегодня!`;
+      `Вы ничем не рискуете. Выберите подходящее решение в каталоге ниже и начните строить свой бизнес уже сегодня!`;
     if (!matchedProducts.length) {
       matchedProducts = products.slice(0, 3);
     }
   }
   // 5. Payment methods & buying process
   else if (lower.includes('оплат') || lower.includes('купить') || lower.includes('заказ') || lower.includes('карт') || lower.includes('крипт') || lower.includes('цена')) {
-    reply = `💳 **Как быстро и безопасно оформить заказ:**\n\n` +
+    reply = `**Как быстро и безопасно оформить заказ:**\n\n` +
       `1. **Выберите решение** из каталога ниже и добавьте его в корзину.\n` +
       `2. **Оплатите удобным способом:**\n` +
       `   • Банковская карта / СБП по реквизитам с фиксацией чека.\n` +
       `   • Криптовалюта (USDT, TON, BTC через CryptoBot) — зачисление за 30 секунд.\n` +
       `3. **Получите проект:** Передача готовых решений — от 24 часов с полным инструктажем!\n\n` +
-      `🎁 *Совет:* Перед оплатой крутите Рулетку скидок на главной странице — вы можете сэкономить до 30%!\n\n` +
+      `*Совет:* Перед оплатой крутите Рулетку скидок на главной странице — вы можете сэкономить до 30%!\n\n` +
       `Для моментальной консультации напишите в Telegram: **@HustlifyHelp**.`;
     if (!matchedProducts.length) {
       matchedProducts = products.slice(0, 3);
@@ -1171,11 +1310,11 @@ function generateSalesConsultationResponse(message, products, customMatched = nu
   else {
     reply = `Здравствуйте! Я — **Hustlify Agent**, ваш главный консультант и архитектор готовых IT-бизнесов.\n\n` +
       `Моя задача — подобрать для вас проект, который начнет приносить чистую прибыль уже в первые 2 недели!\n\n` +
-      `🔥 **ТОП-3 самых прибыльных решений прямо сейчас:**\n` +
+      `**ТОП-3 самых прибыльных решений прямо сейчас:**\n` +
       `• **Telegram Mini App (8 990 ₽)** — трендовый канал продаж с рекордной конверсией.\n` +
       `• **Бот Автовыдачи 24/7 (5 990 ₽)** — пассивный доход на цифровых товарах без вашего участия.\n` +
       `• **Кейс "Hustlify & TeleStore" (3 889 ₽)** — готовый онлайн-бизнес с товарной матрицей.\n\n` +
-      `💡 **Какой у вас бюджет на старт?** Напишите сумму, и я рассчитаю точный срок окупаемости и чистую прибыль.\n\n` +
+      `**Какой у вас бюджет на старт?** Напишите сумму, и я рассчитаю точный срок окупаемости и чистую прибыль.\n\n` +
       `Или переходите к оформлению ниже / напишите нам в Telegram: **@HustlifyHelp**!`;
     if (!matchedProducts.length) {
       matchedProducts = products.slice(0, 3);

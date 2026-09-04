@@ -392,40 +392,83 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
 .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;}
 @media(max-width:900px){.grid-3{grid-template-columns:1fr;}}
 
-#projectsGrid{
-  display:grid;
-  grid-template-columns:repeat(4, minmax(0, 1fr));
-  gap:16px;
-  width:100%;
+.projects-wrap{
+  position:relative;
+  padding:0 54px;
+}
+.projects-track{
+  display:flex;
+  flex-wrap:nowrap;
+  overflow-x:auto;
+  scroll-snap-type:x mandatory;
+  scroll-behavior:smooth;
+  gap:18px;
+  padding:12px 4px 18px;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+  -ms-overflow-style:none;
+}
+.projects-track::-webkit-scrollbar{
+  display:none;
+  width:0;
+  height:0;
+}
+.projects-track .flip-card{
+  flex:0 0 300px;
+  width:300px;
+  height:300px;
+  min-width:300px;
+  aspect-ratio:1 / 1;
+  scroll-snap-align:start;
 }
 @media(max-width:768px){
-  #projectsGrid{
-    display:flex;
-    flex-wrap:nowrap;
-    overflow-x:auto;
-    scroll-snap-type:x mandatory;
-    gap:14px;
-    padding-bottom:12px;
-    -webkit-overflow-scrolling:touch;
-    scrollbar-width:thin;
-    scrollbar-color:rgba(255,255,255,.2) transparent;
+  .projects-wrap{
+    padding:0 42px;
   }
-  #projectsGrid::-webkit-scrollbar{
-    height:5px;
-  }
-  #projectsGrid::-webkit-scrollbar-track{
-    background:rgba(255,255,255,.04);
-    border-radius:10px;
-  }
-  #projectsGrid::-webkit-scrollbar-thumb{
-    background:rgba(255,255,255,.2);
-    border-radius:10px;
-  }
-  #projectsGrid .flip-card{
+  .projects-track .flip-card{
     flex:0 0 270px;
+    width:270px;
+    height:270px;
     min-width:270px;
-    scroll-snap-align:start;
   }
+}
+.proj-nav{
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  width:44px;
+  height:44px;
+  border-radius:50%;
+  background:var(--white);
+  color:var(--bg);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:all .25s var(--ease);
+  z-index:10;
+  box-shadow:0 6px 22px rgba(0,0,0,0.5);
+  border:1px solid rgba(255,255,255,0.15);
+  cursor:pointer;
+  user-select:none;
+}
+.proj-nav:hover{
+  transform:translateY(-50%) scale(1.08);
+  box-shadow:0 8px 28px rgba(0,0,0,0.7);
+  background:#ffffff;
+}
+.proj-nav:active{
+  transform:translateY(-50%) scale(0.96);
+}
+.proj-nav.next{
+  right:6px;
+}
+.proj-nav.prev{
+  left:6px;
+}
+.proj-nav svg{
+  width:18px;
+  height:18px;
+  display:block;
 }
 .tilt-card{
   background:var(--card);
@@ -468,7 +511,8 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
 
 /* ---- flip cards (О нас) ---- */
 .flip-card{
-  height:380px;
+  height:300px;
+  aspect-ratio:1 / 1;
   perspective:1400px;
   padding:0;
   background:none;
@@ -498,16 +542,256 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
 }
 .flip-front-overlay{position:relative;z-index:2;text-align:center;padding:0 18px;}
 .flip-front-overlay h3{
-  font-family:'Unbounded';font-size:19px;font-weight:800;line-height:1.25;margin-bottom:20px;
+  font-family:'Unbounded';font-size:17px;font-weight:800;line-height:1.25;margin-bottom:16px;
 }
 .flip-open-btn{
   background:var(--white);color:var(--bg);
-  padding:11px 22px;border-radius:100px;
-  font-size:13px;font-weight:600;border:none;cursor:pointer;
+  padding:9px 20px;border-radius:100px;
+  font-size:12.5px;font-weight:600;border:none;cursor:pointer;
   transition:transform .25s var(--ease);
 }
 .flip-open-btn:hover{transform:translateY(-2px);}
-.flip-back{transform:rotateY(180deg);background:var(--card);padding:24px 20px;display:flex;flex-direction:column;}
+.flip-back{
+  transform:rotateY(180deg);
+  background:var(--card);
+  padding:18px 18px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+}
+.flip-back .proj-top{margin-bottom:6px;gap:10px;}
+.flip-back .proj-icon{width:40px;height:40px;min-width:40px;border-radius:10px;}
+.flip-back h3{font-size:15px;line-height:1.2;}
+.flip-back .desc{font-size:12px;line-height:1.42;margin:6px 0 10px;min-height:0;flex:1;}
+.flip-back .proj-actions{margin-top:auto;}
+
+/* ---- Stars & Premium Configurator ---- */
+.cfg-container{
+  width:100%;
+  margin-bottom:28px;
+}
+.cfg-grid{
+  display:grid;
+  grid-template-columns:repeat(2, 1fr);
+  gap:20px;
+}
+@media(max-width:880px){
+  .cfg-grid{grid-template-columns:1fr;}
+}
+.cfg-card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:var(--radius-lg);
+  padding:26px 24px;
+  display:flex;
+  flex-direction:column;
+  position:relative;
+  transition:border-color .3s, box-shadow .3s;
+}
+.cfg-card:hover{
+  border-color:rgba(255,255,255,.2);
+  box-shadow:0 24px 48px -18px rgba(0,0,0,.7);
+}
+.cfg-top{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:14px;
+  margin-bottom:18px;
+}
+.cfg-top-info{flex:1;}
+.cfg-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:4px 10px;
+  border-radius:100px;
+  font-size:11.5px;
+  font-weight:600;
+  background:rgba(255,255,255,.08);
+  color:var(--gray-light);
+  margin-bottom:8px;
+}
+.cfg-title{
+  font-family:'Unbounded';
+  font-size:18px;
+  font-weight:700;
+  color:var(--white);
+  margin-bottom:4px;
+}
+.cfg-desc{
+  font-size:13px;
+  color:var(--gray);
+  line-height:1.45;
+}
+.cfg-icon{
+  width:48px;
+  height:48px;
+  min-width:48px;
+  border-radius:14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.03));
+  border:1px solid rgba(255,255,255,0.1);
+  color:var(--white);
+}
+.cfg-amount-box{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  margin:14px 0 8px;
+}
+.cfg-amount-num{
+  font-family:'Unbounded';
+  font-size:32px;
+  font-weight:800;
+  color:var(--white);
+  letter-spacing:-0.5px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.cfg-amount-unit{
+  font-size:14px;
+  color:var(--gray);
+  font-family:'Plus Jakarta Sans', sans-serif;
+  font-weight:500;
+}
+.custom-slider{
+  -webkit-appearance:none;
+  appearance:none;
+  width:100%;
+  height:8px;
+  border-radius:8px;
+  background:rgba(255,255,255,0.14);
+  outline:none;
+  margin:10px 0 16px;
+  cursor:pointer;
+}
+.custom-slider::-webkit-slider-thumb{
+  -webkit-appearance:none;
+  appearance:none;
+  width:22px;
+  height:22px;
+  border-radius:50%;
+  background:#ffffff;
+  cursor:pointer;
+  box-shadow:0 2px 10px rgba(0,0,0,0.5);
+  border:2px solid #0a0a0a;
+  transition:transform .15s ease;
+}
+.custom-slider::-webkit-slider-thumb:hover{
+  transform:scale(1.15);
+}
+.custom-slider::-moz-range-thumb{
+  width:22px;
+  height:22px;
+  border-radius:50%;
+  background:#ffffff;
+  cursor:pointer;
+  box-shadow:0 2px 10px rgba(0,0,0,0.5);
+  border:2px solid #0a0a0a;
+  transition:transform .15s ease;
+}
+.custom-slider::-moz-range-thumb:hover{
+  transform:scale(1.15);
+}
+.cfg-chips{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-bottom:18px;
+}
+.cfg-chip{
+  padding:6px 12px;
+  border-radius:100px;
+  font-size:12px;
+  font-weight:600;
+  border:1px solid rgba(255,255,255,0.12);
+  background:rgba(255,255,255,0.04);
+  color:var(--gray);
+  cursor:pointer;
+  transition:all .2s;
+}
+.cfg-chip:hover{
+  border-color:rgba(255,255,255,0.3);
+  color:var(--white);
+  background:rgba(255,255,255,0.08);
+}
+.cfg-chip.active{
+  background:var(--white);
+  color:var(--bg);
+  border-color:var(--white);
+}
+.cfg-field{
+  margin-bottom:20px;
+}
+.cfg-field label{
+  display:block;
+  font-size:12px;
+  color:var(--gray);
+  margin-bottom:6px;
+  font-weight:500;
+}
+.cfg-field input{
+  width:100%;
+  padding:12px 14px;
+  border-radius:12px;
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.12);
+  color:var(--white);
+  font-size:13.5px;
+  outline:none;
+  transition:border-color .2s;
+  font-family:inherit;
+}
+.cfg-field input:focus{
+  border-color:rgba(255,255,255,0.4);
+  background:rgba(255,255,255,0.08);
+}
+.cfg-foot{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  padding-top:16px;
+  border-top:1px solid var(--line);
+  margin-top:auto;
+}
+.cfg-price{
+  display:flex;
+  flex-direction:column;
+}
+.cfg-price .now{
+  font-family:'Unbounded';
+  font-size:22px;
+  font-weight:800;
+  color:var(--white);
+}
+.cfg-price .old{
+  font-size:13px;
+  color:var(--gray-dim);
+  text-decoration:line-through;
+}
+.cfg-btn{
+  padding:12px 22px;
+  border-radius:100px;
+  background:var(--white);
+  color:var(--bg);
+  font-size:13.5px;
+  font-weight:700;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  cursor:pointer;
+  border:none;
+  transition:transform .2s, filter .2s;
+}
+.cfg-btn:hover{
+  transform:translateY(-2px);
+  filter:brightness(1.1);
+}
 
 .news-wrap{
   position:relative;
@@ -964,12 +1248,20 @@ footer .flinks a:hover{color:var(--white);}
 .tilt-card,.product{cursor:pointer;}
 
 .detail-media{
-  aspect-ratio:1/0.7;display:flex;align-items:center;justify-content:center;
+  margin:18px 22px 0 22px;
+  aspect-ratio:1/0.72;display:flex;align-items:center;justify-content:center;
   background:radial-gradient(circle at 50% 40%,#232427,#101113 75%);
-  font-size:84px;overflow:hidden;
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:18px;
+  overflow:hidden;
+  font-size:84px;
 }
-.detail-media img{width:100%;height:100%;object-fit:cover;}
+.detail-media img{width:100%;height:100%;object-fit:cover;border-radius:18px;display:block;}
 .detail-media .dobj{animation:hover3d 5s ease-in-out infinite;transform-style:preserve-3d;}
+@media (max-width:560px){
+  .detail-media{margin:14px 16px 0 16px;border-radius:14px;}
+  .detail-media img{border-radius:14px;}
+}
 .detail-body{padding:24px 26px 28px;}
 .detail-eyebrow{font-size:11.5px;text-transform:uppercase;letter-spacing:2px;color:var(--gray-dim);font-weight:600;margin-bottom:10px;}
 .detail-desc{color:var(--gray);font-size:14.5px;line-height:1.75;margin-bottom:20px;}
@@ -1727,111 +2019,119 @@ body.page-leaving {
 <section class="section" id="about">
   <div class="wrap">
     <div class="section-head reveal">
-      <h2>За нашими плечами — 2 года работы и<br>500+ завершённых проектов</h2>
-      <p>Мы не экспериментируем над клиентами, а применяем готовые работающие связки</p>
+      <h2>Наш сервис объединяет в себе<br>множество проектов</h2>
+      <p>Каждый из них неотъемлимая часть Hustlify</p>
     </div>
-    <div class="projects-grid" id="projectsGrid">
+    <div class="projects-wrap reveal">
+      <button class="proj-nav prev" id="projPrev" aria-label="Предыдущий проект"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <div class="projects-track" id="projectsGrid">
 
-      <article class="tilt-card flip-card" data-project="vieto">
-        <div class="flip-inner">
-          <div class="flip-face flip-front">
-            <div class="flip-front-bg" style="background-image:url('images/projects/vieto.png');"></div>
-            <div class="flip-front-overlay">
-              <h3>Проект<br>Hustlify</h3>
-              <button class="flip-open-btn" type="button" data-nomodal>Открыть проект</button>
-            </div>
-          </div>
-          <div class="flip-face flip-back">
-            <div class="proj-top">
-              <div class="proj-icon i1" style="overflow:hidden;padding:0;border-radius:14px;background:transparent;">
-                <img src="images/projects/vieto.png" alt="Vieto Store" style="width:100%;height:100%;object-fit:cover;border-radius:14px;">
+        <!-- 1: Apex -->
+        <article class="tilt-card flip-card" data-project="apex">
+          <div class="flip-inner">
+            <div class="flip-face flip-front">
+              <div class="flip-front-bg" style="background-image:url('images/projects/apex.png');"></div>
+              <div class="flip-front-overlay">
+                <h3>Проект<br>Hustlify</h3>
+                <button class="flip-open-btn" type="button" data-nomodal>Открыть проект</button>
               </div>
-              <h3>Vieto<br>Store</h3>
             </div>
-            <p class="desc">Магазин цифровых продуктов. От верификаций до накрутки в любые соц-сети. <b>Автовыдача 24/7</b></p>
-            <div class="proj-actions">
-              <button class="pbtn b1" onclick="openProjectModal('vieto')" style="background:var(--white);color:var(--bg);">Подробнее</button>
-              <a href="#" class="tg-btn" data-tg data-nomodal><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 3.3 2.8 11c-1.3.5-1.3 1.2-.2 1.5l4.9 1.5 1.9 5.8c.2.6.4.8.8.8.4 0 .6-.2.9-.5l2.2-2.1 4.6 3.4c.8.5 1.4.2 1.6-.7l3-14c.3-1.1-.4-1.6-1.6-1.4Z"/></svg></a>
-            </div>
-          </div>
-        </div>
-      </article>
-
-      <article class="tilt-card flip-card" data-project="flux">
-        <div class="flip-inner">
-          <div class="flip-face flip-front">
-            <div class="flip-front-bg" style="background-image:url('images/projects/flux.png');"></div>
-            <div class="flip-front-overlay">
-              <h3>Проект<br>Hustlify</h3>
-              <button class="flip-open-btn" type="button" data-nomodal>Открыть проект</button>
-            </div>
-          </div>
-          <div class="flip-face flip-back">
-            <div class="proj-top">
-              <div class="proj-icon i2" style="overflow:hidden;padding:0;border-radius:14px;background:transparent;">
-                <img src="images/projects/flux.png" alt="Flux Studio" style="width:100%;height:100%;object-fit:cover;border-radius:14px;">
+            <div class="flip-face flip-back">
+              <div class="proj-top">
+                <div class="proj-icon i4" style="overflow:hidden;padding:0;border-radius:10px;background:transparent;">
+                  <img src="images/projects/apex.png" alt="Apex" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">
+                </div>
+                <h3>Apex<br>Core</h3>
               </div>
-              <h3>Flux<br>Studio</h3>
-            </div>
-            <p class="desc">Студия дизайна. Упаковка бизнеса под ключ с 0. <b>Зацепи клиента стилем!</b></p>
-            <div class="proj-actions">
-              <button class="pbtn b2" onclick="openProjectModal('flux')" style="background:var(--white);color:var(--bg);">Подробнее</button>
-              <a href="#" class="tg-btn" data-tg data-nomodal><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 3.3 2.8 11c-1.3.5-1.3 1.2-.2 1.5l4.9 1.5 1.9 5.8c.2.6.4.8.8.8.4 0 .6-.2.9-.5l2.2-2.1 4.6 3.4c.8.5 1.4.2 1.6-.7l3-14c.3-1.1-.4-1.6-1.6-1.4Z"/></svg></a>
-            </div>
-          </div>
-        </div>
-      </article>
-
-      <article class="tilt-card flip-card" data-project="cursor">
-        <div class="flip-inner">
-          <div class="flip-face flip-front">
-            <div class="flip-front-bg" style="background-image:url('images/projects/cursor.png');"></div>
-            <div class="flip-front-overlay">
-              <h3>Проект<br>Hustlify</h3>
-              <button class="flip-open-btn" type="button" data-nomodal>Открыть проект</button>
-            </div>
-          </div>
-          <div class="flip-face flip-back">
-            <div class="proj-top">
-              <div class="proj-icon i3" style="overflow:hidden;padding:0;border-radius:14px;background:transparent;">
-                <img src="images/projects/cursor.png" alt="Cursor Market" style="width:100%;height:100%;object-fit:cover;border-radius:14px;">
+              <p class="desc">Сервис AI агентов для вашего бизнеса. <b>Продажи будут идти даже когда ты спишь</b></p>
+              <div class="proj-actions">
+                <button class="pbtn b4" onclick="openProjectModal('apex')" style="background:var(--white);color:var(--bg);">Подробнее</button>
+                <a href="https://apex-core.site" id="projLink_apex" target="_blank" rel="noopener noreferrer" class="tg-btn" title="Перейти на сайт Apex Core" data-nomodal><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>
               </div>
-              <h3>Cursor<br>Market</h3>
-            </div>
-            <p class="desc">Витрина, которая поможет вашему оформлению. Премиум/NFT/Звёзды. <b>Стань привлекательнее в Telegram</b></p>
-            <div class="proj-actions">
-              <button class="pbtn b3" onclick="openProjectModal('cursor')" style="background:var(--white);color:var(--bg);">Подробнее</button>
-              <a href="#" class="tg-btn" data-tg data-nomodal><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 3.3 2.8 11c-1.3.5-1.3 1.2-.2 1.5l4.9 1.5 1.9 5.8c.2.6.4.8.8.8.4 0 .6-.2.9-.5l2.2-2.1 4.6 3.4c.8.5 1.4.2 1.6-.7l3-14c.3-1.1-.4-1.6-1.6-1.4Z"/></svg></a>
             </div>
           </div>
-        </div>
-      </article>
+        </article>
 
-      <article class="tilt-card flip-card" data-project="apex">
-        <div class="flip-inner">
-          <div class="flip-face flip-front">
-            <div class="flip-front-bg" style="background-image:url('images/projects/apex.png');"></div>
-            <div class="flip-front-overlay">
-              <h3>Проект<br>Hustlify</h3>
-              <button class="flip-open-btn" type="button" data-nomodal>Открыть проект</button>
-            </div>
-          </div>
-          <div class="flip-face flip-back">
-            <div class="proj-top">
-              <div class="proj-icon i4" style="overflow:hidden;padding:0;border-radius:14px;background:transparent;">
-                <img src="images/projects/apex.png" alt="Apex" style="width:100%;height:100%;object-fit:cover;border-radius:14px;">
+        <!-- 2: Flux -->
+        <article class="tilt-card flip-card" data-project="flux">
+          <div class="flip-inner">
+            <div class="flip-face flip-front">
+              <div class="flip-front-bg" style="background-image:url('images/projects/flux.png');"></div>
+              <div class="flip-front-overlay">
+                <h3>Проект<br>Hustlify</h3>
+                <button class="flip-open-btn" type="button" data-nomodal>Открыть проект</button>
               </div>
-              <h3>Apex<br>Core</h3>
             </div>
-            <p class="desc">Сервис AI агентов для вашего бизнеса <b>Продажи будут идти даже когда ты спишь</b></p>
-            <div class="proj-actions">
-              <button class="pbtn b4" onclick="openProjectModal('apex')" style="background:var(--white);color:var(--bg);">Подробнее</button>
-              <a href="https://apex-core.site" target="_blank" rel="noopener noreferrer" class="tg-btn" title="apex-core.site" data-nomodal><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>
+            <div class="flip-face flip-back">
+              <div class="proj-top">
+                <div class="proj-icon i2" style="overflow:hidden;padding:0;border-radius:10px;background:transparent;">
+                  <img src="images/projects/flux.png" alt="Flux Studio" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">
+                </div>
+                <h3>Flux<br>Studio</h3>
+              </div>
+              <p class="desc">Студия дизайна. Упаковка бизнеса под ключ с 0. <b>Зацепи клиента стилем!</b></p>
+              <div class="proj-actions">
+                <button class="pbtn b2" onclick="openProjectModal('flux')" style="background:var(--white);color:var(--bg);">Подробнее</button>
+                <a href="https://t.me/+zhWLLWIaVeI2Y2Yy" id="projLink_flux" target="_blank" rel="noopener noreferrer" class="tg-btn" title="Flux Studio в Telegram" data-nomodal><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 3.3 2.8 11c-1.3.5-1.3 1.2-.2 1.5l4.9 1.5 1.9 5.8c.2.6.4.8.8.8.4 0 .6-.2.9-.5l2.2-2.1 4.6 3.4c.8.5 1.4.2 1.6-.7l3-14c.3-1.1-.4-1.6-1.6-1.4Z"/></svg></a>
+              </div>
             </div>
           </div>
-        </div>
-      </article>
+        </article>
 
+        <!-- 3: Vieto -->
+        <article class="tilt-card flip-card" data-project="vieto">
+          <div class="flip-inner">
+            <div class="flip-face flip-front">
+              <div class="flip-front-bg" style="background-image:url('images/projects/vieto.png');"></div>
+              <div class="flip-front-overlay">
+                <h3>Проект<br>Hustlify</h3>
+                <button class="flip-open-btn" type="button" data-nomodal>Открыть проект</button>
+              </div>
+            </div>
+            <div class="flip-face flip-back">
+              <div class="proj-top">
+                <div class="proj-icon i1" style="overflow:hidden;padding:0;border-radius:10px;background:transparent;">
+                  <img src="images/projects/vieto.png" alt="Vieto Store" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">
+                </div>
+                <h3>Vieto<br>Store</h3>
+              </div>
+              <p class="desc">Магазин цифровых продуктов. От верификаций до звёзд и премиума в Telegram. <b>Автовыдача 24/7</b></p>
+              <div class="proj-actions">
+                <button class="pbtn b1" onclick="openProjectModal('vieto')" style="background:var(--white);color:var(--bg);">Подробнее</button>
+                <a href="https://t.me/VietoFullStore" id="projLink_vieto" target="_blank" rel="noopener noreferrer" class="tg-btn" title="Vieto Store в Telegram" data-nomodal><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 3.3 2.8 11c-1.3.5-1.3 1.2-.2 1.5l4.9 1.5 1.9 5.8c.2.6.4.8.8.8.4 0 .6-.2.9-.5l2.2-2.1 4.6 3.4c.8.5 1.4.2 1.6-.7l3-14c.3-1.1-.4-1.6-1.6-1.4Z"/></svg></a>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- 4: Cursor -->
+        <article class="tilt-card flip-card" data-project="cursor">
+          <div class="flip-inner">
+            <div class="flip-face flip-front">
+              <div class="flip-front-bg" style="background-image:url('images/projects/cursor.png');"></div>
+              <div class="flip-front-overlay">
+                <h3>Проект<br>Hustlify</h3>
+                <button class="flip-open-btn" type="button" data-nomodal>Открыть проект</button>
+              </div>
+            </div>
+            <div class="flip-face flip-back">
+              <div class="proj-top">
+                <div class="proj-icon i3" style="overflow:hidden;padding:0;border-radius:10px;background:transparent;">
+                  <img src="images/projects/cursor.png" alt="Cursor Market" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">
+                </div>
+                <h3>Cursor<br>Market</h3>
+              </div>
+              <p class="desc">Витрина, которая поможет вашему оформлению. Премиум/NFT/Звёзды. <b>Стань привлекательнее в Telegram</b></p>
+              <div class="proj-actions">
+                <button class="pbtn b3" onclick="openProjectModal('cursor')" style="background:var(--white);color:var(--bg);">Подробнее</button>
+                <a href="https://t.me/CursorRobot" id="projLink_cursor" target="_blank" rel="noopener noreferrer" class="tg-btn" title="Cursor Market в Telegram" data-nomodal><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 3.3 2.8 11c-1.3.5-1.3 1.2-.2 1.5l4.9 1.5 1.9 5.8c.2.6.4.8.8.8.4 0 .6-.2.9-.5l2.2-2.1 4.6 3.4c.8.5 1.4.2 1.6-.7l3-14c.3-1.1-.4-1.6-1.6-1.4Z"/></svg></a>
+              </div>
+            </div>
+          </div>
+        </article>
+
+      </div>
+      <button class="proj-nav next" id="projNext" aria-label="Следующий проект"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 6l6 6-6 6"/></svg></button>
     </div>
   </div>
 </section>
@@ -1872,6 +2172,7 @@ body.page-leaving {
       <p>Листай. Выбирай. Покупай</p>
     </div>
     <div class="filter-row reveal" id="filterRow"></div>
+    <div id="catalogSpecialWrap" class="reveal" style="margin-bottom:34px;"></div>
     <div class="pgrid reveal" id="catalogGrid"></div>
     <div class="reveal" style="text-align:center;margin-top:44px;">
       <button class="btn btn-outline" id="catalogMoreBtn" style="padding:14px 36px;font-size:14.5px;font-weight:600;">
@@ -1913,7 +2214,7 @@ body.page-leaving {
         <img src="images/team/егора.png" alt="Абрамов Егор" style="width:100%;height:100%;object-fit:cover;">
       </div>
       <div class="team-info">
-        <h3>Абрамов Егор</h3>
+        <h3>Тимур</h3>
         <div class="role"><span class="dot"></span>CEO Hustlify</div>
         <div class="divider"></div>
         <p class="quote">Я создаю экосистемы, где дизайн встречает код, а хардкор — стиль.</p>
@@ -2355,6 +2656,9 @@ let activeFilter = 'Все';
 function getCategorySvg(cat){
   if(!cat) return '<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg>';
   const c = String(cat).toLowerCase();
+  if(c.includes('звезд') || c.includes('премиум') || c.includes('stars') || c.includes('premium')) {
+    return '<svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
+  }
   if(c.includes('ai') || c.includes('бот') || c.includes('ии')) {
     return '<svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4M8 15h.01M16 15h.01"/></svg>';
   }
@@ -2370,8 +2674,8 @@ function getCategorySvg(cat){
   return '<svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>';
 }
 
-function thumbHtml(p){ return p.img ? `<img src="${p.img}" alt="${p.name}" style="width:100%;height:100%;object-fit:contain;border-radius:10px;">` : getCategorySvg(p.cat); }
-function money(n){ return n.toLocaleString('ru-RU') + ' ₽'; }
+function thumbHtml(p){ return p && p.img ? `<img src="${p.img}" alt="${p.name}" style="width:100%;height:100%;object-fit:contain;border-radius:10px;">` : getCategorySvg(p ? p.cat : ''); }
+function money(n){ return (n || 0).toLocaleString('ru-RU') + ' ₽'; }
 
 function productCard(p, isCase){
   const inWish = wishlist.includes(p.id);
@@ -2409,12 +2713,285 @@ function renderFilters(){
 let catalogVisibleCount = 8;
 let catalogExpanded = false;
 
+/* ================= STARS & PREMIUM CONFIGURATOR ================= */
+let selectedStarsCount = 250;
+let selectedPremIndex = 1; // 0: 3m, 1: 6m, 2: 9m, 3: 12m
+const PREM_DURATIONS = [
+  { months: 3, id: 'tg_premium_3', label: '3 месяца', tag: 'Старт' },
+  { months: 6, id: 'tg_premium_6', label: '6 месяцев', tag: 'Хит продаж' },
+  { months: 9, id: 'tg_premium_9', label: '9 месяцев', tag: 'Популярно' },
+  { months: 12, id: 'tg_premium_12', label: '12 месяцев', tag: 'Выгодно -25%' }
+];
+
+function getStarsProduct(){
+  return ALL_PRODUCTS.find(p => p.id === 'tg_stars') || { price: 2, old: 3, name: 'Telegram Звёзды (Stars)' };
+}
+
+function getPremProduct(months){
+  const found = ALL_PRODUCTS.find(p => p.id === `tg_premium_${months}`);
+  if (found) return found;
+  const def = { 3: { price: 990, old: 1290 }, 6: { price: 1790, old: 2290 }, 9: { price: 2490, old: 3190 }, 12: { price: 2990, old: 3990 } }[months] || { price: 1790, old: 2290 };
+  return { id: `tg_premium_${months}`, name: `Telegram Premium — ${months} месяцев`, price: def.price, old: def.old };
+}
+
+function renderStarsAndPremiumHtml(){
+  const starsProd = getStarsProduct();
+  const starsPrice = Math.round(selectedStarsCount * (starsProd.price || 2));
+  const starsOld = Math.round(selectedStarsCount * (starsProd.old || Math.round((starsProd.price || 2) * 1.4)));
+
+  const curPrem = PREM_DURATIONS[selectedPremIndex];
+  const premProd = getPremProduct(curPrem.months);
+
+  const starPresets = [25, 100, 250, 500, 1000, 2500, 5000, 10000];
+
+  return `
+  <div class="cfg-container" id="cfgStarsPremiumBox">
+    <div class="cfg-grid">
+      <!-- Card 1: Telegram Stars -->
+      <div class="cfg-card" id="cardTgStars">
+        <div class="cfg-top">
+          <div class="cfg-top-info">
+            <div class="cfg-badge">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="#ffffff"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              Официальные звёзды
+            </div>
+            <h3 class="cfg-title">Telegram Звёзды (Stars)</h3>
+            <div class="cfg-desc">Для подарков, платных реакций, доступа к контенту в каналах и ботов. Мгновенная отправка.</div>
+          </div>
+          <div class="cfg-icon">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
+        </div>
+
+        <div class="cfg-amount-box">
+          <div class="cfg-amount-num">
+            <span id="starsDisplayVal">${selectedStarsCount.toLocaleString('ru-RU')}</span>
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="#ffffff"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
+          <span class="cfg-amount-unit">${starsProd.price || 2} ₽ / звезда</span>
+        </div>
+
+        <input type="range" class="custom-slider" id="starsRangeInput" min="25" max="10000" step="25" value="${selectedStarsCount}">
+
+        <div class="cfg-chips" id="starsChipsRow">
+          ${starPresets.map(val => `<button type="button" class="cfg-chip ${val===selectedStarsCount?'active':''}" data-star-val="${val}">${val >= 1000 ? (val/1000)+'k' : val}</button>`).join('')}
+        </div>
+
+        <div class="cfg-field">
+          <label>Получатель (username или ссылка на канал)</label>
+          <input type="text" id="starsTargetInput" placeholder="@username или https://t.me/...">
+        </div>
+
+        <div class="cfg-foot">
+          <div class="cfg-price">
+            <span class="now" id="starsPriceDisplay">${money(starsPrice)}</span>
+            <span class="old" id="starsOldDisplay">${money(starsOld)}</span>
+          </div>
+          <button class="cfg-btn" id="addStarsToCartBtn">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+            В корзину
+          </button>
+        </div>
+      </div>
+
+      <!-- Card 2: Telegram Premium -->
+      <div class="cfg-card" id="cardTgPrem">
+        <div class="cfg-top">
+          <div class="cfg-top-info">
+            <div class="cfg-badge">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="12 6 14 10 18 10 15 13 16 17 12 14 8 17 9 13 6 10 10 10"/></svg>
+              Официальная подписка
+            </div>
+            <h3 class="cfg-title">Telegram Premium</h3>
+            <div class="cfg-desc">Активация подарком по юзернейму. Без входа в ваш аккаунт и передачи паролей.</div>
+          </div>
+          <div class="cfg-icon">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          </div>
+        </div>
+
+        <div class="cfg-amount-box">
+          <div class="cfg-amount-num">
+            <span id="premDurationVal">${curPrem.months}</span>
+            <span style="font-size:18px;color:var(--gray-light);font-weight:600;margin-left:4px;">мес.</span>
+          </div>
+          <span class="cfg-amount-unit" id="premTagVal">${curPrem.tag}</span>
+        </div>
+
+        <input type="range" class="custom-slider" id="premRangeInput" min="0" max="3" step="1" value="${selectedPremIndex}">
+
+        <div class="cfg-chips" id="premChipsRow">
+          ${PREM_DURATIONS.map((dur, i) => `<button type="button" class="cfg-chip ${i===selectedPremIndex?'active':''}" data-prem-index="${i}">${dur.label}</button>`).join('')}
+        </div>
+
+        <div class="cfg-field">
+          <label>Telegram username для подарка</label>
+          <input type="text" id="premTargetInput" placeholder="@username">
+        </div>
+
+        <div class="cfg-foot">
+          <div class="cfg-price">
+            <span class="now" id="premPriceDisplay">${money(premProd.price)}</span>
+            <span class="old" id="premOldDisplay">${money(premProd.old)}</span>
+          </div>
+          <button class="cfg-btn" id="addPremToCartBtn">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+            В корзину
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function initStarsAndPremiumControls(){
+  const box = document.getElementById('cfgStarsPremiumBox');
+  if(!box) return;
+
+  const starsRange = document.getElementById('starsRangeInput');
+  const starsDisp = document.getElementById('starsDisplayVal');
+  const starsPriceDisp = document.getElementById('starsPriceDisplay');
+  const starsOldDisp = document.getElementById('starsOldDisplay');
+  const starsTarget = document.getElementById('starsTargetInput');
+  const addStarsBtn = document.getElementById('addStarsToCartBtn');
+
+  function updateStarsUI(val){
+    selectedStarsCount = Math.max(25, Math.min(10000, parseInt(val) || 25));
+    if(starsRange && parseInt(starsRange.value) !== selectedStarsCount) starsRange.value = selectedStarsCount;
+    if(starsDisp) starsDisp.textContent = selectedStarsCount.toLocaleString('ru-RU');
+    const p = getStarsProduct();
+    const price = Math.round(selectedStarsCount * (p.price || 2));
+    const old = Math.round(selectedStarsCount * (p.old || Math.round((p.price || 2) * 1.4)));
+    if(starsPriceDisp) starsPriceDisp.textContent = money(price);
+    if(starsOldDisp) starsOldDisp.textContent = money(old);
+    document.querySelectorAll('#starsChipsRow [data-star-val]').forEach(chip => {
+      chip.classList.toggle('active', parseInt(chip.dataset.starVal) === selectedStarsCount);
+    });
+  }
+
+  if(starsRange){
+    starsRange.oninput = (e) => updateStarsUI(e.target.value);
+  }
+  document.querySelectorAll('#starsChipsRow [data-star-val]').forEach(chip => {
+    chip.onclick = () => updateStarsUI(chip.dataset.starVal);
+  });
+
+  if(addStarsBtn){
+    addStarsBtn.onclick = () => {
+      const target = (starsTarget ? starsTarget.value.trim() : '');
+      const p = getStarsProduct();
+      const price = Math.round(selectedStarsCount * (p.price || 2));
+      addToCartCustom({
+        id: 'tg_stars',
+        name: `Telegram Звёзды (${selectedStarsCount.toLocaleString('ru-RU')} шт.)`,
+        stars: selectedStarsCount,
+        qty: 1,
+        price: price,
+        target: target,
+        details: `${selectedStarsCount.toLocaleString('ru-RU')} звёзд${target ? ' для ' + target : ''}`
+      });
+      addStarsBtn.classList.add('added');
+      const orig = addStarsBtn.innerHTML;
+      addStarsBtn.innerHTML = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Добавлено';
+      setTimeout(() => { addStarsBtn.classList.remove('added'); addStarsBtn.innerHTML = orig; }, 1400);
+    };
+  }
+
+  const premRange = document.getElementById('premRangeInput');
+  const premDurVal = document.getElementById('premDurationVal');
+  const premTag = document.getElementById('premTagVal');
+  const premPriceDisp = document.getElementById('premPriceDisplay');
+  const premOldDisp = document.getElementById('premOldDisplay');
+  const premTarget = document.getElementById('premTargetInput');
+  const addPremBtn = document.getElementById('addPremToCartBtn');
+
+  function updatePremUI(idx){
+    selectedPremIndex = Math.max(0, Math.min(3, parseInt(idx) || 0));
+    if(premRange && parseInt(premRange.value) !== selectedPremIndex) premRange.value = selectedPremIndex;
+    const dur = PREM_DURATIONS[selectedPremIndex];
+    const prod = getPremProduct(dur.months);
+    if(premDurVal) premDurVal.textContent = dur.months;
+    if(premTag) premTag.textContent = dur.tag;
+    if(premPriceDisp) premPriceDisp.textContent = money(prod.price);
+    if(premOldDisp) premOldDisp.textContent = money(prod.old);
+    document.querySelectorAll('#premChipsRow [data-prem-index]').forEach(chip => {
+      chip.classList.toggle('active', parseInt(chip.dataset.premIndex) === selectedPremIndex);
+    });
+  }
+
+  if(premRange){
+    premRange.oninput = (e) => updatePremUI(e.target.value);
+  }
+  document.querySelectorAll('#premChipsRow [data-prem-index]').forEach(chip => {
+    chip.onclick = () => updatePremUI(chip.dataset.premIndex);
+  });
+
+  if(addPremBtn){
+    addPremBtn.onclick = () => {
+      const target = (premTarget ? premTarget.value.trim() : '');
+      const dur = PREM_DURATIONS[selectedPremIndex];
+      const prod = getPremProduct(dur.months);
+      addToCartCustom({
+        id: prod.id,
+        name: `Telegram Premium ${dur.months} мес.`,
+        months: dur.months,
+        qty: 1,
+        price: prod.price,
+        target: target,
+        details: `Подписка на ${dur.months} мес.${target ? ' для ' + target : ''}`
+      });
+      addPremBtn.classList.add('added');
+      const orig = addPremBtn.innerHTML;
+      addPremBtn.innerHTML = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Добавлено';
+      setTimeout(() => { addPremBtn.classList.remove('added'); addPremBtn.innerHTML = orig; }, 1400);
+    };
+  }
+}
+
 function renderCatalog(){
-  const items = activeFilter==='Все' ? catalogData : catalogData.filter(p=>p.cat===activeFilter);
+  const specialWrap = document.getElementById('catalogSpecialWrap');
+  const moreBtn = document.getElementById('catalogMoreBtn');
+
+  if(activeFilter === 'Звезды&Премиум'){
+    if(specialWrap){
+      specialWrap.style.display = 'block';
+      specialWrap.innerHTML = renderStarsAndPremiumHtml();
+      initStarsAndPremiumControls();
+    }
+    document.getElementById('catalogGrid').innerHTML = '';
+    if(moreBtn) moreBtn.style.display = 'none';
+    return;
+  }
+
+  if(activeFilter === 'Все'){
+    if(specialWrap){
+      specialWrap.style.display = 'block';
+      specialWrap.innerHTML = renderStarsAndPremiumHtml();
+      initStarsAndPremiumControls();
+    }
+    const items = catalogData.filter(p => p.cat !== 'Звезды&Премиум');
+    const visibleItems = catalogExpanded ? items : items.slice(0, catalogVisibleCount);
+    document.getElementById('catalogGrid').innerHTML = visibleItems.map(p=>productCard(p,false)).join('');
+
+    if(moreBtn){
+      if(items.length <= catalogVisibleCount || catalogExpanded){
+        moreBtn.style.display = 'none';
+      } else {
+        moreBtn.style.display = 'inline-flex';
+        moreBtn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" style="display:inline-block;vertical-align:-2px;margin-right:8px;"><path d="M12 5v14M5 12h14"/></svg> Показать ещё (' + (items.length - catalogVisibleCount) + ')';
+      }
+    }
+    return;
+  }
+
+  if(specialWrap){
+    specialWrap.style.display = 'none';
+    specialWrap.innerHTML = '';
+  }
+  const items = catalogData.filter(p=>p.cat===activeFilter);
   const visibleItems = catalogExpanded ? items : items.slice(0, catalogVisibleCount);
   document.getElementById('catalogGrid').innerHTML = visibleItems.map(p=>productCard(p,false)).join('');
 
-  const moreBtn = document.getElementById('catalogMoreBtn');
   if(moreBtn){
     if(items.length <= catalogVisibleCount || catalogExpanded){
       moreBtn.style.display = 'none';
@@ -2499,29 +3076,75 @@ function renderWishDrawer(){
 }
 
 function addToCart(id){
-  const existing = cart.find(c=>c.id===id);
+  const p = ALL_PRODUCTS.find(x=>x.id===id);
+  const existing = cart.find(c=>c.id===id && !c.stars && !c.months);
   if(existing){ existing.qty++; } else { cart.push({id, qty:1}); }
   updateBadges();
   renderCartDrawer();
-  const p = ALL_PRODUCTS.find(x=>x.id===id);
-  showToast(`В корзину: ${p.name}`);
+  showToast(`В корзину: ${p ? p.name : 'Товар'}`);
   if(window.triggerSurveyPrompt) window.triggerSurveyPrompt();
 }
+
+function addToCartCustom(item){
+  const existing = cart.find(c => c.id === item.id && c.target === item.target && c.stars === item.stars && c.months === item.months);
+  if(existing){
+    existing.qty = (existing.qty || 1) + (item.qty || 1);
+  } else {
+    cart.push({
+      id: item.id,
+      qty: item.qty || 1,
+      stars: item.stars || null,
+      months: item.months || null,
+      target: item.target || '',
+      price: item.price,
+      name: item.name,
+      details: item.details || ''
+    });
+  }
+  updateBadges();
+  renderCartDrawer();
+  showToast(`В корзину: ${item.name}`);
+  if(window.triggerSurveyPrompt) window.triggerSurveyPrompt();
+}
+
 function removeFromCart(id){
   cart = cart.filter(c=>c.id!==id);
   updateBadges(); renderCartDrawer();
 }
+
 function renderCartDrawer(){
   const body = document.getElementById('cartBody');
   if(cart.length===0){ body.innerHTML = '<div class="empty-state">Корзина пуста. Загляните в каталог!</div>'; }
   else{
-    body.innerHTML = cart.map(c=>{
+    body.innerHTML = cart.map((c, idx)=>{
       const p = ALL_PRODUCTS.find(x=>x.id===c.id);
-      return `<div class="cart-item"><div class="ci-img">${thumbHtml(p)}</div><div class="ci-info"><h5>${p.name} ${c.qty>1? '× '+c.qty:''}</h5><div class="ci-price">${money(p.price*c.qty)}</div></div><button class="ci-remove" data-uncart="${c.id}">Убрать</button></div>`;
+      const title = c.name || (p ? p.name : 'Товар');
+      const itemPrice = c.price !== undefined ? c.price : (p ? p.price * c.qty : 0);
+      const sub = c.details || (c.target ? `Получатель: ${c.target}` : (p ? p.desc : ''));
+      const fallbackCat = c.stars || c.months ? 'Звезды&Премиум' : (p ? p.cat : '');
+      return `<div class="cart-item">
+        <div class="ci-img">${p && p.img ? `<img src="${p.img}" alt="${title}" style="width:100%;height:100%;object-fit:contain;border-radius:10px;">` : getCategorySvg(fallbackCat)}</div>
+        <div class="ci-info">
+          <h5>${title} ${c.qty>1 && !c.stars ? '× '+c.qty : ''}</h5>
+          ${sub ? `<div style="font-size:12px;color:var(--gray);margin-top:2px;line-height:1.4;">${sub}</div>` : ''}
+          <div class="ci-price">${money(itemPrice)}</div>
+        </div>
+        <button class="ci-remove" data-uncart-idx="${idx}">Убрать</button>
+      </div>`;
     }).join('');
-    body.querySelectorAll('[data-uncart]').forEach(b=> b.onclick = ()=> removeFromCart(b.dataset.uncart));
+    body.querySelectorAll('[data-uncart-idx]').forEach(b=> {
+      b.onclick = ()=> {
+        const i = parseInt(b.dataset.uncartIdx);
+        cart.splice(i, 1);
+        updateBadges();
+        renderCartDrawer();
+      };
+    });
   }
-  const total = cart.reduce((s,c)=>{ const p=ALL_PRODUCTS.find(x=>x.id===c.id); return s + p.price*c.qty; },0);
+  const total = cart.reduce((s,c)=>{
+    const p = ALL_PRODUCTS.find(x=>x.id===c.id);
+    return s + (c.price !== undefined ? c.price : (p ? p.price * c.qty : 0));
+  }, 0);
   document.getElementById('cartTotal').textContent = money(total);
 }
 
@@ -2582,7 +3205,18 @@ document.getElementById('checkoutContinueBtn').onclick = async ()=>{
     const res = await fetch('/api/orders', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ items: cart.map(c=>({id:c.id, qty:c.qty})), contact, promoCode })
+      body: JSON.stringify({
+        items: cart.map(c=>({
+          id: c.id,
+          qty: c.qty,
+          stars: c.stars,
+          months: c.months,
+          target: c.target,
+          details: c.details
+        })),
+        contact,
+        promoCode
+      })
     });
     const order = await res.json();
     if(!res.ok){ err.textContent = order.error || 'Не удалось создать заказ'; return; }
@@ -2871,20 +3505,23 @@ const projectDetails = {
     iconSvg: '<svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>',
     img: 'images/projects/vieto.png',
     title: 'Vieto Store',
-    desc: 'Магазин цифровых продуктов: верификации криптокошельков, бирж и Telegram-сервисов, накрутка активности в соцсетях. Работает в формате автовыдачи 24/7 — заказ обрабатывается без ожидания менеджера в рабочее время.'
+    desc: 'Магазин цифровых продуктов: верификации криптокошельков, бирж и Telegram-сервисов, накрутка активности в соцсетях. Работает в формате автовыдачи 24/7 — заказ обрабатывается без ожидания менеджера в рабочее время.',
+    tgLink: 'https://t.me/VietoFullStore'
   },
   flux: {
     iconSvg: '<svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>',
     img: 'images/projects/flux.png',
     title: 'Flux Studio',
     desc: 'Студия визуального оформления: аватарки, баннеры, полная упаковка бренда с нуля. Помогаем каналу или проекту выглядеть узнаваемо и профессионально с первого касания.',
+    tgLink: 'https://t.me/+zhWLLWIaVeI2Y2Yy',
     portfolioLink: 'https://t.me/+0Bd2iyw1aOU4NDEy'
   },
   cursor: {
     iconSvg: '<svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
     img: 'images/projects/cursor.png',
     title: 'Cursor Market',
-    desc: 'Витрина премиум-атрибутики Telegram: юзернеймы, NFT, подарки и звёзды. Помогаем собрать заметный, статусный профиль.'
+    desc: 'Витрина премиум-атрибутики Telegram: юзернеймы, NFT, подарки и звёзды. Помогаем собрать заметный, статусный профиль.',
+    tgLink: 'https://t.me/CursorRobot'
   },
   apex: {
     iconSvg: '<svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="12 2 2 22 22 22 12 2"/><line x1="12" y1="9" x2="12" y2="15"/></svg>',
@@ -2895,6 +3532,38 @@ const projectDetails = {
     siteButtonText: 'Перейти на сайт'
   }
 };
+
+async function syncProjectsConfig(){
+  try {
+    const res = await fetch('/api/projects');
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.apex && data.apex.url) {
+      projectDetails.apex.siteLink = data.apex.url;
+      if (data.apex.buttonText) projectDetails.apex.siteButtonText = data.apex.buttonText;
+      const el = document.getElementById('projLink_apex');
+      if (el) el.href = data.apex.url;
+    }
+    if (data.flux && data.flux.url) {
+      projectDetails.flux.tgLink = data.flux.url;
+      if (data.flux.portfolioUrl) projectDetails.flux.portfolioLink = data.flux.portfolioUrl;
+      const el = document.getElementById('projLink_flux');
+      if (el) el.href = data.flux.url;
+    }
+    if (data.vieto && data.vieto.url) {
+      projectDetails.vieto.tgLink = data.vieto.url;
+      const el = document.getElementById('projLink_vieto');
+      if (el) el.href = data.vieto.url;
+    }
+    if (data.cursor && data.cursor.url) {
+      projectDetails.cursor.tgLink = data.cursor.url;
+      const el = document.getElementById('projLink_cursor');
+      if (el) el.href = data.cursor.url;
+    }
+  } catch(e) {}
+}
+syncProjectsConfig();
+
 const projectModal = document.getElementById('projectModal');
 function openProjectModal(key){
   const d = projectDetails[key];
@@ -2902,7 +3571,7 @@ function openProjectModal(key){
   document.getElementById('prName').textContent = d.title;
 
   document.getElementById('prMedia').innerHTML = d.img 
-    ? `<img src="${d.img}" alt="${d.title}" style="width:100%;height:100%;object-fit:contain;border-radius:16px;">`
+    ? `<img src="${d.img}" alt="${d.title}">`
     : `<div class="dobj">${d.iconSvg || '<svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="3"/></svg>'}</div>`;
 
   document.getElementById('prDesc').textContent = d.desc;
@@ -2910,9 +3579,13 @@ function openProjectModal(key){
   const moreBtn = document.getElementById('prMoreBtn');
   if(d.siteLink){
     moreBtn.href = d.siteLink;
+    moreBtn.target = '_blank';
+    moreBtn.rel = 'noopener noreferrer';
     moreBtn.innerHTML = `${d.siteButtonText || 'Перейти на сайт'} <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" style="margin-left:6px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>`;
   } else {
-    moreBtn.href = TELEGRAM_LINK;
+    moreBtn.href = d.tgLink || TELEGRAM_LINK;
+    moreBtn.target = '_blank';
+    moreBtn.rel = 'noopener noreferrer';
     moreBtn.innerHTML = `Подробнее в Telegram <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" style="margin-left:6px;"><path d="M21.9 3.3 2.8 11c-1.3.5-1.3 1.2-.2 1.5l4.9 1.5 1.9 5.8c.2.6.4.8.8.8.4 0 .6-.2.9-.5l2.2-2.1 4.6 3.4c.8.5 1.4.2 1.6-.7l3-14c.3-1.1-.4-1.6-1.6-1.4Z"/></svg>`;
   }
 
@@ -3727,6 +4400,65 @@ loadNews();
 updateBadges();
 renderCartDrawer();
 renderWishDrawer();
+initProjectsNav();
+
+// Projects carousel navigation
+function initProjectsNav() {
+  const track = document.getElementById('projectsGrid');
+  const prevBtn = document.getElementById('projPrev');
+  const nextBtn = document.getElementById('projNext');
+  if (!track || !prevBtn || !nextBtn) return;
+
+  function getStep() {
+    const card = track.querySelector('.flip-card');
+    if (!card) return 320;
+    const style = window.getComputedStyle(track);
+    const gap = parseFloat(style.columnGap || style.gap) || 18;
+    return card.offsetWidth + gap;
+  }
+
+  function updateButtons() {
+    const maxScroll = Math.max(0, track.scrollWidth - track.clientWidth);
+    if (maxScroll <= 5) {
+      prevBtn.style.opacity = '0.25';
+      prevBtn.style.pointerEvents = 'none';
+      nextBtn.style.opacity = '0.25';
+      nextBtn.style.pointerEvents = 'none';
+      return;
+    }
+    const sl = track.scrollLeft;
+    if (sl <= 10) {
+      prevBtn.style.opacity = '0.25';
+      prevBtn.style.pointerEvents = 'none';
+    } else {
+      prevBtn.style.opacity = '1';
+      prevBtn.style.pointerEvents = 'auto';
+    }
+
+    if (sl >= maxScroll - 10) {
+      nextBtn.style.opacity = '0.25';
+      nextBtn.style.pointerEvents = 'none';
+    } else {
+      nextBtn.style.opacity = '1';
+      nextBtn.style.pointerEvents = 'auto';
+    }
+  }
+
+  prevBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    track.scrollBy({ left: -getStep(), behavior: 'smooth' });
+  });
+
+  nextBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    track.scrollBy({ left: getStep(), behavior: 'smooth' });
+  });
+
+  track.addEventListener('scroll', updateButtons, { passive: true });
+  window.addEventListener('resize', updateButtons, { passive: true });
+  setTimeout(updateButtons, 150);
+  setTimeout(updateButtons, 600);
+}
 
 // Smooth scroll for anchor links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {

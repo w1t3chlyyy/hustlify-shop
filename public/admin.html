@@ -84,6 +84,22 @@ td.num{font-family:'Unbounded';font-weight:600;}
 .save-btn{flex:1;padding:13px;border-radius:100px;background:var(--white);color:var(--bg);font-weight:600;font-size:14px;border:none;cursor:pointer;}
 .cancel-btn{flex:1;padding:13px;border-radius:100px;background:none;border:1px solid var(--line);color:var(--white);font-size:14px;cursor:pointer;}
 .hint{font-size:12px;color:var(--gray-dim);margin-top:16px;line-height:1.6;padding:14px;background:var(--card-hi);border-radius:12px;}
+
+/* rates editor */
+.rates-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px;}
+@media(max-width:860px){.rates-grid{grid-template-columns:1fr;}}
+.rate-card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:24px;}
+.rate-card-head{display:flex;align-items:center;gap:12px;margin-bottom:20px;}
+.rate-icon{width:42px;height:42px;border-radius:12px;background:var(--card-hi);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--white);flex-shrink:0;}
+.rate-card-title{font-family:'Unbounded',sans-serif;font-size:15px;font-weight:700;}
+.rate-card-sub{font-size:12px;color:var(--gray);margin-top:3px;line-height:1.4;}
+.rate-calc-preview{background:var(--card-hi);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-top:16px;font-size:12.5px;color:var(--gray);}
+.rate-calc-preview b{color:var(--white);font-weight:600;}
+.rate-calc-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.05);}
+.rate-calc-row:last-child{border-bottom:none;}
+.rate-box{background:var(--card-hi);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px;}
+.rate-box-title{font-size:12.5px;font-weight:600;color:var(--white);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;}
+.rate-badge-sm{font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(34,197,139,.15);color:var(--green);font-weight:600;}
 </style>
 </head>
 <body>
@@ -113,6 +129,8 @@ td.num{font-family:'Unbounded';font-weight:600;}
   <div class="wrap">
     <div class="tabs" id="mainTabs">
       <button class="tab active" data-tab="products">Товары и кейсы</button>
+      <button class="tab" data-tab="stars-premium">Курсы Звёзд и Премиум</button>
+      <button class="tab" data-tab="projects">Ссылки проектов</button>
       <button class="tab" data-tab="news">Новости</button>
       <button class="tab" data-tab="orders">Заказы</button>
       <button class="tab" data-tab="requisites">Реквизиты</button>
@@ -134,6 +152,207 @@ td.num{font-family:'Unbounded';font-weight:600;}
         <thead><tr><th></th><th>Название</th><th>Раздел</th><th>Категория</th><th>Цена</th><th></th></tr></thead>
         <tbody id="productsTbody"></tbody>
       </table>
+    </div>
+
+    <div class="panel" id="panel-stars-premium">
+      <div class="toolbar">
+        <div>
+          <h2 style="font-size:18px;margin-bottom:4px;">Курсы Telegram Звёзд и Premium</h2>
+          <div style="color:var(--gray);font-size:13px;">Управляйте курсом звёзд и тарифами подписок. Изменения моментально отобразятся на витрине и в калькуляторе корзины</div>
+        </div>
+        <button class="add-btn" id="saveRatesBtn">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" style="display:inline-block;vertical-align:-2px;margin-right:6px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Сохранить курсы
+        </button>
+      </div>
+
+      <div class="rates-grid">
+        <!-- Telegram Stars Card -->
+        <div class="rate-card">
+          <div class="rate-card-head">
+            <div class="rate-icon">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            <div>
+              <div class="rate-card-title">Telegram Звёзды (Stars)</div>
+              <div class="rate-card-sub">Курс за 1 звезду при расчёте любого объёма от 25 до 10 000 шт.</div>
+            </div>
+          </div>
+
+          <div class="grid2">
+            <div class="field">
+              <label>Текущая цена за 1 шт. (₽)</label>
+              <input type="number" id="rate_stars_price" step="0.1" min="0.1" placeholder="2">
+            </div>
+            <div class="field">
+              <label>Старая цена за 1 шт. (₽)</label>
+              <input type="number" id="rate_stars_old" step="0.1" min="0" placeholder="3">
+            </div>
+          </div>
+
+          <div class="rate-calc-preview">
+            <div style="font-weight:600;color:var(--white);margin-bottom:8px;">Превью цен для покупателей:</div>
+            <div class="rate-calc-row"><span>25 звёзд:</span> <b id="prev_stars_25">50 ₽</b></div>
+            <div class="rate-calc-row"><span>100 звёзд:</span> <b id="prev_stars_100">200 ₽</b></div>
+            <div class="rate-calc-row"><span>250 звёзд (по умолч.):</span> <b id="prev_stars_250">500 ₽</b></div>
+            <div class="rate-calc-row"><span>1 000 звёзд:</span> <b id="prev_stars_1000">2 000 ₽</b></div>
+            <div class="rate-calc-row"><span>5 000 звёзд:</span> <b id="prev_stars_5000">10 000 ₽</b></div>
+            <div class="rate-calc-row"><span>10 000 звёзд:</span> <b id="prev_stars_10000">20 000 ₽</b></div>
+          </div>
+        </div>
+
+        <!-- Telegram Premium Card -->
+        <div class="rate-card">
+          <div class="rate-card-head">
+            <div class="rate-icon">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="12 6 14 10 18 10 15 13 16 17 12 14 8 17 9 13 6 10 10 10"/></svg>
+            </div>
+            <div>
+              <div class="rate-card-title">Telegram Premium (Тарифы)</div>
+              <div class="rate-card-sub">Стоимость подарочных подписок на 3, 6, 9 и 12 месяцев</div>
+            </div>
+          </div>
+
+          <div class="rate-box">
+            <div class="rate-box-title">
+              <span>3 месяца</span>
+              <span class="rate-badge-sm">Старт</span>
+            </div>
+            <div class="grid2">
+              <div class="field" style="margin-bottom:0;"><label>Цена, ₽</label><input type="number" id="rate_prem3_price" placeholder="990"></div>
+              <div class="field" style="margin-bottom:0;"><label>Старая цена, ₽</label><input type="number" id="rate_prem3_old" placeholder="1290"></div>
+            </div>
+          </div>
+
+          <div class="rate-box">
+            <div class="rate-box-title">
+              <span>6 месяцев</span>
+              <span class="rate-badge-sm">Хит продаж</span>
+            </div>
+            <div class="grid2">
+              <div class="field" style="margin-bottom:0;"><label>Цена, ₽</label><input type="number" id="rate_prem6_price" placeholder="1790"></div>
+              <div class="field" style="margin-bottom:0;"><label>Старая цена, ₽</label><input type="number" id="rate_prem6_old" placeholder="2290"></div>
+            </div>
+          </div>
+
+          <div class="rate-box">
+            <div class="rate-box-title">
+              <span>9 месяцев</span>
+              <span class="rate-badge-sm">Популярно</span>
+            </div>
+            <div class="grid2">
+              <div class="field" style="margin-bottom:0;"><label>Цена, ₽</label><input type="number" id="rate_prem9_price" placeholder="2490"></div>
+              <div class="field" style="margin-bottom:0;"><label>Старая цена, ₽</label><input type="number" id="rate_prem9_old" placeholder="3190"></div>
+            </div>
+          </div>
+
+          <div class="rate-box">
+            <div class="rate-box-title">
+              <span>12 месяцев</span>
+              <span class="rate-badge-sm">Выгодно -25%</span>
+            </div>
+            <div class="grid2">
+              <div class="field" style="margin-bottom:0;"><label>Цена, ₽</label><input type="number" id="rate_prem12_price" placeholder="2990"></div>
+              <div class="field" style="margin-bottom:0;"><label>Старая цена, ₽</label><input type="number" id="rate_prem12_old" placeholder="3990"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="ratesStatusMsg" style="min-height:22px;margin-bottom:12px;font-size:13.5px;font-weight:500;"></div>
+    </div>
+
+    <div class="panel" id="panel-projects">
+      <div class="toolbar">
+        <div>
+          <h2 style="font-size:18px;margin-bottom:4px;">Ссылки проектов</h2>
+          <div style="color:var(--gray);font-size:13px;">Управление индивидуальными ссылками проектов для кнопки «Подробнее» и карточек витрины</div>
+        </div>
+        <button class="add-btn" id="saveProjectsBtn">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" style="display:inline-block;vertical-align:-2px;margin-right:6px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Сохранить ссылки
+        </button>
+      </div>
+
+      <div class="rates-grid" style="margin-bottom:20px;">
+        <!-- Apex Core -->
+        <div class="rate-card">
+          <div class="rate-card-head">
+            <div class="rate-icon" style="background:rgba(255,255,255,0.06);color:var(--white);">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 22 22 22 12 2"/><line x1="12" y1="9" x2="12" y2="15"/></svg>
+            </div>
+            <div>
+              <div class="rate-card-title">Apex Core (Сайт)</div>
+              <div class="rate-card-sub">Проект ведёт на внешний веб-сайт вместо Telegram</div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Ссылка на веб-сайт (URL)</label>
+            <input type="text" id="proj_apex_url" placeholder="https://apex-core.site">
+          </div>
+          <div class="field" style="margin-bottom:0;">
+            <label>Текст кнопки</label>
+            <input type="text" id="proj_apex_btn" placeholder="Перейти на сайт">
+          </div>
+        </div>
+
+        <!-- Flux Studio -->
+        <div class="rate-card">
+          <div class="rate-card-head">
+            <div class="rate-icon" style="background:rgba(255,255,255,0.06);color:var(--white);">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
+            </div>
+            <div>
+              <div class="rate-card-title">Flux Studio (Telegram)</div>
+              <div class="rate-card-sub">Индивидуальная ссылка в Telegram для студии дизайна</div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Ссылка в Telegram</label>
+            <input type="text" id="proj_flux_url" placeholder="https://t.me/+zhWLLWIaVeI2Y2Yy">
+          </div>
+          <div class="field" style="margin-bottom:0;">
+            <label>Ссылка на портфолио</label>
+            <input type="text" id="proj_flux_portfolio" placeholder="https://t.me/+0Bd2iyw1aOU4NDEy">
+          </div>
+        </div>
+
+        <!-- Vieto Store -->
+        <div class="rate-card">
+          <div class="rate-card-head">
+            <div class="rate-icon" style="background:rgba(255,255,255,0.06);color:var(--white);">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+            </div>
+            <div>
+              <div class="rate-card-title">Vieto Store (Telegram)</div>
+              <div class="rate-card-sub">Индивидуальная ссылка в Telegram для магазина цифровых продуктов</div>
+            </div>
+          </div>
+          <div class="field" style="margin-bottom:0;">
+            <label>Ссылка в Telegram</label>
+            <input type="text" id="proj_vieto_url" placeholder="https://t.me/VietoFullStore">
+          </div>
+        </div>
+
+        <!-- Cursor Market -->
+        <div class="rate-card">
+          <div class="rate-card-head">
+            <div class="rate-icon" style="background:rgba(255,255,255,0.06);color:var(--white);">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            <div>
+              <div class="rate-card-title">Cursor Market (Telegram)</div>
+              <div class="rate-card-sub">Индивидуальная ссылка в Telegram для премиум-атрибутики</div>
+            </div>
+          </div>
+          <div class="field" style="margin-bottom:0;">
+            <label>Ссылка в Telegram</label>
+            <input type="text" id="proj_cursor_url" placeholder="https://t.me/CursorRobot">
+          </div>
+        </div>
+      </div>
+
+      <div id="projectsStatusMsg" style="min-height:22px;margin-bottom:12px;font-size:13.5px;font-weight:500;"></div>
     </div>
 
     <div class="panel" id="panel-news">
@@ -232,7 +451,7 @@ async function checkAuth(){
   if(res.ok){ showDash(); } else { showLogin(); }
 }
 function showLogin(){ document.getElementById('loginScreen').style.display='flex'; document.getElementById('dash').style.display='none'; }
-function showDash(){ document.getElementById('loginScreen').style.display='none'; document.getElementById('dash').style.display='block'; loadProducts(); loadNews(); loadOrders(); loadRequisites(); }
+function showDash(){ document.getElementById('loginScreen').style.display='none'; document.getElementById('dash').style.display='block'; loadProducts(); loadRates(); loadProjects(); loadNews(); loadOrders(); loadRequisites(); }
 
 document.getElementById('loginSubmit').onclick = async ()=>{
   const login = document.getElementById('loginUser').value;
@@ -260,7 +479,11 @@ document.querySelectorAll('#mainTabs .tab').forEach(t=>{
     document.querySelectorAll('#mainTabs .tab').forEach(x=>x.classList.remove('active'));
     document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
     t.classList.add('active');
-    document.getElementById('panel-'+t.dataset.tab).classList.add('active');
+    const panelId = 'panel-'+t.dataset.tab;
+    const targetPanel = document.getElementById(panelId);
+    if(targetPanel) targetPanel.classList.add('active');
+    if(t.dataset.tab === 'stars-premium') loadRates();
+    if(t.dataset.tab === 'projects') loadProjects();
   };
 });
 
@@ -491,7 +714,7 @@ async function loadOrders(){
   tbody.innerHTML = orders.map(o=>`
     <tr>
       <td style="font-family:monospace;font-size:12px;">${o.id}</td>
-      <td>${o.items.map(i=>i.name+(i.qty>1?' ×'+i.qty:'')).join(', ')}</td>
+      <td>${o.items.map(i=>i.name + (i.target ? ' <span style="color:var(--blue);font-weight:600;">[' + i.target + ']</span>' : '') + (i.qty>1 && !i.stars ? ' ×'+i.qty : '')).join('<br>')}</td>
       <td style="font-size:12.5px;">${o.contact || '<span style="color:var(--gray-dim);">не указан</span>'}</td>
       <td class="num">${money(o.total)}</td>
       <td style="font-size:12px;">${o.promo_code ? `${o.promo_code} (-${o.discount_percent}%)` : '—'}</td>
@@ -557,6 +780,208 @@ document.getElementById('saveRequisites').onclick = async ()=>{
   }
   setTimeout(()=> saved.textContent='', 2500);
 };
+
+/* ---------------- RATES (STARS & PREMIUM) ---------------- */
+function updateStarsPreview(rate){
+  const r = Math.max(0, parseFloat(rate) || 0);
+  const p25 = document.getElementById('prev_stars_25');
+  const p100 = document.getElementById('prev_stars_100');
+  const p250 = document.getElementById('prev_stars_250');
+  const p1000 = document.getElementById('prev_stars_1000');
+  const p5000 = document.getElementById('prev_stars_5000');
+  const p10000 = document.getElementById('prev_stars_10000');
+  if(p25) p25.textContent = Math.round(25 * r).toLocaleString('ru-RU') + ' ₽';
+  if(p100) p100.textContent = Math.round(100 * r).toLocaleString('ru-RU') + ' ₽';
+  if(p250) p250.textContent = Math.round(250 * r).toLocaleString('ru-RU') + ' ₽';
+  if(p1000) p1000.textContent = Math.round(1000 * r).toLocaleString('ru-RU') + ' ₽';
+  if(p5000) p5000.textContent = Math.round(5000 * r).toLocaleString('ru-RU') + ' ₽';
+  if(p10000) p10000.textContent = Math.round(10000 * r).toLocaleString('ru-RU') + ' ₽';
+}
+
+const rateStarsInput = document.getElementById('rate_stars_price');
+if(rateStarsInput){
+  rateStarsInput.addEventListener('input', (e)=> updateStarsPreview(e.target.value));
+}
+
+async function loadRates(){
+  try{
+    const res = await adminFetch('/api/admin/rates');
+    const data = await res.json();
+    if(!res.ok) return;
+
+    if(data.stars){
+      const starsPrice = data.stars.price ?? 2;
+      const starsOld = data.stars.old ?? 3;
+      if(document.getElementById('rate_stars_price')) document.getElementById('rate_stars_price').value = starsPrice;
+      if(document.getElementById('rate_stars_old')) document.getElementById('rate_stars_old').value = starsOld;
+      updateStarsPreview(starsPrice);
+    }
+    if(data.premium){
+      if(data.premium[3]){
+        if(document.getElementById('rate_prem3_price')) document.getElementById('rate_prem3_price').value = data.premium[3].price ?? 990;
+        if(document.getElementById('rate_prem3_old')) document.getElementById('rate_prem3_old').value = data.premium[3].old ?? 1290;
+      }
+      if(data.premium[6]){
+        if(document.getElementById('rate_prem6_price')) document.getElementById('rate_prem6_price').value = data.premium[6].price ?? 1790;
+        if(document.getElementById('rate_prem6_old')) document.getElementById('rate_prem6_old').value = data.premium[6].old ?? 2290;
+      }
+      if(data.premium[9]){
+        if(document.getElementById('rate_prem9_price')) document.getElementById('rate_prem9_price').value = data.premium[9].price ?? 2490;
+        if(document.getElementById('rate_prem9_old')) document.getElementById('rate_prem9_old').value = data.premium[9].old ?? 3190;
+      }
+      if(data.premium[12]){
+        if(document.getElementById('rate_prem12_price')) document.getElementById('rate_prem12_price').value = data.premium[12].price ?? 2990;
+        if(document.getElementById('rate_prem12_old')) document.getElementById('rate_prem12_old').value = data.premium[12].old ?? 3990;
+      }
+    }
+  }catch(e){}
+}
+
+const saveRatesBtn = document.getElementById('saveRatesBtn');
+if(saveRatesBtn){
+  saveRatesBtn.onclick = async ()=>{
+    const statusEl = document.getElementById('ratesStatusMsg');
+    statusEl.textContent = '';
+    statusEl.style.color = 'var(--white)';
+    saveRatesBtn.disabled = true;
+
+    const payload = {
+      stars: {
+        price: parseFloat(document.getElementById('rate_stars_price').value) || 2,
+        old: parseFloat(document.getElementById('rate_stars_old').value) || 0
+      },
+      premium: {
+        3: {
+          price: parseInt(document.getElementById('rate_prem3_price').value) || 990,
+          old: parseInt(document.getElementById('rate_prem3_old').value) || 0
+        },
+        6: {
+          price: parseInt(document.getElementById('rate_prem6_price').value) || 1790,
+          old: parseInt(document.getElementById('rate_prem6_old').value) || 0
+        },
+        9: {
+          price: parseInt(document.getElementById('rate_prem9_price').value) || 2490,
+          old: parseInt(document.getElementById('rate_prem9_old').value) || 0
+        },
+        12: {
+          price: parseInt(document.getElementById('rate_prem12_price').value) || 2990,
+          old: parseInt(document.getElementById('rate_prem12_old').value) || 0
+        }
+      }
+    };
+
+    try{
+      const res = await adminFetch('/api/admin/rates', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json().catch(()=>({}));
+      if(!res.ok){
+        statusEl.style.color = 'var(--red)';
+        statusEl.textContent = data.error || 'Не удалось сохранить курсы';
+        saveRatesBtn.disabled = false;
+        return;
+      }
+      statusEl.style.color = 'var(--green)';
+      statusEl.textContent = 'Курсы успешно сохранены и применены в магазине!';
+      loadProducts();
+      setTimeout(()=>{ statusEl.textContent = ''; }, 3500);
+    }catch(e){
+      if(e.message !== 'unauthorized'){
+        statusEl.style.color = 'var(--red)';
+        statusEl.textContent = 'Сервер недоступен. Проверьте соединение';
+      }
+    }
+    saveRatesBtn.disabled = false;
+  };
+}
+
+/* ---------------- PROJECTS MANAGEMENT ---------------- */
+async function loadProjects(){
+  try {
+    const res = await fetch('/api/projects');
+    if(!res.ok) return;
+    const data = await res.json();
+
+    if(data.apex){
+      if(document.getElementById('proj_apex_url')) document.getElementById('proj_apex_url').value = data.apex.url || '';
+      if(document.getElementById('proj_apex_btn')) document.getElementById('proj_apex_btn').value = data.apex.buttonText || 'Перейти на сайт';
+    }
+    if(data.flux){
+      if(document.getElementById('proj_flux_url')) document.getElementById('proj_flux_url').value = data.flux.url || '';
+      if(document.getElementById('proj_flux_portfolio')) document.getElementById('proj_flux_portfolio').value = data.flux.portfolioUrl || '';
+    }
+    if(data.vieto){
+      if(document.getElementById('proj_vieto_url')) document.getElementById('proj_vieto_url').value = data.vieto.url || '';
+    }
+    if(data.cursor){
+      if(document.getElementById('proj_cursor_url')) document.getElementById('proj_cursor_url').value = data.cursor.url || '';
+    }
+  } catch(e){}
+}
+
+const saveProjectsBtn = document.getElementById('saveProjectsBtn');
+if(saveProjectsBtn){
+  saveProjectsBtn.onclick = async ()=>{
+    const statusEl = document.getElementById('projectsStatusMsg');
+    saveProjectsBtn.disabled = true;
+    statusEl.style.color = 'var(--gray)';
+    statusEl.textContent = 'Сохранение...';
+
+    const payload = {
+      apex: {
+        title: 'Apex Core',
+        type: 'site',
+        url: (document.getElementById('proj_apex_url').value || '').trim() || 'https://apex-core.site',
+        buttonText: (document.getElementById('proj_apex_btn').value || '').trim() || 'Перейти на сайт'
+      },
+      flux: {
+        title: 'Flux Studio',
+        type: 'telegram',
+        url: (document.getElementById('proj_flux_url').value || '').trim() || 'https://t.me/+zhWLLWIaVeI2Y2Yy',
+        buttonText: 'Подробнее в Telegram',
+        portfolioUrl: (document.getElementById('proj_flux_portfolio').value || '').trim() || 'https://t.me/+0Bd2iyw1aOU4NDEy'
+      },
+      vieto: {
+        title: 'Vieto Store',
+        type: 'telegram',
+        url: (document.getElementById('proj_vieto_url').value || '').trim() || 'https://t.me/VietoFullStore',
+        buttonText: 'Подробнее в Telegram'
+      },
+      cursor: {
+        title: 'Cursor Market',
+        type: 'telegram',
+        url: (document.getElementById('proj_cursor_url').value || '').trim() || 'https://t.me/CursorRobot',
+        buttonText: 'Подробнее в Telegram'
+      }
+    };
+
+    try {
+      const res = await adminFetch('/api/admin/projects', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json().catch(()=>({}));
+      if(!res.ok){
+        statusEl.style.color = 'var(--red)';
+        statusEl.textContent = data.error || 'Не удалось сохранить ссылки';
+        saveProjectsBtn.disabled = false;
+        return;
+      }
+      statusEl.style.color = 'var(--green)';
+      statusEl.textContent = 'Ссылки проектов успешно сохранены!';
+      setTimeout(()=>{ statusEl.textContent = ''; }, 3500);
+    } catch(e){
+      if(e.message !== 'unauthorized'){
+        statusEl.style.color = 'var(--red)';
+        statusEl.textContent = 'Сервер недоступен. Проверьте соединение';
+      }
+    }
+    saveProjectsBtn.disabled = false;
+  };
+}
 
 checkAuth();
 </script>

@@ -1,0 +1,27 @@
+{
+  "apex": {
+    "title": "Apex Core",
+    "type": "site",
+    "url": "https://apex-core.site",
+    "buttonText": "Перейти на сайт"
+  },
+  "flux": {
+    "title": "Flux Studio",
+    "type": "telegram",
+    "url": "https://t.me/+zhWLLWIaVeI2Y2Yy",
+    "buttonText": "Подробнее в Telegram",
+    "portfolioUrl": "https://t.me/+0Bd2iyw1aOU4NDEy"
+  },
+  "vieto": {
+    "title": "Vieto Store",
+    "type": "telegram",
+    "url": "https://t.me/VietoFullStore",
+    "buttonText": "Подробнее в Telegram"
+  },
+  "cursor": {
+    "title": "Cursor Market",
+    "type": "telegram",
+    "url": "https://t.me/CursorRobot",
+    "buttonText": "Подробнее в Telegram"
+  }
+}

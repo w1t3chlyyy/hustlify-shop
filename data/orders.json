@@ -1,5 +1,35 @@
 [
   {
+    "id": "ord_mtmvdzgcpxat",
+    "items": [
+      {
+        "id": "tg_stars",
+        "name": "Telegram Звёзды (500 шт.)",
+        "price": 1000,
+        "qty": 1,
+        "stars": 500,
+        "target": "@testuser",
+        "details": "500 звёзд для @testuser"
+      },
+      {
+        "id": "tg_premium_6",
+        "name": "Telegram Premium — 6 месяцев",
+        "price": 1790,
+        "qty": 1,
+        "target": "@testuser",
+        "details": "Telegram Premium — 6 месяцев для @testuser"
+      }
+    ],
+    "items_total": 2790,
+    "discount_percent": 0,
+    "promo_code": null,
+    "total": 2790,
+    "contact": "@testuser",
+    "status": "pending",
+    "payment": null,
+    "created_at": "2026-09-04T11:27:54.301Z"
+  },
+  {
     "id": "ord_mrixvm6w8pyl",
     "items": [
       {

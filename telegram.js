@@ -111,7 +111,15 @@ async function sendTelegramDocument(documentUrl, caption) {
 
 function formatOrderMessage(order, prefix, title) {
   const itemsList = order.items
-    .map(i => `• ${i.name}${i.qty > 1 ? ' × ' + i.qty : ''} — ${i.price * i.qty} ₽`)
+    .map(i => {
+      let line = `• ${i.name}${i.qty > 1 && !i.stars ? ' × ' + i.qty : ''} — ${i.price * (i.stars ? 1 : i.qty)} ₽`;
+      if (i.target) {
+        line += `\n  ├ Получатель: <code>${i.target}</code>`;
+      } else if (i.details && i.details !== i.name) {
+        line += `\n  ├ Детали: ${i.details}`;
+      }
+      return line;
+    })
     .join('\n');
   const promoLine = order.promo_code
     ? `\nПромокод: <b>${order.promo_code}</b> (-${order.discount_percent}%)`
