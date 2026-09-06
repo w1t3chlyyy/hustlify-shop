@@ -2647,7 +2647,11 @@ async function loadProducts(){
   }
   catalogData = ALL_PRODUCTS.filter(p=>p.section==='catalog');
   casesData = ALL_PRODUCTS.filter(p=>p.section==='case');
-  CATEGORIES = ['Все', ...new Set(catalogData.map(p=>p.cat))];
+  const catList = catalogData.map(p=>p.cat).filter(Boolean);
+  if(!catList.includes('Звезды&Премиум')){
+    catList.unshift('Звезды&Премиум');
+  }
+  CATEGORIES = ['Все', ...new Set(catList)];
   renderAll();
 }
 

@@ -93,13 +93,51 @@ npm start
 - При оформлении заказа сервер сам проверяет код: не использован ли, не истёк ли — и применяет скидку к сумме. Код одноразовый, сгорает сразу после применения.
 - В админке во вкладке «Заказы» видно, какой промокод и с какой скидкой был применён, плюс контакт покупателя.
 
-## Supabase: таблица реквизитов и хранилище чеков
+## Supabase: таблицы базы данных и хранилище чеков
 
+### 1. Таблица товаров (`products`) и курсы Звёзд / Premium
+Выполните в **Supabase → SQL Editor**, чтобы создать таблицу и наполнить её курсами звёзд и подписок Telegram:
+
+```sql
+create table if not exists public.products (
+  id text primary key,
+  name text not null,
+  price numeric not null default 0,
+  category text default 'Разное',
+  old_price numeric default 0,
+  description text default '',
+  section text default 'catalog',
+  img text default '',
+  icon text default 'star',
+  hit boolean default false,
+  created_at timestamptz default now()
+);
+
+insert into public.products (id, name, price, category, old_price, description, section, img, icon, hit)
+values 
+  ('tg_stars', 'Telegram Звёзды (Stars)', 2, 'Звезды&Премиум', 3, 'Моментальная накрутка и покупка звёзд для Telegram-каналов и ботов по оптовому курсу', 'catalog', '/images/1000pdp.jpg', 'star', true),
+  ('tg_premium_3', 'Telegram Premium — 3 месяца', 990, 'Звезды&Премиум', 1290, 'Официальная подписка Telegram Premium на 3 месяца без входа в аккаунт', 'catalog', '/images/1000p.jpg', 'premium', false),
+  ('tg_premium_6', 'Telegram Premium — 6 месяцев', 1790, 'Звезды&Премиум', 2290, 'Официальная подписка Telegram Premium на 6 месяцев с гарантией', 'catalog', '/images/1000p.jpg', 'premium', true),
+  ('tg_premium_9', 'Telegram Premium — 9 месяцев', 2490, 'Звезды&Премиум', 3190, 'Официальная подписка Telegram Premium на 9 месяцев', 'catalog', '/images/1000p.jpg', 'premium', false),
+  ('tg_premium_12', 'Telegram Premium — 12 месяцев', 2990, 'Звезды&Премиум', 3990, 'Официальная подписка Telegram Premium на 1 год с максимальной выгодой', 'catalog', '/images/1000p.jpg', 'premium', false)
+on conflict (id) do update set
+  price = excluded.price,
+  old_price = excluded.old_price,
+  category = excluded.category,
+  section = excluded.section,
+  name = excluded.name,
+  description = excluded.description,
+  img = excluded.img,
+  icon = excluded.icon,
+  hit = excluded.hit;
+```
+
+### 2. Таблица `requisites`
 Оплата по реквизитам использует таблицу `requisites` (одна строка с реквизитами,
 которую вы редактируете в админке) и Storage-бакет `receipts` (туда
 складываются загруженные клиентами чеки).
 
-**1. Таблица `requisites`** — выполните в Supabase → SQL Editor:
+Выполните в Supabase → SQL Editor:
 ```sql
 create table if not exists public.requisites (
   id int primary key default 1,
@@ -118,7 +156,7 @@ on conflict (id) do nothing;
 обходит RLS, так что дополнительные политики не обязательны. Если вы всё же
 включите RLS на этой таблице, service-role ключ продолжит работать как есть.
 
-**2. Storage-бакет `receipts`** — в Supabase → Storage → **New bucket**:
+### 3. Storage-бакет `receipts` — в Supabase → Storage → **New bucket**:
 - Имя: `receipts`
 - **Public bucket**: включить (чтобы ссылка на чек открывалась в Telegram и в
   админке без дополнительной авторизации). Путь к файлу содержит случайный

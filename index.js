@@ -31,10 +31,10 @@ const path = require('path');
 const fs = require('fs');
 const { createClient } = require('@supabase/supabase-js');
 
-// Вспомогательные функции для локального хранилища /data
+const ROOT_DATA_DIR = path.join(__dirname, 'data');
 const DATA_DIR = process.env.VERCEL 
   ? path.join('/tmp', 'data') 
-  : path.join(__dirname, 'data');
+  : (process.env.DATA_DIR || ROOT_DATA_DIR);
 if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
 }
@@ -42,7 +42,15 @@ if (!fs.existsSync(DATA_DIR)) {
 function readJsonFile(filename, defaultValue = []) {
   try {
     const filepath = path.join(DATA_DIR, filename);
-    if (!fs.existsSync(filepath)) return defaultValue;
+    if (!fs.existsSync(filepath)) {
+      const fallbackPath = path.join(ROOT_DATA_DIR, filename);
+      if (fs.existsSync(fallbackPath)) {
+        const initialContent = fs.readFileSync(fallbackPath, 'utf8');
+        try { fs.writeFileSync(filepath, initialContent, 'utf8'); } catch (e) {}
+        return JSON.parse(initialContent);
+      }
+      return defaultValue;
+    }
     const content = fs.readFileSync(filepath, 'utf8');
     return JSON.parse(content);
   } catch (e) {
@@ -175,18 +183,44 @@ function toDbProduct(p) {
 
 /* ================= PUBLIC: PRODUCTS ================= */
 app.get('/api/products', async (req, res) => {
+  let dbProducts = null;
   if (supabase) {
     try {
       const { data, error } = await supabase
         .from('products')
         .select(PRODUCT_SELECT)
         .order('created_at', { ascending: false });
-      if (!error && data) return res.json(data);
+      if (!error && data) {
+        dbProducts = data;
+      }
     } catch (e) {
       console.error('Supabase products error:', e.message);
     }
   }
-  res.json(readJsonFile('products.json'));
+
+  const localProducts = readJsonFile('products.json');
+
+  if (dbProducts) {
+    const rateIds = ['tg_stars', 'tg_premium_3', 'tg_premium_6', 'tg_premium_9', 'tg_premium_12'];
+    const missing = [];
+    for (const rid of rateIds) {
+      if (!dbProducts.some(p => p.id === rid)) {
+        const lp = localProducts.find(x => x.id === rid);
+        if (lp) {
+          missing.push(lp);
+          dbProducts.push(lp);
+        }
+      }
+    }
+    if (missing.length > 0 && supabase) {
+      supabase.from('products').upsert(missing.map(toDbProduct), { onConflict: 'id' })
+        .then(() => {})
+        .catch(err => console.error('Auto-seed missing rates error:', err.message));
+    }
+    return res.json(dbProducts);
+  }
+
+  res.json(localProducts);
 });
 
 /* ================= SURVEY SUBMIT ================= */
@@ -222,18 +256,33 @@ app.post('/api/survey/submit', async (req, res) => {
 
 /* ================= ADMIN: PRODUCTS CRUD ================= */
 app.get('/api/admin/products', requireAdmin, async (req, res) => {
+  let dbProducts = null;
   if (supabase) {
     try {
       const { data, error } = await supabase
         .from('products')
         .select(PRODUCT_SELECT)
         .order('created_at', { ascending: false });
-      if (!error && data) return res.json(data);
+      if (!error && data) dbProducts = data;
     } catch (e) {
       console.error('Supabase admin products error:', e.message);
     }
   }
-  res.json(readJsonFile('products.json'));
+
+  const localProducts = readJsonFile('products.json');
+
+  if (dbProducts) {
+    const rateIds = ['tg_stars', 'tg_premium_3', 'tg_premium_6', 'tg_premium_9', 'tg_premium_12'];
+    for (const rid of rateIds) {
+      if (!dbProducts.some(p => p.id === rid)) {
+        const lp = localProducts.find(x => x.id === rid);
+        if (lp) dbProducts.push(lp);
+      }
+    }
+    return res.json(dbProducts);
+  }
+
+  res.json(localProducts);
 });
 
 app.post('/api/admin/products', requireAdmin, async (req, res) => {
@@ -310,33 +359,65 @@ app.delete('/api/admin/products/:id', requireAdmin, async (req, res) => {
 
 /* ================= ADMIN: RATES (STARS & PREMIUM) ================= */
 app.get('/api/admin/rates', requireAdmin, async (req, res) => {
-  const products = readJsonFile('products.json');
-  const stars = products.find(p => p.id === 'tg_stars') || { price: 2, old: 3 };
-  const prem3 = products.find(p => p.id === 'tg_premium_3') || { price: 990, old: 1290 };
-  const prem6 = products.find(p => p.id === 'tg_premium_6') || { price: 1790, old: 2290 };
-  const prem9 = products.find(p => p.id === 'tg_premium_9') || { price: 2490, old: 3190 };
-  const prem12 = products.find(p => p.id === 'tg_premium_12') || { price: 2990, old: 3990 };
+  let products = [];
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select(PRODUCT_SELECT)
+        .in('id', ['tg_stars', 'tg_premium_3', 'tg_premium_6', 'tg_premium_9', 'tg_premium_12']);
+      if (!error && data && data.length > 0) {
+        products = data;
+      }
+    } catch (e) {
+      console.error('Supabase admin rates error:', e.message);
+    }
+  }
+
+  const localProducts = readJsonFile('products.json');
+  function findRate(id, defPrice, defOld) {
+    const foundDb = products.find(p => p.id === id);
+    if (foundDb) return { price: foundDb.price, old: foundDb.old };
+    const foundLocal = localProducts.find(p => p.id === id);
+    if (foundLocal) return { price: foundLocal.price, old: foundLocal.old };
+    return { price: defPrice, old: defOld };
+  }
 
   res.json({
-    stars: { price: stars.price, old: stars.old },
+    stars: findRate('tg_stars', 2, 3),
     premium: {
-      3: { price: prem3.price, old: prem3.old },
-      6: { price: prem6.price, old: prem6.old },
-      9: { price: prem9.price, old: prem9.old },
-      12: { price: prem12.price, old: prem12.old }
+      3: findRate('tg_premium_3', 990, 1290),
+      6: findRate('tg_premium_6', 1790, 2290),
+      9: findRate('tg_premium_9', 2490, 3190),
+      12: findRate('tg_premium_12', 2990, 3990)
     }
   });
 });
 
 app.put('/api/admin/rates', requireAdmin, async (req, res) => {
   const { stars, premium } = req.body || {};
-  const products = readJsonFile('products.json');
+  let products = readJsonFile('products.json');
+
+  const defaultTemplates = {
+    tg_stars: { name: 'Telegram Звёзды (Stars)', price: 2, old: 3, cat: 'Звезды&Премиум', desc: 'Моментальная накрутка и покупка звёзд для Telegram-каналов и ботов по оптовому курсу', section: 'catalog', img: '/images/1000pdp.jpg', icon: 'star', hit: true },
+    tg_premium_3: { name: 'Telegram Premium — 3 месяца', price: 990, old: 1290, cat: 'Звезды&Премиум', desc: 'Официальная подписка Telegram Premium на 3 месяца без входа в аккаунт', section: 'catalog', img: '/images/1000p.jpg', icon: 'premium', hit: false },
+    tg_premium_6: { name: 'Telegram Premium — 6 месяцев', price: 1790, old: 2290, cat: 'Звезды&Премиум', desc: 'Официальная подписка Telegram Premium на 6 месяцев с гарантией', section: 'catalog', img: '/images/1000p.jpg', icon: 'premium', hit: true },
+    tg_premium_9: { name: 'Telegram Premium — 9 месяцев', price: 2490, old: 3190, cat: 'Звезды&Премиум', desc: 'Официальная подписка Telegram Premium на 9 месяцев', section: 'catalog', img: '/images/1000p.jpg', icon: 'premium', hit: false },
+    tg_premium_12: { name: 'Telegram Premium — 12 месяцев', price: 2990, old: 3990, cat: 'Звезды&Премиум', desc: 'Официальная подписка Telegram Premium на 1 год с максимальной выгодой', section: 'catalog', img: '/images/1000p.jpg', icon: 'premium', hit: false }
+  };
 
   function updateProd(id, newPrice, newOld) {
     const idx = products.findIndex(p => p.id === id);
     if (idx !== -1) {
       if (newPrice !== undefined && !isNaN(Number(newPrice))) products[idx].price = Number(newPrice);
       if (newOld !== undefined && !isNaN(Number(newOld))) products[idx].old = Number(newOld);
+      products[idx].cat = 'Звезды&Премиум';
+      products[idx].section = 'catalog';
+    } else if (defaultTemplates[id]) {
+      const item = { ...defaultTemplates[id], id };
+      if (newPrice !== undefined && !isNaN(Number(newPrice))) item.price = Number(newPrice);
+      if (newOld !== undefined && !isNaN(Number(newOld))) item.old = Number(newOld);
+      products.push(item);
     }
   }
 
@@ -356,10 +437,17 @@ app.put('/api/admin/rates', requireAdmin, async (req, res) => {
   if (supabase) {
     try {
       const ids = ['tg_stars', 'tg_premium_3', 'tg_premium_6', 'tg_premium_9', 'tg_premium_12'];
+      const upsertRows = [];
       for (const id of ids) {
-        const p = products.find(x => x.id === id);
+        const p = products.find(x => x.id === id) || defaultTemplates[id];
         if (p) {
-          await supabase.from('products').update(toDbProduct(p)).eq('id', id);
+          upsertRows.push(toDbProduct({ ...p, id }));
+        }
+      }
+      if (upsertRows.length > 0) {
+        const { error } = await supabase.from('products').upsert(upsertRows, { onConflict: 'id' });
+        if (error) {
+          console.error('Supabase upsert rates error:', error.message);
         }
       }
     } catch (e) {
