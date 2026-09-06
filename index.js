@@ -448,10 +448,12 @@ app.put('/api/admin/rates', requireAdmin, async (req, res) => {
         const { error } = await supabase.from('products').upsert(upsertRows, { onConflict: 'id' });
         if (error) {
           console.error('Supabase upsert rates error:', error.message);
+          return res.status(500).json({ error: 'Ошибка сохранения в Supabase: ' + error.message });
         }
       }
     } catch (e) {
       console.error('Supabase update rates error:', e.message);
+      return res.status(500).json({ error: 'Ошибка базы данных: ' + e.message });
     }
   }
 

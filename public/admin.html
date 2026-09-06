@@ -885,6 +885,7 @@ if(saveRatesBtn){
       }
       statusEl.style.color = 'var(--green)';
       statusEl.textContent = 'Курсы успешно сохранены и применены в магазине!';
+      await loadRates();
       loadProducts();
       setTimeout(()=>{ statusEl.textContent = ''; }, 3500);
     }catch(e){
