@@ -379,12 +379,26 @@ td.num{font-family:'Unbounded';font-weight:600;}
 
     <div class="panel" id="panel-requisites">
       <div style="max-width:520px;">
+        <h4 style="font-size:15px;font-weight:700;margin-bottom:14px;color:var(--white);">Реквизиты для оплаты</h4>
         <div class="field"><label>Номер карты</label><input id="rq_card" placeholder="0000 0000 0000 0000"></div>
         <div class="field"><label>Банк</label><input id="rq_bank" placeholder="Т-Банк, Сбербанк..."></div>
-        <div class="field"><label>Получатель (ФИО)</label><input id="rq_name" placeholder="Иванов Иван Иванович"></div>
+        <div class="field"><label>Получатель перевода (ФИО)</label><input id="rq_name" placeholder="Тимур Б."></div>
         <div class="field">
           <label>Комментарий / инструкция для клиента</label>
-          <textarea id="rq_comment" rows="4" style="width:100%;padding:13px 16px;border-radius:12px;background:var(--bg);border:1px solid var(--line);color:var(--white);font-size:14px;outline:none;resize:vertical;font-family:inherit;" placeholder="Например: в комментарии к переводу укажите номер заказа"></textarea>
+          <textarea id="rq_comment" rows="3" style="width:100%;padding:13px 16px;border-radius:12px;background:var(--bg);border:1px solid var(--line);color:var(--white);font-size:14px;outline:none;resize:vertical;font-family:inherit;" placeholder="Например: в комментарии к переводу укажите номер заказа"></textarea>
+        </div>
+
+        <h4 style="font-size:15px;font-weight:700;margin:22px 0 14px;color:var(--white);border-top:1px solid var(--line);padding-top:18px;">Данные самозанятого (Оферта и подвал)</h4>
+        <div class="field">
+          <label>ФИО самозанятого (для публичной оферты и чекаута)</label>
+          <input id="rq_self_employed_name" placeholder="Бенаи Тимур Рустамович">
+        </div>
+        <div class="field">
+          <label>ИНН самозанятого</label>
+          <input id="rq_self_employed_inn" placeholder="920159216794">
+        </div>
+        <div style="font-size:12px;color:var(--gray);margin-bottom:14px;">
+          Эти данные отображаются в подвале сайта, в форме оформления заказа и в тексте официальной <a href="/oferta" target="_blank" style="text-decoration:underline;color:var(--white);">Публичной оферты</a>.
         </div>
         <div id="rqSaved" style="color:var(--green);font-size:13px;min-height:18px;margin-bottom:10px;"></div>
         <button class="add-btn" id="saveRequisites">Сохранить реквизиты</button>
@@ -760,6 +774,8 @@ async function loadRequisites(){
     document.getElementById('rq_bank').value = r?.bank_name || '';
     document.getElementById('rq_name').value = r?.recipient_name || '';
     document.getElementById('rq_comment').value = r?.comment || '';
+    document.getElementById('rq_self_employed_name').value = r?.self_employed_name || 'Бенаи Тимур Рустамович';
+    document.getElementById('rq_self_employed_inn').value = r?.self_employed_inn || '920159216794';
   }catch(e){}
 }
 document.getElementById('saveRequisites').onclick = async ()=>{
@@ -769,7 +785,9 @@ document.getElementById('saveRequisites').onclick = async ()=>{
     card_number: document.getElementById('rq_card').value.trim(),
     bank_name: document.getElementById('rq_bank').value.trim(),
     recipient_name: document.getElementById('rq_name').value.trim(),
-    comment: document.getElementById('rq_comment').value.trim()
+    comment: document.getElementById('rq_comment').value.trim(),
+    self_employed_name: document.getElementById('rq_self_employed_name').value.trim(),
+    self_employed_inn: document.getElementById('rq_self_employed_inn').value.trim()
   };
   try{
     const res = await adminFetch('/api/admin/requisites', { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });

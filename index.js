@@ -93,6 +93,9 @@ app.get('/admin.html', (req, res) => {
 app.get('/order-success.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'order-success.html'));
 });
+app.get(['/oferta', '/offer', '/oferta.html', '/offer.html'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'offer.html'));
+});
 
 const PORT = 3000;
 const PUBLIC_URL = process.env.PUBLIC_URL || `http://localhost:${PORT}`;
@@ -1039,7 +1042,9 @@ const defaultRequisites = {
   id: 1,
   card_number: '2200 0000 0000 0000',
   bank_name: 'Т-Банк',
-  recipient_name: 'Иван И.',
+  recipient_name: 'Тимур Б.',
+  self_employed_name: 'Бенаи Тимур Рустамович',
+  self_employed_inn: '920159216794',
   comment: 'Укажите ID заказа в комментарии к переводу'
 };
 
@@ -1055,13 +1060,16 @@ app.get('/api/requisites', async (req, res) => {
 });
 
 app.put('/api/admin/requisites', requireAdmin, async (req, res) => {
-  const { card_number, bank_name, recipient_name, comment } = req.body || {};
+  const { card_number, bank_name, recipient_name, comment, self_employed_name, self_employed_inn } = req.body || {};
+  const currentReqs = readJsonFile('requisites.json', [defaultRequisites])[0] || defaultRequisites;
   const updatedData = {
     id: 1,
-    card_number: (card_number || '').toString().trim(),
-    bank_name: (bank_name || '').toString().trim(),
-    recipient_name: (recipient_name || '').toString().trim(),
-    comment: (comment || '').toString().trim(),
+    card_number: (card_number !== undefined ? card_number : currentReqs.card_number || '').toString().trim(),
+    bank_name: (bank_name !== undefined ? bank_name : currentReqs.bank_name || '').toString().trim(),
+    recipient_name: (recipient_name !== undefined ? recipient_name : currentReqs.recipient_name || '').toString().trim(),
+    self_employed_name: (self_employed_name !== undefined ? self_employed_name : currentReqs.self_employed_name || 'Бенаи Тимур Рустамович').toString().trim(),
+    self_employed_inn: (self_employed_inn !== undefined ? self_employed_inn : currentReqs.self_employed_inn || '920159216794').toString().trim(),
+    comment: (comment !== undefined ? comment : currentReqs.comment || '').toString().trim(),
     updated_at: new Date().toISOString()
   };
 

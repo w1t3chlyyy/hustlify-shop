@@ -2413,6 +2413,17 @@ Telegram: Напишите в личные сообщения на аккаун�
       <a href="#about">О нас</a>
       <a href="#faq">FAQ</a>
       <a href="/ai-agent">Hustlify Agent</a>
+      <a href="/oferta" id="footerOfferLink" style="font-weight:600;color:var(--white);">Публичная оферта</a>
+    </div>
+    <div class="flegal" style="width:100%;border-top:1px solid rgba(255,255,255,.08);padding-top:16px;margin-top:10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;font-size:12.5px;color:var(--gray-dim);">
+      <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px 14px;">
+        <span>Исполнитель: <b style="color:var(--gray);font-weight:500;">Самозанятый <span class="self-employed-name-val">Бенаи Тимур Рустамович</span></b></span>
+        <span>•</span>
+        <span>ИНН: <b style="color:var(--gray);font-weight:500;" class="self-employed-inn-val">920159216794</b></span>
+      </div>
+      <div>
+        <a href="/oferta" id="footerOfferDirect" style="color:var(--gray);text-decoration:underline;">Договор об оказании услуг (Оферта)</a>
+      </div>
     </div>
   </div>
 </footer>
@@ -2506,6 +2517,19 @@ Telegram: Напишите в личные сообщения на аккаун�
       <label style="display:block;font-size:12.5px;color:var(--gray);margin-bottom:7px;">Промокод (необязательно)</label>
       <input type="text" id="checkoutPromo" placeholder="Например R7QK9M2XPLTN" style="width:100%;padding:13px 16px;border-radius:12px;background:var(--bg-soft);border:1px solid var(--line);color:var(--white);font-size:14.5px;outline:none;text-transform:uppercase;">
     </div>
+
+    <!-- БЛОК ПУБЛИЧНОЙ ОФЕРТЫ И РЕКВИЗИТОВ САМОЗАНЯТОГО -->
+    <div style="background:var(--bg-soft);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:9px;">
+      <label style="display:flex;align-items:flex-start;gap:9px;cursor:pointer;font-size:12.5px;color:var(--gray);line-height:1.45;">
+        <input type="checkbox" id="checkoutOfferAgree" checked style="margin-top:2px;accent-color:var(--white);cursor:pointer;width:16px;height:16px;flex-shrink:0;">
+        <span>Я ознакомлен(а) и принимаю условия <a href="/oferta" id="checkoutOfferLink" style="text-decoration:underline;color:var(--white);font-weight:600;">Публичной оферты</a> и правила оказания услуг</span>
+      </label>
+      <div style="font-size:11.5px;color:var(--gray-dim);border-top:1px solid rgba(255,255,255,.06);padding-top:7px;display:flex;flex-wrap:wrap;gap:4px 12px;">
+        <span>Исполнитель: Самозанятый <b class="self-employed-name-val" style="color:var(--gray);font-weight:500;">Бенаи Тимур Рустамович</b></span>
+        <span>ИНН: <b class="self-employed-inn-val" style="color:var(--gray);font-weight:500;">920159216794</b></span>
+      </div>
+    </div>
+
     <div id="checkoutErr" style="color:var(--white);font-weight:600;font-size:12.5px;min-height:16px;"></div>
     <button class="btn btn-white" id="checkoutContinueBtn" style="justify-content:center;">Продолжить к оплате</button>
   </div>
@@ -2596,7 +2620,62 @@ Telegram: Напишите в личные сообщения на аккаун�
   </div>
 </div>
 
-<!-- SURVEY PROMPT BOTTOM TOAST -->
+<!-- MODAL: ПУБЛИЧНАЯ ОФЕРТА -->
+<div class="search-modal" id="offerModal" style="top:50%;transform:translate(-50%,calc(-50% - 16px));max-width:720px;width:calc(100% - 32px);max-height:86vh;display:flex;flex-direction:column;">
+  <div class="search-input-row" style="justify-content:space-between;flex-shrink:0;">
+    <h3 style="font-size:17px;display:flex;align-items:center;gap:8px;">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      Публичная оферта
+    </h3>
+    <button class="close-x" id="offerModalClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div>
+  <div style="overflow-y:auto;padding:22px 24px;flex:1;font-size:13.5px;line-height:1.65;color:#d4d4d8;">
+    <div style="background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin-bottom:20px;">
+      <div style="font-weight:700;color:var(--white);font-size:14.5px;margin-bottom:4px;">ПУБЛИЧНАЯ ОФЕРТА</div>
+      <div style="color:var(--gray);font-size:12.5px;">о заключении договора об оказании услуг</div>
+      <div style="margin-top:10px;font-size:12px;color:var(--gray-dim);display:flex;flex-wrap:wrap;gap:6px 14px;">
+        <span>Исполнитель: Самозанятый <b class="self-employed-name-val" style="color:var(--white);">Бенаи Тимур Рустамович</b></span>
+        <span>ИНН: <b class="self-employed-inn-val" style="color:var(--white);">920159216794</b></span>
+      </div>
+    </div>
+
+    <h4 style="font-size:15px;color:var(--white);margin:16px 0 8px;">1. Общие положения</h4>
+    <p style="margin-bottom:8px;">В настоящей Публичной оферте содержатся условия заключения Договора об оказании услуг (далее — «Договор»). Настоящей офертой признается официальное публичное предложение Исполнителя в соответствии с п. 2 ст. 437 Гражданского кодекса РФ.</p>
+    <p style="margin-bottom:8px;">Совершение указанных в настоящей Оферте действий (оформление заказа, оплата, регистрация) является подтверждением согласия обеих Сторон заключить Договор об оказании услуг без каких-либо изъятий или ограничений на условиях присоединения.</p>
+
+    <h4 style="font-size:15px;color:var(--white);margin:16px 0 8px;">2. Предмет Договора</h4>
+    <p style="margin-bottom:8px;">2.1. Исполнитель обязуется оказать Заказчику Услуги (цифровые решения, готовые IT-проекты, боты, скрипты, консультации), а Заказчик обязуется оплатить их в размере и сроки, установленные настоящим Договором.</p>
+    <p style="margin-bottom:8px;">2.2. Договор заключается путем акцепта Оферты через конклюдентные действия: оформление заявки на Сайте, регистрацию, оплату услуг Исполнителя.</p>
+
+    <h4 style="font-size:15px;color:var(--white);margin:16px 0 8px;">3. Права и обязанности Сторон</h4>
+    <p style="margin-bottom:8px;">3.1. Исполнитель обязуется оказать Услуги в надлежащем качестве и сроках, обеспечивать конфиденциальность и сохранность персональных данных Заказчика.</p>
+    <p style="margin-bottom:8px;">3.2. Заказчик обязуется предоставить достоверную контактную информацию, принять оказанные услуги и не нарушать авторские права на переданные материалы.</p>
+
+    <h4 style="font-size:15px;color:var(--white);margin:16px 0 8px;">4. Цена и порядок расчетов</h4>
+    <p style="margin-bottom:8px;">4.1. Стоимость услуг указывается на Сайте при оформлении заказа. Все расчеты производятся в безналичном порядке.</p>
+
+    <h4 style="font-size:15px;color:var(--white);margin:16px 0 8px;">5. Конфиденциальность</h4>
+    <p style="margin-bottom:8px;">Стороны обеспечивают защиту персональных данных в соответствии с ФЗ № 152-ФЗ «О персональных данных» и ФЗ № 149-ФЗ.</p>
+
+    <h4 style="font-size:15px;color:var(--white);margin:16px 0 8px;">6. Реквизиты Исполнителя</h4>
+    <div style="background:var(--bg-soft);border:1px solid var(--line);border-radius:10px;padding:14px;margin-top:10px;font-size:13px;line-height:1.8;">
+      <div>• <b>Статус:</b> Плательщик налога на профессиональный доход (Самозанятый РФ)</div>
+      <div>• <b>ФИО:</b> <span class="self-employed-name-val">Бенаи Тимур Рустамович</span></div>
+      <div>• <b>ИНН:</b> <span class="self-employed-inn-val">920159216794</span></div>
+      <div>• <b>Платформа:</b> Hustlify</div>
+      <div>• <b>Поддержка:</b> <a href="https://t.me/HustlifyHelp" target="_blank" style="text-decoration:underline;color:var(--white);">@HustlifyHelp</a></div>
+    </div>
+  </div>
+  <div style="padding:14px 24px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;flex-shrink:0;">
+    <a href="/oferta" target="_blank" style="font-size:13px;color:var(--gray);text-decoration:underline;display:inline-flex;align-items:center;gap:6px;">
+      Открыть полную версию документа
+      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/></svg>
+    </a>
+    <button class="btn btn-white" id="offerModalAccept" style="padding:10px 22px;font-size:13.5px;">Понятно</button>
+  </div>
+</div>
+
+<!-- SURVEY PROMPT BOTTOM TOAST (FIXED POPUP) -->
 <div class="survey-prompt-toast" id="surveyPromptToast">
   <div class="spt-icon">
     <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
@@ -3176,6 +3255,8 @@ function closeAll(){
   document.getElementById('projectModal').classList.remove('open');
   document.getElementById('requisitesModal').classList.remove('open');
   document.getElementById('receiptSentModal').classList.remove('open');
+  const om = document.getElementById('offerModal');
+  if(om) om.classList.remove('open');
   const sm = document.getElementById('surveyModal');
   if(sm) sm.classList.remove('open');
 }
@@ -3190,8 +3271,36 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeAll(); });
 
 const payModal = document.getElementById('payModal');
 const checkoutModal = document.getElementById('checkoutModal');
+const offerModal = document.getElementById('offerModal');
 let currentOrder = null;
 let lastPromoCode = '';
+
+const openOfferModal = (e) => {
+  if(e) e.preventDefault();
+  closeAll();
+  if(offerModal) openDrawer(offerModal);
+};
+const fOfferLink = document.getElementById('footerOfferLink');
+if(fOfferLink) fOfferLink.onclick = openOfferModal;
+const cOfferLink = document.getElementById('checkoutOfferLink');
+if(cOfferLink) cOfferLink.onclick = openOfferModal;
+const omClose = document.getElementById('offerModalClose');
+if(omClose) omClose.onclick = closeAll;
+const omAccept = document.getElementById('offerModalAccept');
+if(omAccept) omAccept.onclick = closeAll;
+
+async function loadSelfEmployedRequisites(){
+  try{
+    const res = await fetch('/api/requisites');
+    if(!res.ok) return;
+    const data = await res.json();
+    const name = data.self_employed_name || 'Бенаи Тимур Рустамович';
+    const inn = data.self_employed_inn || '920159216794';
+    document.querySelectorAll('.self-employed-name-val').forEach(el => el.textContent = name);
+    document.querySelectorAll('.self-employed-inn-val').forEach(el => el.textContent = inn);
+  }catch(e){}
+}
+loadSelfEmployedRequisites();
 
 document.getElementById('checkoutBtn').onclick = ()=>{
   if(cart.length===0){ showToast('Корзина пуста'); return; }
@@ -3205,8 +3314,13 @@ document.getElementById('checkoutClose').onclick = closeAll;
 document.getElementById('checkoutContinueBtn').onclick = async ()=>{
   const contact = document.getElementById('checkoutContact').value.trim();
   const promoCode = document.getElementById('checkoutPromo').value.trim();
+  const agree = document.getElementById('checkoutOfferAgree');
   const err = document.getElementById('checkoutErr');
   err.textContent = '';
+  if(agree && !agree.checked){
+    err.textContent = 'Для продолжения необходимо подтвердить согласие с Публичной офертой';
+    return;
+  }
   try{
     const res = await fetch('/api/orders', {
       method:'POST',
