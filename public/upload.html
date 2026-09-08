@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Установка видео для главного экрана | Hustlify</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    body {
+      background: #000000;
+      color: #ffffff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .card {
+      background: #0a0a0a;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 16px;
+      padding: 40px 32px;
+      max-width: 580px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+    }
+    .logo {
+      font-weight: 800;
+      font-size: 20px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #888888;
+      margin-bottom: 16px;
+    }
+    h1 {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      letter-spacing: -0.5px;
+    }
+    p {
+      color: #999999;
+      font-size: 15px;
+      line-height: 1.5;
+      margin-bottom: 28px;
+    }
+    .drop-zone {
+      border: 2px dashed rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      padding: 48px 24px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: rgba(255, 255, 255, 0.02);
+      margin-bottom: 24px;
+      position: relative;
+    }
+    .drop-zone.dragover {
+      border-color: #ffffff;
+      background: rgba(255, 255, 255, 0.08);
+      transform: scale(1.01);
+    }
+    .icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+      display: block;
+    }
+    .drop-text {
+      font-size: 16px;
+      font-weight: 500;
+      color: #eeeeee;
+      margin-bottom: 6px;
+    }
+    .drop-sub {
+      font-size: 13px;
+      color: #777777;
+    }
+    input[type="file"] {
+      display: none;
+    }
+    .btn {
+      display: inline-block;
+      background: #ffffff;
+      color: #000000;
+      font-weight: 600;
+      font-size: 15px;
+      padding: 12px 28px;
+      border-radius: 8px;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn:hover {
+      opacity: 0.9;
+    }
+    .progress-bar {
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+      overflow: hidden;
+      margin: 18px 0;
+      display: none;
+    }
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: #ffffff;
+      transition: width 0.2s ease;
+    }
+    .status {
+      font-size: 14px;
+      margin-top: 14px;
+      min-height: 20px;
+    }
+    .status.success { color: #4ade80; }
+    .status.error { color: #f87171; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">Hustlify Hardware</div>
+    <h1>Установка оригинального видео</h1>
+    <p>Перетащите сюда ваш видеофайл (.mp4, .mov, .webm) для моментальной установки на главный экран.</p>
+
+    <div class="drop-zone" id="dropZone">
+      <span class="icon">🎬</span>
+      <div class="drop-text">Нажмите или перетащите видео сюда</div>
+      <div class="drop-sub">MP4, MOV или WEBM (до 150 МБ)</div>
+      <input type="file" id="fileInput" accept="video/mp4,video/quicktime,video/webm">
+    </div>
+
+    <div class="progress-bar" id="progressBar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <div class="status" id="statusText"></div>
+
+    <div style="margin-top: 24px; display: flex; gap: 12px; justify-content: center;">
+      <a href="/" class="btn" style="background: rgba(255,255,255,0.1); color: #fff;">На главную</a>
+      <button class="btn" id="selectBtn">Выбрать файл</button>
+    </div>
+  </div>
+
+  <script>
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const selectBtn = document.getElementById('selectBtn');
+    const progressBar = document.getElementById('progressBar');
+    const progressFill = document.getElementById('progressFill');
+    const statusText = document.getElementById('statusText');
+
+    selectBtn.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    ['dragenter', 'dragover'].forEach(ev => {
+      dropZone.addEventListener(ev, e => {
+        e.preventDefault();
+        dropZone.classList.add('dragover');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach(ev => {
+      dropZone.addEventListener(ev, e => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+      });
+    });
+
+    dropZone.addEventListener('drop', e => {
+      if (e.dataTransfer.files.length) {
+        uploadFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length) {
+        uploadFile(fileInput.files[0]);
+      }
+    });
+
+    function uploadFile(file) {
+      if (!file) return;
+      statusText.className = 'status';
+      statusText.textContent = `Загрузка ${file.name} (${(file.size / (1024*1024)).toFixed(1)} МБ)...`;
+      progressBar.style.display = 'block';
+      progressFill.style.width = '20%';
+
+      const formData = new FormData();
+      formData.append('video', file);
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '/api/upload-hero-video', true);
+
+      xhr.upload.onprogress = e => {
+        if (e.lengthComputable) {
+          const pct = Math.round((e.loaded / e.total) * 100);
+          progressFill.style.width = pct + '%';
+        }
+      };
+
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          progressFill.style.width = '100%';
+          statusText.className = 'status success';
+          statusText.textContent = 'Готово! Ваше видео успешно установлено в главный экран. Перенаправление...';
+          setTimeout(() => {
+            window.location.href = '/?t=' + Date.now();
+          }, 1200);
+        } else {
+          statusText.className = 'status error';
+          statusText.textContent = 'Ошибка загрузки: ' + xhr.responseText;
+        }
+      };
+
+      xhr.onerror = () => {
+        statusText.className = 'status error';
+        statusText.textContent = 'Ошибка соединения при загрузке.';
+      };
+
+      xhr.send(formData);
+    }
+  </script>
+</body>
+</html>

@@ -79,10 +79,50 @@ const upload = multer({
   }
 });
 
+// Загрузка оригинального видео для главного экрана (Hero Video)
+const heroVideoStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = path.join(__dirname, 'public', 'images');
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    cb(null, 'hero_laptop.mp4');
+  }
+});
+const uploadHeroVideo = multer({
+  storage: heroVideoStorage,
+  limits: { fileSize: 150 * 1024 * 1024 }
+});
+
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.static('public'));
+
+app.post('/api/upload-hero-video', uploadHeroVideo.single('video'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'Файл видео не получен' });
+  }
+  const mp4Path = path.join(__dirname, 'public', 'images', 'hero_laptop.mp4');
+  const posterPath = path.join(__dirname, 'public', 'images', 'hero_laptop_poster.jpg');
+  const webmPath = path.join(__dirname, 'public', 'images', 'hero_laptop.webm');
+  
+  // Создаём постер первого кадра через ffmpeg
+  const { exec } = require('child_process');
+  exec(`ffmpeg -y -i "${mp4Path}" -vframes 1 -q:v 2 "${posterPath}"`, (err) => {
+    if (err) console.error('Ошибка создания постера:', err.message);
+  });
+  exec(`ffmpeg -y -i "${mp4Path}" -c:v libvpx-vp9 -b:v 0 -crf 32 -an "${webmPath}"`, (err) => {
+    if (err) console.error('Ошибка конвертации в webm:', err.message);
+  });
+
+  return res.json({ success: true, message: 'Оригинальное видео успешно установлено в главный экран!' });
+});
+
+app.get('/upload.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'upload.html'));
+});
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
@@ -1682,15 +1722,20 @@ app.use((err, req, res, next) => {
 });
 
 /* ================= ЗАПУСК ================= */
+let serverInstance = null;
 function startServer() {
-  return app.listen(PORT, '0.0.0.0', () => {
+  if (serverInstance) {
+    return serverInstance;
+  }
+  serverInstance = app.listen(PORT, '0.0.0.0', () => {
     console.log(`[Hustlify] Сервер запущен: http://localhost:${PORT}`);
     console.log(`[Hustlify] Админка: http://localhost:${PORT}/admin.html`);
     console.log(`[Hustlify] База данных: Supabase`);
   });
+  return serverInstance;
 }
 
-if (require.main === module || (require.main && require.main.filename && (require.main.filename.endsWith('server.js') || require.main.filename.endsWith('index.js')))) {
+if (require.main === module) {
   startServer();
 }
 
