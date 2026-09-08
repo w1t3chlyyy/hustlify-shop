@@ -51,10 +51,7 @@ img{max-width:100%;display:block;}
 
 .ambient{
   position:fixed;inset:0;z-index:-2;pointer-events:none;
-  background:
-    radial-gradient(ellipse 600px 400px at 15% 0%, rgba(255,255,255,.08), transparent 60%),
-    radial-gradient(ellipse 700px 500px at 85% 10%, rgba(255,255,255,.06), transparent 60%),
-    #08090a;
+  background:#000000;
 }
 .noise{
   position:fixed;inset:0;z-index:-1;opacity:.035;pointer-events:none;
@@ -62,13 +59,24 @@ img{max-width:100%;display:block;}
 }
 
 header{
-  position:sticky;top:0;z-index:200;
-  padding:18px 0;
-  background:rgba(8,9,10,.65);
-  backdrop-filter:blur(16px) saturate(140%);
-  border-bottom:1px solid var(--line);
+  position:sticky;top:14px;z-index:200;
+  padding:0 24px;
+  background:transparent;
+  border-bottom:none;
+  pointer-events:none;
+  margin-bottom:12px;
 }
-header .wrap{display:flex;align-items:center;justify-content:space-between;gap:24px;}
+header .wrap{
+  pointer-events:auto;
+  display:flex;align-items:center;justify-content:space-between;gap:24px;
+  padding:10px 26px;
+  background:rgba(16, 17, 21, 0.6);
+  backdrop-filter:blur(8px) saturate(130%);
+  -webkit-backdrop-filter:blur(8px) saturate(130%);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:100px;
+  box-shadow:0 12px 36px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
+}
 .nav-left{display:flex;align-items:center;gap:34px;}
 .nav-left a{font-size:14.5px;color:var(--gray);transition:color .25s var(--ease);position:relative;}
 .nav-left a:hover{color:var(--white);}
@@ -115,7 +123,11 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
   white-space:nowrap;
 }
 .btn-contact:hover{background:var(--white);color:var(--bg);}
-@media(max-width:860px){.nav-left a{display:none;}}
+@media(max-width:860px){
+  header{top:10px;padding:0 12px;margin-bottom:8px;}
+  header .wrap{padding:9px 18px;}
+  .nav-left a{display:none;}
+}
 
 /* ================= HERO REDESIGN (Frame 73) ================= */
 .hero {
@@ -297,7 +309,7 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
 }
 
 .hero-social-stat {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Unbounded', sans-serif;
   font-size: 19px;
   font-weight: 800;
   color: #ffffff;
@@ -2089,19 +2101,6 @@ body.page-leaving {
   </div>
 </header>
 
-<div class="urgency-bar">
-  <div class="urgency-badge">
-    <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M12 2c0 3.8-3.1 7-7 7 0 5 4 9 9 9s9-4 9-9c-2 0-4-1-5-3 0 2-2 3-4 3 0-3-2-5-2-7z"/></svg>
-    FLASH SALE
-  </div>
-  <div>Скидка до <b>-30%</b> на готовые IT-проекты под ключ</div>
-  <div class="urgency-timer" id="urgencyTimer">03:42:18</div>
-  <div class="live-users-pill">
-    <span class="live-dot"></span>
-    <span><b id="liveUserCount">24</b> человека выбирают проект</span>
-  </div>
-</div>
-
 <section class="hero" id="hero">
   <div class="hero-container">
     <div class="hero-left">
@@ -2112,7 +2111,7 @@ body.page-leaving {
         <u>за 2 недели</u>
       </h1>
       <p class="hero-subtitle" id="heroSubtitle">
-        Не трать время на поиски подрядчиков. Мы берём на себя всё: от идеи до запуска.
+        Не трать время на поиски подрядчиков. Мы берём на себя всё: от идеи до первых денег.
       </p>
       <div class="hero-actions" id="heroActions">
         <a href="#cases" class="hero-btn-primary" id="heroBtnCases">Кейсы</a>
