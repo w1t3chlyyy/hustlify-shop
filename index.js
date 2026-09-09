@@ -105,15 +105,20 @@ app.post('/api/upload-hero-video', uploadHeroVideo.single('video'), (req, res) =
     return res.status(400).json({ error: 'Файл видео не получен' });
   }
   const mp4Path = path.join(__dirname, 'public', 'images', 'hero_laptop.mp4');
+  const heroVideoPath = path.join(__dirname, 'public', 'images', 'hero_video.mp4');
   const posterPath = path.join(__dirname, 'public', 'images', 'hero_laptop_poster.jpg');
   const webmPath = path.join(__dirname, 'public', 'images', 'hero_laptop.webm');
   
+  try {
+    fs.copyFileSync(mp4Path, heroVideoPath);
+  } catch (e) {}
+
   // Создаём постер первого кадра через ffmpeg
   const { exec } = require('child_process');
   exec(`ffmpeg -y -i "${mp4Path}" -vframes 1 -q:v 2 "${posterPath}"`, (err) => {
     if (err) console.error('Ошибка создания постера:', err.message);
   });
-  exec(`ffmpeg -y -i "${mp4Path}" -c:v libvpx-vp9 -b:v 0 -crf 32 -an "${webmPath}"`, (err) => {
+  exec(`ffmpeg -y -i "${mp4Path}" -c:v libvpx-vp9 -b:v 0 -crf 32 -an "${webmPath}" && cp "${webmPath}" "${path.join(__dirname, 'public', 'images', 'hero_video.webm')}"`, (err) => {
     if (err) console.error('Ошибка конвертации в webm:', err.message);
   });
 
