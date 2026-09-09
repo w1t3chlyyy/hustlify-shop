@@ -2238,7 +2238,7 @@ footer .flinks a:hover{color:var(--white);}
 
 /* === SOCIAL PROOF TOAST (GLASSMORPHISM) === */
 .social-proof-toast{
-  position:fixed;bottom:24px;left:24px;z-index:9990;
+  position:fixed;bottom:24px;right:24px;z-index:9990;
   background:rgba(18, 18, 24, 0.65);
   background:linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.04) 100%);
   border:1px solid rgba(255, 255, 255, 0.28);
@@ -2372,6 +2372,7 @@ footer .flinks a:hover{color:var(--white);}
   .survey-prompt-toast{left:14px;right:14px;bottom:14px;max-width:none;padding:14px 16px;}
   .spt-title{font-size:12.5px;}
   .spt-sub{font-size:11px;}
+  .social-proof-toast{left:14px;right:14px;bottom:14px;max-width:none;padding:14px 16px;}
 }
 
 /* === SURVEY QUESTION OPTIONS === */
@@ -4925,6 +4926,33 @@ document.querySelectorAll('[data-tg]').forEach(el=>{
   if(closeBtn){
     closeBtn.addEventListener('click', () => toast.classList.remove('show'));
   }
+})();
+
+/* === 4b. ANTI-OVERLAP: keep the sales toast clear of the survey toast === */
+(function initToastStacking(){
+  const social = document.getElementById('socialProofToast');
+  const survey = document.getElementById('surveyPromptToast');
+  if(!social || !survey) return;
+
+  const BASE_BOTTOM = 24;
+  const GAP = 14;
+
+  function reposition(){
+    if(survey.classList.contains('show') && social.classList.contains('show')){
+      social.style.bottom = (BASE_BOTTOM + survey.offsetHeight + GAP) + 'px';
+    } else {
+      social.style.bottom = BASE_BOTTOM + 'px';
+    }
+  }
+
+  const socialObserver = new MutationObserver(reposition);
+  socialObserver.observe(social, { attributes: true, attributeFilter: ['class'] });
+
+  const surveyObserver = new MutationObserver(reposition);
+  surveyObserver.observe(survey, { attributes: true, attributeFilter: ['class'] });
+
+  window.addEventListener('resize', reposition);
+  reposition();
 })();
 
 /* === 5. AI MATCHMAKER WIZARD LOGIC === */
