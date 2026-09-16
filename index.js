@@ -509,6 +509,26 @@ app.put('/api/admin/rates', requireAdmin, async (req, res) => {
 });
 
 /* ================= PROJECTS (Hustlify) ================= */
+// Как и у products, поля во фронтенде — camelCase (shortDesc, fullDesc, buttonText,
+// portfolioUrl), а в таблице Supabase — snake_case (short_desc, full_desc, ...).
+// PROJECT_SELECT делает преобразование прямо в запросе через алиасы Supabase.
+const PROJECT_SELECT = 'id,title,type,image,shortDesc:short_desc,fullDesc:full_desc,url,buttonText:button_text,portfolioUrl:portfolio_url,hidden,created_at';
+
+function toDbProject(p) {
+  const out = {};
+  if (p.id !== undefined) out.id = p.id;
+  if (p.title !== undefined) out.title = p.title;
+  if (p.type !== undefined) out.type = p.type;
+  if (p.image !== undefined) out.image = p.image;
+  if (p.shortDesc !== undefined) out.short_desc = p.shortDesc;
+  if (p.fullDesc !== undefined) out.full_desc = p.fullDesc;
+  if (p.url !== undefined) out.url = p.url;
+  if (p.buttonText !== undefined) out.button_text = p.buttonText;
+  if (p.portfolioUrl !== undefined) out.portfolio_url = p.portfolioUrl;
+  if (p.hidden !== undefined) out.hidden = !!p.hidden;
+  return out;
+}
+
 function loadProjectsList() {
   const list = readJsonFile('projects.json', []);
   return Array.isArray(list) ? list : [];
@@ -526,40 +546,106 @@ function sanitizeProjectInput(p, existing) {
     fullDesc: p.fullDesc !== undefined ? String(p.fullDesc) : (base.fullDesc || ''),
     url: p.url !== undefined ? String(p.url).trim() : (base.url || ''),
     buttonText: p.buttonText !== undefined ? String(p.buttonText).trim() : (base.buttonText || ''),
-    portfolioUrl: p.portfolioUrl !== undefined ? String(p.portfolioUrl).trim() : (base.portfolioUrl || '')
+    portfolioUrl: p.portfolioUrl !== undefined ? String(p.portfolioUrl).trim() : (base.portfolioUrl || ''),
+    hidden: p.hidden !== undefined ? !!p.hidden : !!base.hidden
   };
 }
 
-app.get('/api/projects', (req, res) => {
+// GET /api/projects — публичный список, скрытые проекты не показываем
+app.get('/api/projects', async (req, res) => {
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('projects')
+        .select(PROJECT_SELECT)
+        .order('created_at', { ascending: true });
+      if (!error && data) return res.json(data.filter(p => !p.hidden));
+    } catch (e) {
+      console.error('Supabase projects error:', e.message);
+    }
+  }
+  res.json(loadProjectsList().filter(p => !p.hidden));
+});
+
+// GET /api/admin/projects — в админке видно всё, включая скрытые
+app.get('/api/admin/projects', requireAdmin, async (req, res) => {
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('projects')
+        .select(PROJECT_SELECT)
+        .order('created_at', { ascending: true });
+      if (!error && data) return res.json(data);
+    } catch (e) {
+      console.error('Supabase admin projects error:', e.message);
+    }
+  }
   res.json(loadProjectsList());
 });
 
-app.get('/api/admin/projects', requireAdmin, (req, res) => {
-  res.json(loadProjectsList());
-});
-
-app.post('/api/admin/projects', requireAdmin, (req, res) => {
+app.post('/api/admin/projects', requireAdmin, async (req, res) => {
   const body = req.body || {};
   if (!body.title || !String(body.title).trim()) return res.status(400).json({ error: 'Укажите название проекта' });
-  const list = loadProjectsList();
   const project = sanitizeProjectInput(body, { id: 'proj' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6) });
+
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('projects')
+        .insert([toDbProject(project)])
+        .select(PROJECT_SELECT);
+      if (!error && data && data.length > 0) return res.json(data[0]);
+      if (error) console.error('Supabase insert project error:', error.message);
+    } catch (e) {
+      console.error('Supabase insert project error:', e.message);
+    }
+  }
+
+  const list = loadProjectsList();
   list.push(project);
   writeJsonFile('projects.json', list);
   res.json(project);
 });
 
-app.put('/api/admin/projects/:id', requireAdmin, (req, res) => {
+app.put('/api/admin/projects/:id', requireAdmin, async (req, res) => {
+  const body = req.body || {};
+  if (body.title !== undefined && !String(body.title).trim()) return res.status(400).json({ error: 'Укажите название проекта' });
+
+  if (supabase) {
+    try {
+      const { data: existingRows } = await supabase.from('projects').select(PROJECT_SELECT).eq('id', req.params.id);
+      const existing = existingRows && existingRows[0];
+      if (existing) {
+        const updated = sanitizeProjectInput(body, existing);
+        const { data, error } = await supabase
+          .from('projects')
+          .update(toDbProject(updated))
+          .eq('id', req.params.id)
+          .select(PROJECT_SELECT);
+        if (!error && data && data.length > 0) return res.json(data[0]);
+        if (error) console.error('Supabase update project error:', error.message);
+      }
+    } catch (e) {
+      console.error('Supabase update project error:', e.message);
+    }
+  }
+
   const list = loadProjectsList();
   const idx = list.findIndex(x => x.id === req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'Проект не найден' });
-  const body = req.body || {};
-  if (body.title !== undefined && !String(body.title).trim()) return res.status(400).json({ error: 'Укажите название проекта' });
   list[idx] = sanitizeProjectInput(body, list[idx]);
   writeJsonFile('projects.json', list);
   res.json(list[idx]);
 });
 
-app.delete('/api/admin/projects/:id', requireAdmin, (req, res) => {
+app.delete('/api/admin/projects/:id', requireAdmin, async (req, res) => {
+  if (supabase) {
+    try {
+      await supabase.from('projects').delete().eq('id', req.params.id);
+    } catch (e) {
+      console.error('Supabase delete project error:', e.message);
+    }
+  }
   let list = loadProjectsList();
   list = list.filter(x => x.id !== req.params.id);
   writeJsonFile('projects.json', list);
@@ -582,36 +668,86 @@ function sanitizePartnerInput(p, existing) {
   };
 }
 
-app.get('/api/partners', (req, res) => {
+app.get('/api/partners', async (req, res) => {
+  if (supabase) {
+    try {
+      const { data, error } = await supabase.from('partners').select('*').order('created_at', { ascending: true });
+      if (!error && data) return res.json(data);
+    } catch (e) {
+      console.error('Supabase partners error:', e.message);
+    }
+  }
   res.json(loadPartnersList());
 });
 
-app.get('/api/admin/partners', requireAdmin, (req, res) => {
+app.get('/api/admin/partners', requireAdmin, async (req, res) => {
+  if (supabase) {
+    try {
+      const { data, error } = await supabase.from('partners').select('*').order('created_at', { ascending: true });
+      if (!error && data) return res.json(data);
+    } catch (e) {
+      console.error('Supabase admin partners error:', e.message);
+    }
+  }
   res.json(loadPartnersList());
 });
 
-app.post('/api/admin/partners', requireAdmin, (req, res) => {
+app.post('/api/admin/partners', requireAdmin, async (req, res) => {
   const body = req.body || {};
   if (!body.name || !String(body.name).trim()) return res.status(400).json({ error: 'Укажите название партнёра' });
-  const list = loadPartnersList();
   const partner = sanitizePartnerInput(body, { id: 'ptn' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6) });
+
+  if (supabase) {
+    try {
+      const { data, error } = await supabase.from('partners').insert([partner]).select();
+      if (!error && data && data.length > 0) return res.json(data[0]);
+      if (error) console.error('Supabase insert partner error:', error.message);
+    } catch (e) {
+      console.error('Supabase insert partner error:', e.message);
+    }
+  }
+
+  const list = loadPartnersList();
   list.push(partner);
   writeJsonFile('partners.json', list);
   res.json(partner);
 });
 
-app.put('/api/admin/partners/:id', requireAdmin, (req, res) => {
+app.put('/api/admin/partners/:id', requireAdmin, async (req, res) => {
+  const body = req.body || {};
+  if (body.name !== undefined && !String(body.name).trim()) return res.status(400).json({ error: 'Укажите название партнёра' });
+
+  if (supabase) {
+    try {
+      const { data: existingRows } = await supabase.from('partners').select('*').eq('id', req.params.id);
+      const existing = existingRows && existingRows[0];
+      if (existing) {
+        const updated = sanitizePartnerInput(body, existing);
+        const { data, error } = await supabase.from('partners').update(updated).eq('id', req.params.id).select();
+        if (!error && data && data.length > 0) return res.json(data[0]);
+        if (error) console.error('Supabase update partner error:', error.message);
+      }
+    } catch (e) {
+      console.error('Supabase update partner error:', e.message);
+    }
+  }
+
   const list = loadPartnersList();
   const idx = list.findIndex(x => x.id === req.params.id);
   if (idx === -1) return res.status(404).json({ error: 'Партнёр не найден' });
-  const body = req.body || {};
-  if (body.name !== undefined && !String(body.name).trim()) return res.status(400).json({ error: 'Укажите название партнёра' });
   list[idx] = sanitizePartnerInput(body, list[idx]);
   writeJsonFile('partners.json', list);
   res.json(list[idx]);
 });
 
-app.delete('/api/admin/partners/:id', requireAdmin, (req, res) => {
+app.delete('/api/admin/partners/:id', requireAdmin, async (req, res) => {
+  if (supabase) {
+    try {
+      await supabase.from('partners').delete().eq('id', req.params.id);
+    } catch (e) {
+      console.error('Supabase delete partner error:', e.message);
+    }
+  }
   let list = loadPartnersList();
   list = list.filter(x => x.id !== req.params.id);
   writeJsonFile('partners.json', list);
