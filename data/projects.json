@@ -1,27 +1,46 @@
-{
-  "apex": {
+[
+  {
+    "id": "apex",
     "title": "Apex Core",
     "type": "site",
+    "image": "images/projects/apex.png",
+    "shortDesc": "Сервис AI агентов для вашего бизнеса. <b>Продажи будут идти даже когда ты спишь</b>",
+    "fullDesc": "Сервис для быстрого внедрения автономных AI-агентов в ваш бизнес. Автоматизирует консультации, продажи и обработку входящих заявок 24/7. Процесс подключения максимально упрощен и занимает около 5 минут без сложного кода.",
     "url": "https://apex-core.site",
-    "buttonText": "Перейти на сайт"
+    "buttonText": "Перейти на сайт",
+    "portfolioUrl": ""
   },
-  "flux": {
+  {
+    "id": "flux",
     "title": "Flux Studio",
     "type": "telegram",
+    "image": "images/projects/flux.png",
+    "shortDesc": "Студия дизайна. Упаковка бизнеса под ключ с 0. <b>Зацепи клиента стилем!</b>",
+    "fullDesc": "Студия визуального оформления: аватарки, баннеры, полная упаковка бренда с нуля. Помогаем каналу или проекту выглядеть узнаваемо и профессионально с первого касания.",
     "url": "https://t.me/+zhWLLWIaVeI2Y2Yy",
     "buttonText": "Подробнее в Telegram",
     "portfolioUrl": "https://t.me/+0Bd2iyw1aOU4NDEy"
   },
-  "vieto": {
+  {
+    "id": "vieto",
     "title": "Vieto Store",
     "type": "telegram",
+    "image": "images/projects/vieto.png",
+    "shortDesc": "Магазин цифровых продуктов. От верификаций до звёзд и премиума в Telegram. <b>Автовыдача 24/7</b>",
+    "fullDesc": "Магазин цифровых продуктов: верификации криптокошельков, бирж и Telegram-сервисов, накрутка активности в соцсетях. Работает в формате автовыдачи 24/7 — заказ обрабатывается без ожидания менеджера в рабочее время.",
     "url": "https://t.me/VietoFullStore",
-    "buttonText": "Подробнее в Telegram"
+    "buttonText": "Подробнее в Telegram",
+    "portfolioUrl": ""
   },
-  "cursor": {
+  {
+    "id": "cursor",
     "title": "Cursor Market",
     "type": "telegram",
+    "image": "images/projects/cursor.png",
+    "shortDesc": "Витрина, которая поможет вашему оформлению. Премиум/NFT/Звёзды. <b>Стань привлекательнее в Telegram</b>",
+    "fullDesc": "Витрина премиум-атрибутики Telegram: юзернеймы, NFT, подарки и звёзды. Помогаем собрать заметный, статусный профиль.",
     "url": "https://t.me/CursorRobot",
-    "buttonText": "Подробнее в Telegram"
+    "buttonText": "Подробнее в Telegram",
+    "portfolioUrl": ""
   }
-}
+]

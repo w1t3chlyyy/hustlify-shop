@@ -508,45 +508,114 @@ app.put('/api/admin/rates', requireAdmin, async (req, res) => {
   res.json({ ok: true, products: products.filter(p => p.cat === 'Звезды&Премиум') });
 });
 
-/* ================= PROJECTS CONFIG & LINKS ================= */
-const DEFAULT_PROJECT_LINKS = {
-  apex: {
-    title: 'Apex Core',
-    type: 'site',
-    url: 'https://apex-core.site',
-    buttonText: 'Перейти на сайт'
-  },
-  flux: {
-    title: 'Flux Studio',
-    type: 'telegram',
-    url: 'https://t.me/+zhWLLWIaVeI2Y2Yy',
-    buttonText: 'Подробнее в Telegram',
-    portfolioUrl: 'https://t.me/+0Bd2iyw1aOU4NDEy'
-  },
-  vieto: {
-    title: 'Vieto Store',
-    type: 'telegram',
-    url: 'https://t.me/VietoFullStore',
-    buttonText: 'Подробнее в Telegram'
-  },
-  cursor: {
-    title: 'Cursor Market',
-    type: 'telegram',
-    url: 'https://t.me/CursorRobot',
-    buttonText: 'Подробнее в Telegram'
-  }
-};
+/* ================= PROJECTS (Hustlify) ================= */
+function loadProjectsList() {
+  const list = readJsonFile('projects.json', []);
+  return Array.isArray(list) ? list : [];
+}
+
+function sanitizeProjectInput(p, existing) {
+  const base = existing || {};
+  const type = p.type === 'site' ? 'site' : (p.type === 'telegram' ? 'telegram' : (base.type || 'telegram'));
+  return {
+    ...base,
+    title: p.title !== undefined ? String(p.title).trim() : (base.title || ''),
+    type,
+    image: p.image !== undefined ? String(p.image).trim() : (base.image || ''),
+    shortDesc: p.shortDesc !== undefined ? String(p.shortDesc) : (base.shortDesc || ''),
+    fullDesc: p.fullDesc !== undefined ? String(p.fullDesc) : (base.fullDesc || ''),
+    url: p.url !== undefined ? String(p.url).trim() : (base.url || ''),
+    buttonText: p.buttonText !== undefined ? String(p.buttonText).trim() : (base.buttonText || ''),
+    portfolioUrl: p.portfolioUrl !== undefined ? String(p.portfolioUrl).trim() : (base.portfolioUrl || '')
+  };
+}
 
 app.get('/api/projects', (req, res) => {
-  const fileData = readJsonFile('projects.json') || {};
-  res.json({ ...DEFAULT_PROJECT_LINKS, ...fileData });
+  res.json(loadProjectsList());
 });
 
-app.put('/api/admin/projects', requireAdmin, (req, res) => {
-  const current = readJsonFile('projects.json') || {};
-  const updated = { ...DEFAULT_PROJECT_LINKS, ...current, ...(req.body || {}) };
-  writeJsonFile('projects.json', updated);
-  res.json({ ok: true, projects: updated });
+app.get('/api/admin/projects', requireAdmin, (req, res) => {
+  res.json(loadProjectsList());
+});
+
+app.post('/api/admin/projects', requireAdmin, (req, res) => {
+  const body = req.body || {};
+  if (!body.title || !String(body.title).trim()) return res.status(400).json({ error: 'Укажите название проекта' });
+  const list = loadProjectsList();
+  const project = sanitizeProjectInput(body, { id: 'proj' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6) });
+  list.push(project);
+  writeJsonFile('projects.json', list);
+  res.json(project);
+});
+
+app.put('/api/admin/projects/:id', requireAdmin, (req, res) => {
+  const list = loadProjectsList();
+  const idx = list.findIndex(x => x.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: 'Проект не найден' });
+  const body = req.body || {};
+  if (body.title !== undefined && !String(body.title).trim()) return res.status(400).json({ error: 'Укажите название проекта' });
+  list[idx] = sanitizeProjectInput(body, list[idx]);
+  writeJsonFile('projects.json', list);
+  res.json(list[idx]);
+});
+
+app.delete('/api/admin/projects/:id', requireAdmin, (req, res) => {
+  let list = loadProjectsList();
+  list = list.filter(x => x.id !== req.params.id);
+  writeJsonFile('projects.json', list);
+  res.json({ ok: true });
+});
+
+/* ================= PARTNERS ================= */
+function loadPartnersList() {
+  const list = readJsonFile('partners.json', []);
+  return Array.isArray(list) ? list : [];
+}
+
+function sanitizePartnerInput(p, existing) {
+  const base = existing || {};
+  return {
+    ...base,
+    name: p.name !== undefined ? String(p.name).trim() : (base.name || ''),
+    url: p.url !== undefined ? String(p.url).trim() : (base.url || ''),
+    logo: p.logo !== undefined ? String(p.logo).trim() : (base.logo || '')
+  };
+}
+
+app.get('/api/partners', (req, res) => {
+  res.json(loadPartnersList());
+});
+
+app.get('/api/admin/partners', requireAdmin, (req, res) => {
+  res.json(loadPartnersList());
+});
+
+app.post('/api/admin/partners', requireAdmin, (req, res) => {
+  const body = req.body || {};
+  if (!body.name || !String(body.name).trim()) return res.status(400).json({ error: 'Укажите название партнёра' });
+  const list = loadPartnersList();
+  const partner = sanitizePartnerInput(body, { id: 'ptn' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6) });
+  list.push(partner);
+  writeJsonFile('partners.json', list);
+  res.json(partner);
+});
+
+app.put('/api/admin/partners/:id', requireAdmin, (req, res) => {
+  const list = loadPartnersList();
+  const idx = list.findIndex(x => x.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: 'Партнёр не найден' });
+  const body = req.body || {};
+  if (body.name !== undefined && !String(body.name).trim()) return res.status(400).json({ error: 'Укажите название партнёра' });
+  list[idx] = sanitizePartnerInput(body, list[idx]);
+  writeJsonFile('partners.json', list);
+  res.json(list[idx]);
+});
+
+app.delete('/api/admin/partners/:id', requireAdmin, (req, res) => {
+  let list = loadPartnersList();
+  list = list.filter(x => x.id !== req.params.id);
+  writeJsonFile('partners.json', list);
+  res.json({ ok: true });
 });
 
 /* ================= NEWS ================= */
