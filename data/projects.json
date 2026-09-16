@@ -8,7 +8,8 @@
     "fullDesc": "Сервис для быстрого внедрения автономных AI-агентов в ваш бизнес. Автоматизирует консультации, продажи и обработку входящих заявок 24/7. Процесс подключения максимально упрощен и занимает около 5 минут без сложного кода.",
     "url": "https://apex-core.site",
     "buttonText": "Перейти на сайт",
-    "portfolioUrl": ""
+    "portfolioUrl": "",
+    "hidden": false
   },
   {
     "id": "flux",
@@ -19,7 +20,8 @@
     "fullDesc": "Студия визуального оформления: аватарки, баннеры, полная упаковка бренда с нуля. Помогаем каналу или проекту выглядеть узнаваемо и профессионально с первого касания.",
     "url": "https://t.me/+zhWLLWIaVeI2Y2Yy",
     "buttonText": "Подробнее в Telegram",
-    "portfolioUrl": "https://t.me/+0Bd2iyw1aOU4NDEy"
+    "portfolioUrl": "https://t.me/+0Bd2iyw1aOU4NDEy",
+    "hidden": false
   },
   {
     "id": "vieto",
@@ -30,7 +32,8 @@
     "fullDesc": "Магазин цифровых продуктов: верификации криптокошельков, бирж и Telegram-сервисов, накрутка активности в соцсетях. Работает в формате автовыдачи 24/7 — заказ обрабатывается без ожидания менеджера в рабочее время.",
     "url": "https://t.me/VietoFullStore",
     "buttonText": "Подробнее в Telegram",
-    "portfolioUrl": ""
+    "portfolioUrl": "",
+    "hidden": false
   },
   {
     "id": "cursor",
@@ -41,6 +44,7 @@
     "fullDesc": "Витрина премиум-атрибутики Telegram: юзернеймы, NFT, подарки и звёзды. Помогаем собрать заметный, статусный профиль.",
     "url": "https://t.me/CursorRobot",
     "buttonText": "Подробнее в Telegram",
-    "portfolioUrl": ""
+    "portfolioUrl": "",
+    "hidden": false
   }
 ]
