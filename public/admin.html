@@ -130,7 +130,8 @@ td.num{font-family:'Unbounded';font-weight:600;}
     <div class="tabs" id="mainTabs">
       <button class="tab active" data-tab="products">Товары и кейсы</button>
       <button class="tab" data-tab="stars-premium">Курсы Звёзд и Премиум</button>
-      <button class="tab" data-tab="projects">Ссылки проектов</button>
+      <button class="tab" data-tab="projects">Проекты Hustlify</button>
+      <button class="tab" data-tab="partners">Партнёры</button>
       <button class="tab" data-tab="news">Новости</button>
       <button class="tab" data-tab="orders">Заказы</button>
       <button class="tab" data-tab="requisites">Реквизиты</button>
@@ -264,95 +265,24 @@ td.num{font-family:'Unbounded';font-weight:600;}
 
     <div class="panel" id="panel-projects">
       <div class="toolbar">
-        <div>
-          <h2 style="font-size:18px;margin-bottom:4px;">Ссылки проектов</h2>
-          <div style="color:var(--gray);font-size:13px;">Управление индивидуальными ссылками проектов для кнопки «Подробнее» и карточек витрины</div>
-        </div>
-        <button class="add-btn" id="saveProjectsBtn">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" style="display:inline-block;vertical-align:-2px;margin-right:6px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-          Сохранить ссылки
-        </button>
+        <div style="color:var(--gray);font-size:13.5px;" id="projectsCount"></div>
+        <button class="add-btn" id="addProjectBtn">+ Добавить проект</button>
       </div>
+      <table>
+        <thead><tr><th>Проект</th><th>Тип</th><th>Ссылка</th><th></th></tr></thead>
+        <tbody id="projectsTbody"></tbody>
+      </table>
+    </div>
 
-      <div class="rates-grid" style="margin-bottom:20px;">
-        <!-- Apex Core -->
-        <div class="rate-card">
-          <div class="rate-card-head">
-            <div class="rate-icon" style="background:rgba(255,255,255,0.06);color:var(--white);">
-              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 22 22 22 12 2"/><line x1="12" y1="9" x2="12" y2="15"/></svg>
-            </div>
-            <div>
-              <div class="rate-card-title">Apex Core (Сайт)</div>
-              <div class="rate-card-sub">Проект ведёт на внешний веб-сайт вместо Telegram</div>
-            </div>
-          </div>
-          <div class="field">
-            <label>Ссылка на веб-сайт (URL)</label>
-            <input type="text" id="proj_apex_url" placeholder="https://apex-core.site">
-          </div>
-          <div class="field" style="margin-bottom:0;">
-            <label>Текст кнопки</label>
-            <input type="text" id="proj_apex_btn" placeholder="Перейти на сайт">
-          </div>
-        </div>
-
-        <!-- Flux Studio -->
-        <div class="rate-card">
-          <div class="rate-card-head">
-            <div class="rate-icon" style="background:rgba(255,255,255,0.06);color:var(--white);">
-              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
-            </div>
-            <div>
-              <div class="rate-card-title">Flux Studio (Telegram)</div>
-              <div class="rate-card-sub">Индивидуальная ссылка в Telegram для студии дизайна</div>
-            </div>
-          </div>
-          <div class="field">
-            <label>Ссылка в Telegram</label>
-            <input type="text" id="proj_flux_url" placeholder="https://t.me/+zhWLLWIaVeI2Y2Yy">
-          </div>
-          <div class="field" style="margin-bottom:0;">
-            <label>Ссылка на портфолио</label>
-            <input type="text" id="proj_flux_portfolio" placeholder="https://t.me/+0Bd2iyw1aOU4NDEy">
-          </div>
-        </div>
-
-        <!-- Vieto Store -->
-        <div class="rate-card">
-          <div class="rate-card-head">
-            <div class="rate-icon" style="background:rgba(255,255,255,0.06);color:var(--white);">
-              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-            </div>
-            <div>
-              <div class="rate-card-title">Vieto Store (Telegram)</div>
-              <div class="rate-card-sub">Индивидуальная ссылка в Telegram для магазина цифровых продуктов</div>
-            </div>
-          </div>
-          <div class="field" style="margin-bottom:0;">
-            <label>Ссылка в Telegram</label>
-            <input type="text" id="proj_vieto_url" placeholder="https://t.me/VietoFullStore">
-          </div>
-        </div>
-
-        <!-- Cursor Market -->
-        <div class="rate-card">
-          <div class="rate-card-head">
-            <div class="rate-icon" style="background:rgba(255,255,255,0.06);color:var(--white);">
-              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-            </div>
-            <div>
-              <div class="rate-card-title">Cursor Market (Telegram)</div>
-              <div class="rate-card-sub">Индивидуальная ссылка в Telegram для премиум-атрибутики</div>
-            </div>
-          </div>
-          <div class="field" style="margin-bottom:0;">
-            <label>Ссылка в Telegram</label>
-            <input type="text" id="proj_cursor_url" placeholder="https://t.me/CursorRobot">
-          </div>
-        </div>
+    <div class="panel" id="panel-partners">
+      <div class="toolbar">
+        <div style="color:var(--gray);font-size:13.5px;" id="partnersCount"></div>
+        <button class="add-btn" id="addPartnerBtn">+ Добавить партнёра</button>
       </div>
-
-      <div id="projectsStatusMsg" style="min-height:22px;margin-bottom:12px;font-size:13.5px;font-weight:500;"></div>
+      <table>
+        <thead><tr><th>Партнёр</th><th>Ссылка</th><th></th></tr></thead>
+        <tbody id="partnersTbody"></tbody>
+      </table>
     </div>
 
     <div class="panel" id="panel-news">
@@ -455,6 +385,56 @@ td.num{font-family:'Unbounded';font-weight:600;}
   </div>
 </div>
 
+<!-- PROJECT MODAL -->
+<div class="modal" id="projectModalAdmin">
+  <div class="modal-head"><h3 id="projectModalTitle">Новый проект</h3></div>
+  <div class="modal-body">
+    <div class="grid2">
+      <div class="field"><label>Название проекта</label><input id="pf_title" placeholder="Apex Core"></div>
+      <div class="field"><label>Тип</label>
+        <select id="pf_type" style="width:100%;padding:13px 16px;border-radius:12px;background:var(--bg);border:1px solid var(--line);color:var(--white);">
+          <option value="telegram">Telegram</option>
+          <option value="site">Сайт</option>
+        </select>
+      </div>
+    </div>
+    <div class="field"><label>Ссылка (URL сайта или Telegram)</label><input id="pf_url" placeholder="https://... или https://t.me/..."></div>
+    <div class="grid2">
+      <div class="field"><label>Текст кнопки</label><input id="pf_btn" placeholder="Перейти на сайт / Подробнее в Telegram"></div>
+      <div class="field"><label>Ссылка на портфолио (необязательно)</label><input id="pf_portfolio" placeholder="https://t.me/..."></div>
+    </div>
+    <div class="field"><label>Изображение/логотип проекта</label><input id="pf_image" placeholder="/images/projects/apex.png"></div>
+    <div class="field"><label>Краткое описание (на обороте карточки на сайте)</label>
+      <textarea id="pf_shortdesc" rows="2" style="width:100%;padding:13px 16px;border-radius:12px;background:var(--bg);border:1px solid var(--line);color:var(--white);font-size:14px;outline:none;resize:vertical;font-family:inherit;" placeholder="Можно выделить фразу жирным через <b>...</b>"></textarea>
+    </div>
+    <div class="field"><label>Полное описание (во всплывающем окне «Подробнее»)</label>
+      <textarea id="pf_fulldesc" rows="4" style="width:100%;padding:13px 16px;border-radius:12px;background:var(--bg);border:1px solid var(--line);color:var(--white);font-size:14px;outline:none;resize:vertical;font-family:inherit;"></textarea>
+    </div>
+    <div id="projectErr" style="color:var(--red);font-size:13px;min-height:18px;"></div>
+    <div class="hint">Фото можно положить в папку <b>public/images/projects/</b> и указать путь вида <code>/images/projects/имя-файла.png</code>.</div>
+  </div>
+  <div class="modal-foot">
+    <button class="cancel-btn" id="cancelProjectModal">Отмена</button>
+    <button class="save-btn" id="saveProject">Сохранить</button>
+  </div>
+</div>
+
+<!-- PARTNER MODAL -->
+<div class="modal" id="partnerModal">
+  <div class="modal-head"><h3 id="partnerModalTitle">Новый партнёр</h3></div>
+  <div class="modal-body">
+    <div class="field"><label>Название партнёра</label><input id="ptf_name" placeholder="Партнер1"></div>
+    <div class="field"><label>Ссылка при нажатии</label><input id="ptf_url" placeholder="https://..."></div>
+    <div class="field"><label>Логотип (необязательно)</label><input id="ptf_logo" placeholder="/images/partners/logo.png"></div>
+    <div id="partnerErr" style="color:var(--red);font-size:13px;min-height:18px;"></div>
+    <div class="hint">Если логотип не указан — на сайте отображается кружок с надписью «ЛОГО», как на макете.</div>
+  </div>
+  <div class="modal-foot">
+    <button class="cancel-btn" id="cancelPartnerModal">Отмена</button>
+    <button class="save-btn" id="savePartner">Сохранить</button>
+  </div>
+</div>
+
 <script>
 let editingId = null;
 let products = [];
@@ -465,7 +445,7 @@ async function checkAuth(){
   if(res.ok){ showDash(); } else { showLogin(); }
 }
 function showLogin(){ document.getElementById('loginScreen').style.display='flex'; document.getElementById('dash').style.display='none'; }
-function showDash(){ document.getElementById('loginScreen').style.display='none'; document.getElementById('dash').style.display='block'; loadProducts(); loadRates(); loadProjects(); loadNews(); loadOrders(); loadRequisites(); }
+function showDash(){ document.getElementById('loginScreen').style.display='none'; document.getElementById('dash').style.display='block'; loadProducts(); loadRates(); loadProjects(); loadPartners(); loadNews(); loadOrders(); loadRequisites(); }
 
 document.getElementById('loginSubmit').onclick = async ()=>{
   const login = document.getElementById('loginUser').value;
@@ -498,6 +478,7 @@ document.querySelectorAll('#mainTabs .tab').forEach(t=>{
     if(targetPanel) targetPanel.classList.add('active');
     if(t.dataset.tab === 'stars-premium') loadRates();
     if(t.dataset.tab === 'projects') loadProjects();
+    if(t.dataset.tab === 'partners') loadPartners();
   };
 });
 
@@ -916,91 +897,188 @@ if(saveRatesBtn){
   };
 }
 
-/* ---------------- PROJECTS MANAGEMENT ---------------- */
+/* ---------------- PROJECTS MANAGEMENT (Проекты Hustlify) ---------------- */
+let projectsItems = [];
+let editingProjectId = null;
+const projectModalAdmin = document.getElementById('projectModalAdmin');
+const TYPE_LABEL = { site: 'Сайт', telegram: 'Telegram' };
+
+function escapeHtmlAdmin(str){
+  return String(str == null ? '' : str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
 async function loadProjects(){
-  try {
-    const res = await fetch('/api/projects');
-    if(!res.ok) return;
-    const data = await res.json();
-
-    if(data.apex){
-      if(document.getElementById('proj_apex_url')) document.getElementById('proj_apex_url').value = data.apex.url || '';
-      if(document.getElementById('proj_apex_btn')) document.getElementById('proj_apex_btn').value = data.apex.buttonText || 'Перейти на сайт';
-    }
-    if(data.flux){
-      if(document.getElementById('proj_flux_url')) document.getElementById('proj_flux_url').value = data.flux.url || '';
-      if(document.getElementById('proj_flux_portfolio')) document.getElementById('proj_flux_portfolio').value = data.flux.portfolioUrl || '';
-    }
-    if(data.vieto){
-      if(document.getElementById('proj_vieto_url')) document.getElementById('proj_vieto_url').value = data.vieto.url || '';
-    }
-    if(data.cursor){
-      if(document.getElementById('proj_cursor_url')) document.getElementById('proj_cursor_url').value = data.cursor.url || '';
-    }
-  } catch(e){}
+  try{
+    const res = await adminFetch('/api/admin/projects');
+    projectsItems = await res.json();
+    if(!res.ok){ console.error('Ошибка загрузки проектов:', projectsItems.error); projectsItems = []; }
+  }catch(e){ return; }
+  document.getElementById('projectsCount').textContent = projectsItems.length + ' проектов';
+  const tbody = document.getElementById('projectsTbody');
+  if(projectsItems.length===0){ tbody.innerHTML = '<tr><td colspan="4"><div class="empty">Проектов пока нет</div></td></tr>'; return; }
+  tbody.innerHTML = projectsItems.map(p=>`
+    <tr>
+      <td>${escapeHtmlAdmin(p.title)}</td>
+      <td style="color:var(--gray);">${TYPE_LABEL[p.type] || p.type}</td>
+      <td style="color:var(--gray);font-size:12.5px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtmlAdmin(p.url || '—')}</td>
+      <td>
+        <div class="row-actions">
+          <button class="icon-btn-sm" data-pedit="${p.id}" title="Изменить"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
+          <button class="icon-btn-sm danger" data-pdel="${p.id}" title="Удалить"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+        </div>
+      </td>
+    </tr>`).join('');
+  tbody.querySelectorAll('[data-pedit]').forEach(b=> b.onclick = ()=> openProjectModalAdmin(b.dataset.pedit));
+  tbody.querySelectorAll('[data-pdel]').forEach(b=> b.onclick = ()=> deleteProject(b.dataset.pdel));
 }
 
-const saveProjectsBtn = document.getElementById('saveProjectsBtn');
-if(saveProjectsBtn){
-  saveProjectsBtn.onclick = async ()=>{
-    const statusEl = document.getElementById('projectsStatusMsg');
-    saveProjectsBtn.disabled = true;
-    statusEl.style.color = 'var(--gray)';
-    statusEl.textContent = 'Сохранение...';
+function openProjectModalAdmin(id){
+  editingProjectId = id || null;
+  const p = id ? projectsItems.find(x=>x.id===id) : null;
+  document.getElementById('projectModalTitle').textContent = id ? 'Редактировать проект' : 'Новый проект';
+  document.getElementById('projectErr').textContent = '';
+  document.getElementById('pf_title').value = p?.title || '';
+  document.getElementById('pf_type').value = p?.type || 'telegram';
+  document.getElementById('pf_url').value = p?.url || '';
+  document.getElementById('pf_btn').value = p?.buttonText || '';
+  document.getElementById('pf_portfolio').value = p?.portfolioUrl || '';
+  document.getElementById('pf_image').value = p?.image || '';
+  document.getElementById('pf_shortdesc').value = p?.shortDesc || '';
+  document.getElementById('pf_fulldesc').value = p?.fullDesc || '';
+  overlay.classList.add('open'); projectModalAdmin.classList.add('open');
+}
+function closeProjectModalAdmin(){ overlay.classList.remove('open'); projectModalAdmin.classList.remove('open'); }
+document.getElementById('addProjectBtn').onclick = ()=> openProjectModalAdmin(null);
+document.getElementById('cancelProjectModal').onclick = closeProjectModalAdmin;
 
-    const payload = {
-      apex: {
-        title: 'Apex Core',
-        type: 'site',
-        url: (document.getElementById('proj_apex_url').value || '').trim() || 'https://apex-core.site',
-        buttonText: (document.getElementById('proj_apex_btn').value || '').trim() || 'Перейти на сайт'
-      },
-      flux: {
-        title: 'Flux Studio',
-        type: 'telegram',
-        url: (document.getElementById('proj_flux_url').value || '').trim() || 'https://t.me/+zhWLLWIaVeI2Y2Yy',
-        buttonText: 'Подробнее в Telegram',
-        portfolioUrl: (document.getElementById('proj_flux_portfolio').value || '').trim() || 'https://t.me/+0Bd2iyw1aOU4NDEy'
-      },
-      vieto: {
-        title: 'Vieto Store',
-        type: 'telegram',
-        url: (document.getElementById('proj_vieto_url').value || '').trim() || 'https://t.me/VietoFullStore',
-        buttonText: 'Подробнее в Telegram'
-      },
-      cursor: {
-        title: 'Cursor Market',
-        type: 'telegram',
-        url: (document.getElementById('proj_cursor_url').value || '').trim() || 'https://t.me/CursorRobot',
-        buttonText: 'Подробнее в Telegram'
-      }
-    };
-
-    try {
-      const res = await adminFetch('/api/admin/projects', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json().catch(()=>({}));
-      if(!res.ok){
-        statusEl.style.color = 'var(--red)';
-        statusEl.textContent = data.error || 'Не удалось сохранить ссылки';
-        saveProjectsBtn.disabled = false;
-        return;
-      }
-      statusEl.style.color = 'var(--green)';
-      statusEl.textContent = 'Ссылки проектов успешно сохранены!';
-      setTimeout(()=>{ statusEl.textContent = ''; }, 3500);
-    } catch(e){
-      if(e.message !== 'unauthorized'){
-        statusEl.style.color = 'var(--red)';
-        statusEl.textContent = 'Сервер недоступен. Проверьте соединение';
-      }
-    }
-    saveProjectsBtn.disabled = false;
+document.getElementById('saveProject').onclick = async ()=>{
+  const errEl = document.getElementById('projectErr');
+  errEl.textContent = '';
+  const body = {
+    title: document.getElementById('pf_title').value.trim(),
+    type: document.getElementById('pf_type').value,
+    url: document.getElementById('pf_url').value.trim(),
+    buttonText: document.getElementById('pf_btn').value.trim(),
+    portfolioUrl: document.getElementById('pf_portfolio').value.trim(),
+    image: document.getElementById('pf_image').value.trim(),
+    shortDesc: document.getElementById('pf_shortdesc').value.trim(),
+    fullDesc: document.getElementById('pf_fulldesc').value.trim()
   };
+  if(!body.title){ errEl.textContent = 'Укажите название проекта'; return; }
+  const btn = document.getElementById('saveProject');
+  btn.disabled = true;
+  const url = editingProjectId ? `/api/admin/projects/${editingProjectId}` : '/api/admin/projects';
+  const method = editingProjectId ? 'PUT' : 'POST';
+  try{
+    const res = await adminFetch(url, { method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    let data = {};
+    try{ data = await res.json(); }catch(e){}
+    if(!res.ok){
+      errEl.textContent = data.error || `Не удалось сохранить проект (код ${res.status})`;
+      btn.disabled = false;
+      return;
+    }
+    closeProjectModalAdmin();
+    loadProjects();
+  }catch(e){
+    if(e.message !== 'unauthorized') errEl.textContent = 'Сервер недоступен. Проверьте соединение и попробуйте снова';
+  }
+  btn.disabled = false;
+};
+
+async function deleteProject(id){
+  if(!confirm('Удалить этот проект? Он пропадёт с сайта.')) return;
+  try{
+    const res = await adminFetch(`/api/admin/projects/${id}`, { method:'DELETE' });
+    if(!res.ok){ const d = await res.json().catch(()=>({})); alert(d.error || 'Не удалось удалить проект'); return; }
+    loadProjects();
+  }catch(e){}
 }
+
+/* ---------------- PARTNERS MANAGEMENT (Партнёры) ---------------- */
+let partnersItems = [];
+let editingPartnerId = null;
+const partnerModal = document.getElementById('partnerModal');
+
+async function loadPartners(){
+  try{
+    const res = await adminFetch('/api/admin/partners');
+    partnersItems = await res.json();
+    if(!res.ok){ console.error('Ошибка загрузки партнёров:', partnersItems.error); partnersItems = []; }
+  }catch(e){ return; }
+  document.getElementById('partnersCount').textContent = partnersItems.length + ' партнёров';
+  const tbody = document.getElementById('partnersTbody');
+  if(partnersItems.length===0){ tbody.innerHTML = '<tr><td colspan="3"><div class="empty">Партнёров пока нет</div></td></tr>'; return; }
+  tbody.innerHTML = partnersItems.map(p=>`
+    <tr>
+      <td>${escapeHtmlAdmin(p.name)}</td>
+      <td style="color:var(--gray);font-size:12.5px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtmlAdmin(p.url || '—')}</td>
+      <td>
+        <div class="row-actions">
+          <button class="icon-btn-sm" data-ptedit="${p.id}" title="Изменить"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
+          <button class="icon-btn-sm danger" data-ptdel="${p.id}" title="Удалить"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+        </div>
+      </td>
+    </tr>`).join('');
+  tbody.querySelectorAll('[data-ptedit]').forEach(b=> b.onclick = ()=> openPartnerModal(b.dataset.ptedit));
+  tbody.querySelectorAll('[data-ptdel]').forEach(b=> b.onclick = ()=> deletePartner(b.dataset.ptdel));
+}
+
+function openPartnerModal(id){
+  editingPartnerId = id || null;
+  const p = id ? partnersItems.find(x=>x.id===id) : null;
+  document.getElementById('partnerModalTitle').textContent = id ? 'Редактировать партнёра' : 'Новый партнёр';
+  document.getElementById('partnerErr').textContent = '';
+  document.getElementById('ptf_name').value = p?.name || '';
+  document.getElementById('ptf_url').value = p?.url || '';
+  document.getElementById('ptf_logo').value = p?.logo || '';
+  overlay.classList.add('open'); partnerModal.classList.add('open');
+}
+function closePartnerModal(){ overlay.classList.remove('open'); partnerModal.classList.remove('open'); }
+document.getElementById('addPartnerBtn').onclick = ()=> openPartnerModal(null);
+document.getElementById('cancelPartnerModal').onclick = closePartnerModal;
+
+document.getElementById('savePartner').onclick = async ()=>{
+  const errEl = document.getElementById('partnerErr');
+  errEl.textContent = '';
+  const body = {
+    name: document.getElementById('ptf_name').value.trim(),
+    url: document.getElementById('ptf_url').value.trim(),
+    logo: document.getElementById('ptf_logo').value.trim()
+  };
+  if(!body.name){ errEl.textContent = 'Укажите название партнёра'; return; }
+  const btn = document.getElementById('savePartner');
+  btn.disabled = true;
+  const url = editingPartnerId ? `/api/admin/partners/${editingPartnerId}` : '/api/admin/partners';
+  const method = editingPartnerId ? 'PUT' : 'POST';
+  try{
+    const res = await adminFetch(url, { method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    let data = {};
+    try{ data = await res.json(); }catch(e){}
+    if(!res.ok){
+      errEl.textContent = data.error || `Не удалось сохранить партнёра (код ${res.status})`;
+      btn.disabled = false;
+      return;
+    }
+    closePartnerModal();
+    loadPartners();
+  }catch(e){
+    if(e.message !== 'unauthorized') errEl.textContent = 'Сервер недоступен. Проверьте соединение и попробуйте снова';
+  }
+  btn.disabled = false;
+};
+
+async function deletePartner(id){
+  if(!confirm('Удалить этого партнёра? Он пропадёт с сайта.')) return;
+  try{
+    const res = await adminFetch(`/api/admin/partners/${id}`, { method:'DELETE' });
+    if(!res.ok){ const d = await res.json().catch(()=>({})); alert(d.error || 'Не удалось удалить партнёра'); return; }
+    loadPartners();
+  }catch(e){}
+}
+
+// клик по фону закрывает любые открытые модальные окна
+overlay.addEventListener('click', ()=>{ closeProjectModalAdmin(); closePartnerModal(); });
 
 checkAuth();
 </script>
