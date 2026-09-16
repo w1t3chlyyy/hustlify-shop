@@ -1169,12 +1169,12 @@ header .wrap{
   align-items:center;
   width:max-content;
   gap:72px;
-  animation:partnersScroll 34s linear infinite;
+  animation:partnersScroll 30s linear infinite;
 }
 .partners-marquee.paused .partners-track{animation-play-state:paused;}
 @keyframes partnersScroll{
   from{transform:translateX(0);}
-  to{transform:translateX(-50%);}
+  to{transform:translateX(calc(-1 * var(--marquee-distance, 50%)));}
 }
 .partner-item{
   display:flex;
@@ -4447,10 +4447,54 @@ function renderPartners(list){
       <span class="partner-name">${escapeHtml(p.name)}</span>
     </a>`;
   };
+  const singleHtml = list.map(itemHtml).join('');
 
-  // Duplicate the list so the marquee can loop seamlessly (translateX -50%)
-  const html = list.map(itemHtml).join('') + list.map(itemHtml).join('');
-  track.innerHTML = html;
+  const PX_PER_SEC = 55; // скорость ленты
+
+  function layoutMarquee(){
+    track.style.animation = 'none';
+
+    // Набираем "половину" ленты кусками, реально измеряя ширину на экране
+    // после каждого добавления, пока она не станет заметно больше видимой
+    // области — с запасом. Так бесшовный переход -50% → 0% работает при
+    // любом числе партнёров, любых шрифтах и любой ширине экрана.
+    const viewportWidth = marquee.clientWidth || window.innerWidth;
+    const minHalfWidth = viewportWidth * 1.3;
+
+    let repeats = 1;
+    track.innerHTML = singleHtml;
+    let halfWidth = track.scrollWidth;
+
+    while (halfWidth < minHalfWidth && repeats < 30) {
+      repeats++;
+      track.innerHTML = singleHtml.repeat(repeats);
+      halfWidth = track.scrollWidth;
+    }
+
+    const halfHtml = singleHtml.repeat(repeats);
+    track.innerHTML = halfHtml + halfHtml;
+    halfWidth = track.scrollWidth / 2;
+
+    const duration = Math.max(14, halfWidth / PX_PER_SEC);
+    track.style.setProperty('--marquee-distance', halfWidth + 'px');
+    track.style.animationDuration = duration + 's';
+    track.style.animation = '';
+  }
+
+  layoutMarquee();
+  // Шрифт 'Unbounded' может подгрузиться уже после первого расчёта —
+  // на запасном шрифте текст обычно у́же, поэтому пересчитываем повторно,
+  // когда шрифты и все ресурсы страницы точно готовы.
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(layoutMarquee).catch(()=>{});
+  }
+  window.addEventListener('load', layoutMarquee, { once: true });
+
+  let resizeTimer = null;
+  window.addEventListener('resize', ()=>{
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(layoutMarquee, 200);
+  });
 
   marquee.addEventListener('mouseenter', ()=> marquee.classList.add('paused'));
   marquee.addEventListener('mouseleave', ()=> marquee.classList.remove('paused'));
