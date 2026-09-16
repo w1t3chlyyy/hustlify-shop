@@ -269,7 +269,7 @@ td.num{font-family:'Unbounded';font-weight:600;}
         <button class="add-btn" id="addProjectBtn">+ Добавить проект</button>
       </div>
       <table>
-        <thead><tr><th>Проект</th><th>Тип</th><th>Ссылка</th><th></th></tr></thead>
+        <thead><tr><th>Проект</th><th>Тип</th><th>Ссылка</th><th>Статус</th><th></th></tr></thead>
         <tbody id="projectsTbody"></tbody>
       </table>
     </div>
@@ -404,6 +404,10 @@ td.num{font-family:'Unbounded';font-weight:600;}
       <div class="field"><label>Ссылка на портфолио (необязательно)</label><input id="pf_portfolio" placeholder="https://t.me/..."></div>
     </div>
     <div class="field"><label>Изображение/логотип проекта</label><input id="pf_image" placeholder="/images/projects/apex.png"></div>
+    <div class="field" style="display:flex;align-items:center;gap:10px;">
+      <input type="checkbox" id="pf_hidden" style="width:16px;height:16px;">
+      <label for="pf_hidden" style="margin:0;">Скрыть проект с сайта (не удаляя)</label>
+    </div>
     <div class="field"><label>Краткое описание (на обороте карточки на сайте)</label>
       <textarea id="pf_shortdesc" rows="2" style="width:100%;padding:13px 16px;border-radius:12px;background:var(--bg);border:1px solid var(--line);color:var(--white);font-size:14px;outline:none;resize:vertical;font-family:inherit;" placeholder="Можно выделить фразу жирным через <b>...</b>"></textarea>
     </div>
@@ -915,14 +919,20 @@ async function loadProjects(){
   }catch(e){ return; }
   document.getElementById('projectsCount').textContent = projectsItems.length + ' проектов';
   const tbody = document.getElementById('projectsTbody');
-  if(projectsItems.length===0){ tbody.innerHTML = '<tr><td colspan="4"><div class="empty">Проектов пока нет</div></td></tr>'; return; }
+  if(projectsItems.length===0){ tbody.innerHTML = '<tr><td colspan="5"><div class="empty">Проектов пока нет</div></td></tr>'; return; }
   tbody.innerHTML = projectsItems.map(p=>`
-    <tr>
+    <tr style="${p.hidden ? 'opacity:.55;' : ''}">
       <td>${escapeHtmlAdmin(p.title)}</td>
       <td style="color:var(--gray);">${TYPE_LABEL[p.type] || p.type}</td>
       <td style="color:var(--gray);font-size:12.5px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtmlAdmin(p.url || '—')}</td>
+      <td>${p.hidden
+          ? '<span style="color:var(--gray);font-size:12.5px;">Скрыт</span>'
+          : '<span style="color:var(--green);font-size:12.5px;">Виден</span>'}</td>
       <td>
         <div class="row-actions">
+          <button class="icon-btn-sm" data-ptoggle="${p.id}" title="${p.hidden ? 'Показать на сайте' : 'Скрыть с сайта'}">${p.hidden
+              ? '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a21.86 21.86 0 0 1 5.06-6.06M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a21.86 21.86 0 0 1-2.16 3.19M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg>'
+              : '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'}</button>
           <button class="icon-btn-sm" data-pedit="${p.id}" title="Изменить"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
           <button class="icon-btn-sm danger" data-pdel="${p.id}" title="Удалить"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
         </div>
@@ -930,6 +940,21 @@ async function loadProjects(){
     </tr>`).join('');
   tbody.querySelectorAll('[data-pedit]').forEach(b=> b.onclick = ()=> openProjectModalAdmin(b.dataset.pedit));
   tbody.querySelectorAll('[data-pdel]').forEach(b=> b.onclick = ()=> deleteProject(b.dataset.pdel));
+  tbody.querySelectorAll('[data-ptoggle]').forEach(b=> b.onclick = ()=> toggleProjectHidden(b.dataset.ptoggle));
+}
+
+async function toggleProjectHidden(id){
+  const p = projectsItems.find(x=>x.id===id);
+  if(!p) return;
+  try{
+    const res = await adminFetch(`/api/admin/projects/${id}`, {
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ hidden: !p.hidden })
+    });
+    if(!res.ok){ const d = await res.json().catch(()=>({})); alert(d.error || 'Не удалось изменить видимость проекта'); return; }
+    loadProjects();
+  }catch(e){}
 }
 
 function openProjectModalAdmin(id){
@@ -945,6 +970,7 @@ function openProjectModalAdmin(id){
   document.getElementById('pf_image').value = p?.image || '';
   document.getElementById('pf_shortdesc').value = p?.shortDesc || '';
   document.getElementById('pf_fulldesc').value = p?.fullDesc || '';
+  document.getElementById('pf_hidden').checked = !!p?.hidden;
   overlay.classList.add('open'); projectModalAdmin.classList.add('open');
 }
 function closeProjectModalAdmin(){ overlay.classList.remove('open'); projectModalAdmin.classList.remove('open'); }
@@ -962,7 +988,8 @@ document.getElementById('saveProject').onclick = async ()=>{
     portfolioUrl: document.getElementById('pf_portfolio').value.trim(),
     image: document.getElementById('pf_image').value.trim(),
     shortDesc: document.getElementById('pf_shortdesc').value.trim(),
-    fullDesc: document.getElementById('pf_fulldesc').value.trim()
+    fullDesc: document.getElementById('pf_fulldesc').value.trim(),
+    hidden: document.getElementById('pf_hidden').checked
   };
   if(!body.title){ errEl.textContent = 'Укажите название проекта'; return; }
   const btn = document.getElementById('saveProject');
@@ -987,7 +1014,7 @@ document.getElementById('saveProject').onclick = async ()=>{
 };
 
 async function deleteProject(id){
-  if(!confirm('Удалить этот проект? Он пропадёт с сайта.')) return;
+  if(!confirm('Удалить этот проект насовсем? Он пропадёт с сайта без возможности восстановления. Если нужно временно убрать проект с сайта — используйте кнопку "глаз" вместо удаления.')) return;
   try{
     const res = await adminFetch(`/api/admin/projects/${id}`, { method:'DELETE' });
     if(!res.ok){ const d = await res.json().catch(()=>({})); alert(d.error || 'Не удалось удалить проект'); return; }
