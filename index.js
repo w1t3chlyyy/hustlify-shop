@@ -135,8 +135,11 @@ app.get('/', (req, res) => {
 app.get('/admin.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
-app.get('/order-success.html', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'order-success.html'));
+app.get(['/payment-success', '/payment-success.html', '/success', '/order-success', '/order-success.html'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'payment-success.html'));
+});
+app.get(['/payment-fail', '/payment-fail.html', '/payment-cancel', '/payment-cancel.html', '/fail', '/cancel'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'payment-fail.html'));
 });
 app.get(['/oferta', '/offer', '/oferta.html', '/offer.html'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'offer.html'));
@@ -1195,7 +1198,7 @@ app.post('/api/payments/cryptobot/create', async (req, res) => {
         description: `Заказ ${order.id} — Hustlify`,
         payload: order.id,
         paid_btn_name: 'callback',
-        paid_btn_url: `${PUBLIC_URL}/order-success.html?order=${order.id}`,
+        paid_btn_url: `${PUBLIC_URL}/payment-success.html?order=${order.id}`,
         expires_in: 1800
       })
     });
