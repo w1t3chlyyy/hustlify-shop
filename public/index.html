@@ -632,10 +632,10 @@ header .wrap{
     min-height: 100vh;
     min-height: 100svh;
     margin-top: calc(-1 * var(--hero-hdr));
-    padding: calc(var(--hero-hdr) + 16px) 0 88px;      /* 88px снизу — место под нижнюю панель (mobile-bottom-bar) */
+    padding: calc(var(--hero-hdr) + 16px) 0 104px;     /* 104px снизу = нижняя панель (~67px) + отступ ~35px; меньше число — контент ниже */
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;                       /* контент поднят вверх, не прижат к низу */
+    justify-content: flex-end;                         /* контент опущен вниз, чуть выше конца блока */
     align-items: stretch;
     position: relative;
     overflow: hidden;
@@ -671,10 +671,10 @@ header .wrap{
     height: 100%;
     background:
       linear-gradient(to bottom,
-        rgba(0, 0, 0, 0.72) 0%,
-        rgba(0, 0, 0, 0.50) 30%,
-        rgba(0, 0, 0, 0.42) 55%,
-        rgba(0, 0, 0, 0.80) 85%,
+        rgba(0, 0, 0, 0.20) 0%,
+        rgba(0, 0, 0, 0.10) 30%,
+        rgba(0, 0, 0, 0.55) 55%,
+        rgba(0, 0, 0, 0.85) 80%,
         #000000 100%);
     pointer-events: none;
     z-index: 2;
@@ -742,7 +742,7 @@ header .wrap{
 
 /* невысокие телефоны (iPhone SE и т.п.) — ужимаем ещё, чтобы всё осталось в одном экране */
 @media (max-width: 880px) and (max-height: 700px) {
-  .hero { padding-top: calc(var(--hero-hdr) + 8px); padding-bottom: 80px; }
+  .hero { padding-top: calc(var(--hero-hdr) + 8px); padding-bottom: 96px; }
   .hero-brand-tag { margin-bottom: 8px; }
   .hero-title { font-size: clamp(22px, 6vw, 27px); margin-bottom: 8px; }
   .hero-subtitle { font-size: 12.5px; line-height: 1.42; margin-bottom: 12px; }
