@@ -100,6 +100,15 @@ td.num{font-family:'Unbounded';font-weight:600;}
 .rate-box{background:var(--card-hi);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px;}
 .rate-box-title{font-size:12.5px;font-weight:600;color:var(--white);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;}
 .rate-badge-sm{font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(34,197,139,.15);color:var(--green);font-weight:600;}
+
+/* --- скрыть / удалить Stars & Premium --- */
+.rate-actions{display:flex;gap:8px;margin-left:auto;align-items:center;}
+.rate-box-title{gap:8px;}
+.status-tag{font-size:11px;font-weight:600;padding:3px 9px;border-radius:100px;display:none;}
+.status-tag.hidden-tag{display:inline-block;background:rgba(255,255,255,.08);color:var(--gray);}
+.status-tag.deleted-tag{display:inline-block;background:rgba(255,77,106,.15);color:var(--red);}
+.is-hidden > *:not(.rate-card-head):not(.rate-box-title){opacity:.5;}
+.is-deleted > *:not(.rate-card-head):not(.rate-box-title){opacity:.25;pointer-events:none;}
 </style>
 </head>
 <body>
@@ -812,6 +821,15 @@ async function loadRates(){
     const data = await res.json();
     if(!res.ok) return;
 
+    ratesFlags.stars.hidden  = !!(data.stars && data.stars.hidden);
+    ratesFlags.stars.deleted = !!(data.stars && data.stars.deleted);
+    [3,6,9,12].forEach(function(m){
+      var pm = data.premium && data.premium[m];
+      ratesFlags[m].hidden  = !!(pm && pm.hidden);
+      ratesFlags[m].deleted = !!(pm && pm.deleted);
+    });
+    applyFlagsUI();
+
     if(data.stars){
       const starsPrice = data.stars.price ?? 2;
       const starsOld = data.stars.old ?? 3;
@@ -851,24 +869,29 @@ if(saveRatesBtn){
     const payload = {
       stars: {
         price: parseFloat(document.getElementById('rate_stars_price').value) || 2,
-        old: parseFloat(document.getElementById('rate_stars_old').value) || 0
+        old: parseFloat(document.getElementById('rate_stars_old').value) || 0,
+        hidden: ratesFlags.stars.hidden, deleted: ratesFlags.stars.deleted
       },
       premium: {
         3: {
           price: parseInt(document.getElementById('rate_prem3_price').value) || 990,
-          old: parseInt(document.getElementById('rate_prem3_old').value) || 0
+          old: parseInt(document.getElementById('rate_prem3_old').value) || 0,
+          hidden: ratesFlags[3].hidden, deleted: ratesFlags[3].deleted
         },
         6: {
           price: parseInt(document.getElementById('rate_prem6_price').value) || 1790,
-          old: parseInt(document.getElementById('rate_prem6_old').value) || 0
+          old: parseInt(document.getElementById('rate_prem6_old').value) || 0,
+          hidden: ratesFlags[6].hidden, deleted: ratesFlags[6].deleted
         },
         9: {
           price: parseInt(document.getElementById('rate_prem9_price').value) || 2490,
-          old: parseInt(document.getElementById('rate_prem9_old').value) || 0
+          old: parseInt(document.getElementById('rate_prem9_old').value) || 0,
+          hidden: ratesFlags[9].hidden, deleted: ratesFlags[9].deleted
         },
         12: {
           price: parseInt(document.getElementById('rate_prem12_price').value) || 2990,
-          old: parseInt(document.getElementById('rate_prem12_old').value) || 0
+          old: parseInt(document.getElementById('rate_prem12_old').value) || 0,
+          hidden: ratesFlags[12].hidden, deleted: ratesFlags[12].deleted
         }
       }
     };
@@ -900,6 +923,83 @@ if(saveRatesBtn){
     saveRatesBtn.disabled = false;
   };
 }
+
+/* ---- Скрыть / удалить / восстановить Stars и Premium ---- */
+var ratesFlags = {
+  stars: { hidden:false, deleted:false },
+  3: { hidden:false, deleted:false }, 6: { hidden:false, deleted:false },
+  9: { hidden:false, deleted:false }, 12: { hidden:false, deleted:false }
+};
+var FLAG_LABEL = { stars:'Telegram Звёзды', 3:'Premium 3 мес.', 6:'Premium 6 мес.', 9:'Premium 9 мес.', 12:'Premium 12 мес.' };
+var FLAG_EYE = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+var FLAG_EYE_OFF = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a21.86 21.86 0 0 1 5.06-6.06M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a21.86 21.86 0 0 1-2.16 3.19M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg>';
+var FLAG_X = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>';
+var FLAG_RESTORE = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>';
+
+function flagBox(key){
+  if(key === 'stars') return document.querySelector('#panel-stars-premium .rates-grid .rate-card');
+  var idx = { 3:0, 6:1, 9:2, 12:3 }[key];
+  return document.querySelectorAll('#panel-stars-premium .rate-box')[idx] || null;
+}
+
+function initFlagControls(){
+  Object.keys(ratesFlags).forEach(function(key){
+    var box = flagBox(key);
+    if(!box || box.querySelector('.rate-actions')) return;
+    var head = key === 'stars' ? box.querySelector('.rate-card-head') : box.querySelector('.rate-box-title');
+    if(!head) return;
+    var wrap = document.createElement('div');
+    wrap.className = 'rate-actions';
+    wrap.innerHTML = '<span class="status-tag"></span>' +
+      '<button type="button" class="icon-btn-sm" data-role="hide"></button>' +
+      '<button type="button" class="icon-btn-sm" data-role="del"></button>';
+    head.appendChild(wrap);
+    wrap.querySelector('[data-role="hide"]').onclick = function(){ onFlagHide(key); };
+    wrap.querySelector('[data-role="del"]').onclick = function(){ onFlagDelete(key); };
+  });
+  applyFlagsUI();
+}
+
+function applyFlagsUI(){
+  Object.keys(ratesFlags).forEach(function(key){
+    var f = ratesFlags[key];
+    var box = flagBox(key);
+    if(!box) return;
+    box.classList.toggle('is-hidden', f.hidden && !f.deleted);
+    box.classList.toggle('is-deleted', f.deleted);
+    var tag = box.querySelector('.status-tag');
+    var hideBtn = box.querySelector('[data-role="hide"]');
+    var delBtn = box.querySelector('[data-role="del"]');
+    if(!tag || !hideBtn || !delBtn) return;
+    tag.className = 'status-tag' + (f.deleted ? ' deleted-tag' : (f.hidden ? ' hidden-tag' : ''));
+    tag.textContent = f.deleted ? 'Удалён' : (f.hidden ? 'Скрыт' : '');
+    hideBtn.style.display = f.deleted ? 'none' : '';
+    hideBtn.title = f.hidden ? 'Показать на сайте' : 'Скрыть с сайта';
+    hideBtn.innerHTML = f.hidden ? FLAG_EYE_OFF : FLAG_EYE;
+    delBtn.title = f.deleted ? 'Восстановить' : 'Удалить';
+    delBtn.classList.toggle('danger', !f.deleted);
+    delBtn.innerHTML = f.deleted ? FLAG_RESTORE : FLAG_X;
+    delBtn.style.pointerEvents = 'auto';
+  });
+}
+
+function saveFlagsNow(){
+  applyFlagsUI();
+  var b = document.getElementById('saveRatesBtn');
+  if(b) b.click();
+}
+function onFlagHide(key){
+  ratesFlags[key].hidden = !ratesFlags[key].hidden;
+  saveFlagsNow();
+}
+function onFlagDelete(key){
+  var f = ratesFlags[key];
+  if(f.deleted){ f.deleted = false; f.hidden = false; saveFlagsNow(); return; }
+  if(!confirm('Удалить «' + FLAG_LABEL[key] + '»? Позиция пропадёт с сайта. Её можно восстановить кнопкой на этой же карточке.')) return;
+  f.deleted = true;
+  saveFlagsNow();
+}
+initFlagControls();
 
 /* ---------------- PROJECTS MANAGEMENT (Проекты Hustlify) ---------------- */
 let projectsItems = [];
