@@ -215,7 +215,9 @@ app.get('/api/admin/me', requireAdmin, (req, res) => res.json({ ok: true }));
 // Фронтенд (index.html, admin.html) работает с полями name/cat/old/desc,
 // а в реальной таблице Supabase они называются name/category/old_price/description.
 // Всё преобразование делаем тут, чтобы не трогать фронтенд.
-const PRODUCT_SELECT = 'id,name,price,cat:category,old:old_price,desc:description,section,img,icon,hit,hidden,created_at';
+const PRODUCT_SELECT_FULL = 'id,name,price,cat:category,old:old_price,desc:description,section,img,icon,hit,hidden,deleted,created_at';
+const PRODUCT_SELECT_FALLBACK = 'id,name,price,cat:category,old:old_price,desc:description,section,img,icon,hit,hidden,created_at';
+let PRODUCT_SELECT = PRODUCT_SELECT_FULL;
 
 function toDbProduct(p) {
   const out = {};
@@ -239,10 +241,19 @@ app.get('/api/products', async (req, res) => {
   let dbProducts = null;
   if (supabase) {
     try {
-      const { data, error } = await supabase
+      let { data, error } = await supabase
         .from('products')
         .select(PRODUCT_SELECT)
         .order('created_at', { ascending: false });
+      if (error && /deleted/i.test(error.message || '')) {
+        PRODUCT_SELECT = PRODUCT_SELECT_FALLBACK;
+        const retry = await supabase
+          .from('products')
+          .select(PRODUCT_SELECT)
+          .order('created_at', { ascending: false });
+        data = retry.data;
+        error = retry.error;
+      }
       if (!error && data) {
         dbProducts = data;
       }
@@ -429,10 +440,20 @@ app.get('/api/admin/rates', requireAdmin, async (req, res) => {
   const localProducts = readJsonFile('products.json');
   function findRate(id, defPrice, defOld) {
     const foundDb = products.find(p => p.id === id);
-    if (foundDb) return { price: foundDb.price, old: foundDb.old };
+    if (foundDb) return {
+      price: foundDb.price,
+      old: foundDb.old,
+      hidden: Boolean(foundDb.hidden),
+      deleted: Boolean(foundDb.deleted)
+    };
     const foundLocal = localProducts.find(p => p.id === id);
-    if (foundLocal) return { price: foundLocal.price, old: foundLocal.old };
-    return { price: defPrice, old: defOld };
+    if (foundLocal) return {
+      price: foundLocal.price,
+      old: foundLocal.old,
+      hidden: Boolean(foundLocal.hidden),
+      deleted: Boolean(foundLocal.deleted)
+    };
+    return { price: defPrice, old: defOld, hidden: false, deleted: false };
   }
 
   res.json({
@@ -451,37 +472,43 @@ app.put('/api/admin/rates', requireAdmin, async (req, res) => {
   let products = readJsonFile('products.json');
 
   const defaultTemplates = {
-    tg_stars: { name: 'Telegram Звёзды (Stars)', price: 2, old: 3, cat: 'Звезды&Премиум', desc: 'Моментальная накрутка и покупка звёзд для Telegram-каналов и ботов по оптовому курсу', section: 'catalog', img: '/images/1000pdp.jpg', icon: 'star', hit: true },
-    tg_premium_3: { name: 'Telegram Premium — 3 месяца', price: 990, old: 1290, cat: 'Звезды&Премиум', desc: 'Официальная подписка Telegram Premium на 3 месяца без входа в аккаунт', section: 'catalog', img: '/images/1000p.jpg', icon: 'premium', hit: false },
-    tg_premium_6: { name: 'Telegram Premium — 6 месяцев', price: 1790, old: 2290, cat: 'Звезды&Премиум', desc: 'Официальная подписка Telegram Premium на 6 месяцев с гарантией', section: 'catalog', img: '/images/1000p.jpg', icon: 'premium', hit: true },
-    tg_premium_9: { name: 'Telegram Premium — 9 месяцев', price: 2490, old: 3190, cat: 'Звезды&Премиум', desc: 'Официальная подписка Telegram Premium на 9 месяцев', section: 'catalog', img: '/images/1000p.jpg', icon: 'premium', hit: false },
-    tg_premium_12: { name: 'Telegram Premium — 12 месяцев', price: 2990, old: 3990, cat: 'Звезды&Премиум', desc: 'Официальная подписка Telegram Premium на 1 год с максимальной выгодой', section: 'catalog', img: '/images/1000p.jpg', icon: 'premium', hit: false }
+    tg_stars: { name: 'Telegram Звёзды (Stars)', price: 2, old: 3, cat: 'Звезды&Премиум', desc: 'Моментальная накрутка и покупка звёзд для Telegram-каналов и ботов по оптовому курсу', section: 'catalog', img: '/images/1000pdp.jpg', icon: 'star', hit: true, hidden: false, deleted: false },
+    tg_premium_3: { name: 'Telegram Premium — 3 месяца', price: 990, old: 1290, cat: 'Звезды&Премиум', desc: 'Официальная подписка Telegram Premium на 3 месяца без входа в аккаунт', section: 'catalog', img: '/images/1000p.jpg', icon: 'premium', hit: false, hidden: false, deleted: false },
+    tg_premium_6: { name: 'Telegram Premium — 6 месяцев', price: 1790, old: 2290, cat: 'Звезды&Премиум', desc: 'Официальная подписка Telegram Premium на 6 месяцев с гарантией', section: 'catalog', img: '/images/1000p.jpg', icon: 'premium', hit: true, hidden: false, deleted: false },
+    tg_premium_9: { name: 'Telegram Premium — 9 месяцев', price: 2490, old: 3190, cat: 'Звезды&Премиум', desc: 'Официальная подписка Telegram Premium на 9 месяцев', section: 'catalog', img: '/images/1000p.jpg', icon: 'premium', hit: false, hidden: false, deleted: false },
+    tg_premium_12: { name: 'Telegram Premium — 12 месяцев', price: 2990, old: 3990, cat: 'Звезды&Премиум', desc: 'Официальная подписка Telegram Premium на 1 год с максимальной выгодой', section: 'catalog', img: '/images/1000p.jpg', icon: 'premium', hit: false, hidden: false, deleted: false }
   };
 
-  function updateProd(id, newPrice, newOld) {
+  function updateProd(id, itemData) {
+    if (!itemData) return;
+    const { price, old, hidden, deleted } = itemData;
     const idx = products.findIndex(p => p.id === id);
     if (idx !== -1) {
-      if (newPrice !== undefined && !isNaN(Number(newPrice))) products[idx].price = Number(newPrice);
-      if (newOld !== undefined && !isNaN(Number(newOld))) products[idx].old = Number(newOld);
+      if (price !== undefined && !isNaN(Number(price))) products[idx].price = Number(price);
+      if (old !== undefined && !isNaN(Number(old))) products[idx].old = Number(old);
+      if (hidden !== undefined) products[idx].hidden = Boolean(hidden);
+      if (deleted !== undefined) products[idx].deleted = Boolean(deleted);
       products[idx].cat = 'Звезды&Премиум';
       products[idx].section = 'catalog';
     } else if (defaultTemplates[id]) {
       const item = { ...defaultTemplates[id], id };
-      if (newPrice !== undefined && !isNaN(Number(newPrice))) item.price = Number(newPrice);
-      if (newOld !== undefined && !isNaN(Number(newOld))) item.old = Number(newOld);
+      if (price !== undefined && !isNaN(Number(price))) item.price = Number(price);
+      if (old !== undefined && !isNaN(Number(old))) item.old = Number(old);
+      if (hidden !== undefined) item.hidden = Boolean(hidden);
+      if (deleted !== undefined) item.deleted = Boolean(deleted);
       products.push(item);
     }
   }
 
   if (stars) {
-    updateProd('tg_stars', stars.price, stars.old);
+    updateProd('tg_stars', stars);
   }
 
   if (premium) {
-    if (premium[3]) updateProd('tg_premium_3', premium[3].price, premium[3].old);
-    if (premium[6]) updateProd('tg_premium_6', premium[6].price, premium[6].old);
-    if (premium[9]) updateProd('tg_premium_9', premium[9].price, premium[9].old);
-    if (premium[12]) updateProd('tg_premium_12', premium[12].price, premium[12].old);
+    if (premium[3]) updateProd('tg_premium_3', premium[3]);
+    if (premium[6]) updateProd('tg_premium_6', premium[6]);
+    if (premium[9]) updateProd('tg_premium_9', premium[9]);
+    if (premium[12]) updateProd('tg_premium_12', premium[12]);
   }
 
   writeJsonFile('products.json', products);
@@ -1527,7 +1554,7 @@ function buildSystemPrompt(products) {
 1. Выгода и ROI: Всегда показывай конкретные цифры окупаемости (обычно 7-21 день) и чистый ежемесячный доход (от 35 000 до 150 000 ₽).
 2. Легкий старт "Под ключ": Подчеркивай, что клиенту не нужно программировать. Мы передаем готовую систему с подробной инструкцией за 24–72 часа.
 3. Снятие страхов и возражений: Напоминай про официальные чеки, безопасную оплату (СБП, МИР или моментальный CryptoBot), 24/7 сопровождение специалистов @HustlifyHelp и отзывы в @HustlifyReviews.
-4. Создание срочности и триггер действия: Призывай бронировать место на запуск сегодня, пока действуют акционные цены в Каталоге, или использовать Рулетку скидок для бонуса до -30%.
+4. Создание срочности и триггер действия: Призывай бронировать место на запуск сегодня, пока действуют акционные цены в Каталоге и промокоды на скидку.
 5. Call to Action (CTA): Всегда завершай ответ призывом перейти к оформлению выбранного товара в каталоге или написать менеджеру @HustlifyHelp!
 
 КАТАЛОГ HUSTLIFY:
@@ -1569,7 +1596,7 @@ function generateSalesConsultationResponse(message, products, customMatched = nu
         `• Срок полной окупаемости: **всего 7–14 дней** (достаточно 2–3 продаж!).\n` +
         `• Вам не нужно писать код: передаем готовый проект и обучающие материалы.\n\n` +
         `**Специальное предложение:** Оформите заказ прямо сейчас по акционной цене через карточку товара ниже, либо напишите в Telegram: **@HustlifyHelp** для бронирования запуска за 24 часа!\n` +
-        `*Лайфхак:* Крутаните Рулетку скидок на главной странице, чтобы получить дополнительную скидку до 30%!`;
+        `*Лайфхак:* Используйте персональный промокод или уточните у менеджера спецпредложение на запуск!`;
       if (!matchedProducts.length) {
         matchedProducts = products.filter(p => ['k2', 'k1', 'c1', 'c3'].includes(p.id));
       }
@@ -1651,7 +1678,7 @@ function generateSalesConsultationResponse(message, products, customMatched = nu
       `   • Банковская карта / СБП по реквизитам с фиксацией чека.\n` +
       `   • Криптовалюта (USDT, TON, BTC через CryptoBot) — зачисление за 30 секунд.\n` +
       `3. **Получите проект:** Передача готовых решений — от 24 часов с полным инструктажем!\n\n` +
-      `*Совет:* Перед оплатой крутите Рулетку скидок на главной странице — вы можете сэкономить до 30%!\n\n` +
+      `*Совет:* Уточните у консультанта или в новостях актуальные промокоды перед заказом!\n\n` +
       `Для моментальной консультации напишите в Telegram: **@HustlifyHelp**.`;
     if (!matchedProducts.length) {
       matchedProducts = products.slice(0, 3);
@@ -1784,6 +1811,7 @@ app.post('/api/ai/chat', async (req, res) => {
     if (!products.length) {
       products = readJsonFile('products.json');
     }
+    products = products.filter(p => !p.hidden && !p.deleted);
 
     const { apiKey, model, customBaseUrl } = getQwenConfig();
     const systemPrompt = buildSystemPrompt(products);
@@ -1803,9 +1831,10 @@ app.post('/api/ai/chat', async (req, res) => {
         }
         contents.push({ role: 'user', parts: [{ text: message }] });
 
+        const geminiModel = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
         const geminiRes = await withTimeout(
           gemini.models.generateContent({
-            model: 'gemini-3.8-flash',
+            model: geminiModel,
             contents,
             config: {
               systemInstruction: systemPrompt,

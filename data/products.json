@@ -57,7 +57,8 @@
     "old": 3.8,
     "icon": "star",
     "img": "",
-    "hit": true
+    "hit": true,
+    "hidden": true
   },
   {
     "id": "tg_premium_3",
@@ -69,7 +70,8 @@
     "old": 1390,
     "icon": "premium",
     "img": "",
-    "hit": false
+    "hit": false,
+    "hidden": true
   },
   {
     "id": "tg_premium_6",
@@ -81,7 +83,8 @@
     "old": 2390,
     "icon": "premium",
     "img": "",
-    "hit": true
+    "hit": true,
+    "hidden": true
   },
   {
     "id": "tg_premium_9",
@@ -93,7 +96,8 @@
     "old": 3290,
     "icon": "premium",
     "img": "",
-    "hit": false
+    "hit": false,
+    "hidden": true
   },
   {
     "id": "tg_premium_12",
@@ -105,7 +109,8 @@
     "old": 4090,
     "icon": "premium",
     "img": "",
-    "hit": false
+    "hit": false,
+    "hidden": true
   },
   {
     "id": "c7",
