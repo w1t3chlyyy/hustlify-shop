@@ -215,7 +215,7 @@ app.get('/api/admin/me', requireAdmin, (req, res) => res.json({ ok: true }));
 // Фронтенд (index.html, admin.html) работает с полями name/cat/old/desc,
 // а в реальной таблице Supabase они называются name/category/old_price/description.
 // Всё преобразование делаем тут, чтобы не трогать фронтенд.
-const PRODUCT_SELECT = 'id,name,price,cat:category,old:old_price,desc:description,section,img,icon,hit,created_at';
+const PRODUCT_SELECT = 'id,name,price,cat:category,old:old_price,desc:description,section,img,icon,hit,hidden,created_at';
 
 function toDbProduct(p) {
   const out = {};
@@ -229,6 +229,8 @@ function toDbProduct(p) {
   if (p.icon !== undefined) out.icon = p.icon;
   if (p.hit !== undefined) out.hit = p.hit;
   if (p.id !== undefined) out.id = p.id;
+  if (p.hidden !== undefined) out.hidden = p.hidden;
+  if (p.deleted !== undefined) out.deleted = p.deleted;
   return out;
 }
 
@@ -268,10 +270,9 @@ app.get('/api/products', async (req, res) => {
         .then(() => {})
         .catch(err => console.error('Auto-seed missing rates error:', err.message));
     }
-    return res.json(dbProducts);
+    return res.json(dbProducts.filter(p => !p.hidden && !p.deleted));
   }
-
-  res.json(localProducts);
+  res.json(localProducts.filter(p => !p.hidden && !p.deleted));
 });
 
 /* ================= SURVEY SUBMIT ================= */
@@ -486,27 +487,26 @@ app.put('/api/admin/rates', requireAdmin, async (req, res) => {
   writeJsonFile('products.json', products);
 
   if (supabase) {
-    try {
-      const ids = ['tg_stars', 'tg_premium_3', 'tg_premium_6', 'tg_premium_9', 'tg_premium_12'];
-      const upsertRows = [];
-      for (const id of ids) {
-        const p = products.find(x => x.id === id) || defaultTemplates[id];
-        if (p) {
-          upsertRows.push(toDbProduct({ ...p, id }));
-        }
-      }
-      if (upsertRows.length > 0) {
-        const { error } = await supabase.from('products').upsert(upsertRows, { onConflict: 'id' });
-        if (error) {
-          console.error('Supabase upsert rates error:', error.message);
-          return res.status(500).json({ error: 'Ошибка сохранения в Supabase: ' + error.message });
-        }
-      }
-    } catch (e) {
-      console.error('Supabase update rates error:', e.message);
-      return res.status(500).json({ error: 'Ошибка базы данных: ' + e.message });
+  try {
+    const ids = ['tg_stars', 'tg_premium_3', 'tg_premium_6', 'tg_premium_9', 'tg_premium_12'];
+    const upsertRows = [];
+    for (const id of ids) {
+      const p = products.find(x => x.id === id) || defaultTemplates[id];
+      if (p) upsertRows.push(toDbProduct({ ...p, id }));
     }
+    if (upsertRows.length > 0) {
+      let { error } = await supabase.from('products').upsert(upsertRows, { onConflict: 'id' });
+      if (error && /hidden|deleted/i.test(error.message || '')) {
+        const stripped = upsertRows.map(({ hidden, deleted, ...rest }) => rest);
+        const retry = await supabase.from('products').upsert(stripped, { onConflict: 'id' });
+        error = retry.error;
+      }
+      if (error) console.error('Supabase upsert rates error (сохранено локально):', error.message);
+    }
+  } catch (e) {
+    console.error('Supabase update rates error (сохранено локально):', e.message);
   }
+}
 
   res.json({ ok: true, products: products.filter(p => p.cat === 'Звезды&Премиум') });
 });
