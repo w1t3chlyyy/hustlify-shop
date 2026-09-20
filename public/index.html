@@ -3627,10 +3627,7 @@ async function loadProducts(){
   catalogData = ALL_PRODUCTS.filter(p=>p.section==='catalog');
   casesData = ALL_PRODUCTS.filter(p=>p.section==='case');
   const catList = catalogData.map(p=>p.cat).filter(Boolean);
-  if(!catList.includes('Звезды&Премиум')){
-    catList.unshift('Звезды&Премиум');
-  }
-  CATEGORIES = ['Все', ...new Set(catList)];
+CATEGORIES = ['Все', ...new Set(catList)];
   renderAll();
 }
 
@@ -3708,16 +3705,8 @@ const PREM_DURATIONS = [
   { months: 12, id: 'tg_premium_12', label: '12 месяцев', tag: 'Выгодно -25%' }
 ];
 
-function getStarsProduct(){
-  return ALL_PRODUCTS.find(p => p.id === 'tg_stars') || { price: 2, old: 3, name: 'Telegram Звёзды (Stars)' };
-}
-
-function getPremProduct(months){
-  const found = ALL_PRODUCTS.find(p => p.id === `tg_premium_${months}`);
-  if (found) return found;
-  const def = { 3: { price: 990, old: 1290 }, 6: { price: 1790, old: 2290 }, 9: { price: 2490, old: 3190 }, 12: { price: 2990, old: 3990 } }[months] || { price: 1790, old: 2290 };
-  return { id: `tg_premium_${months}`, name: `Telegram Premium — ${months} месяцев`, price: def.price, old: def.old };
-}
+function getStarsProduct(){ return ALL_PRODUCTS.find(p => p.id === 'tg_stars') || null; }
+function getPremProduct(months){ return ALL_PRODUCTS.find(p => p.id === `tg_premium_${months}`) || null; }
 
 function renderStarsAndPremiumHtml(){
   const starsProd = getStarsProduct();
