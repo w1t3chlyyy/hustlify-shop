@@ -2190,7 +2190,8 @@ footer .flinks a:hover{color:var(--white);}
   .pgrid{gap:8px;}
   .product{border-radius:12px;}
   .product-media{aspect-ratio:1/0.78;}
-  .product-media .obj{width:68%;height:68%;}
+  .product-media .obj:not(.case-obj){width:68%;height:68%;}
+  .obj.case-obj{padding:8px;}
   .tag-hit{top:8px;left:8px;padding:3px 8px;font-size:9.5px;border-radius:6px;}
   .wish{top:8px;right:8px;width:28px;height:28px;}
   .wish svg{width:13px;height:13px;}
