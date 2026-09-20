@@ -8,7 +8,7 @@
     "price": 880,
     "old": 1300,
     "icon": "crypto",
-    "img": "",
+    "img": "/images/cb.jpg",
     "hit": false
   },
   {
@@ -20,7 +20,7 @@
     "price": 250,
     "old": 300,
     "icon": "diamond",
-    "img": "",
+    "img": "/images/frag.jpg",
     "hit": false
   },
   {
@@ -32,7 +32,7 @@
     "price": 789,
     "old": 1000,
     "icon": "wallet",
-    "img": "",
+    "img": "/images/ngwallet.jpg",
     "hit": false
   },
   {
@@ -44,7 +44,7 @@
     "price": 889,
     "old": 1300,
     "icon": "exchange",
-    "img": "",
+    "img": "/images/bybit.jpg",
     "hit": false
   },
   {
@@ -56,9 +56,9 @@
     "price": 2.7,
     "old": 3.8,
     "icon": "star",
-    "img": "",
+    "img": "/images/1000p.jpg",
     "hit": true,
-    "hidden": true
+    "hidden": false
   },
   {
     "id": "tg_premium_3",
@@ -69,9 +69,9 @@
     "price": 1050,
     "old": 1390,
     "icon": "premium",
-    "img": "",
+    "img": "/images/офподкл.jpg",
     "hit": false,
-    "hidden": true
+    "hidden": false
   },
   {
     "id": "tg_premium_6",
@@ -82,9 +82,9 @@
     "price": 1850,
     "old": 2390,
     "icon": "premium",
-    "img": "",
+    "img": "/images/1000pdp.jpg",
     "hit": true,
-    "hidden": true
+    "hidden": false
   },
   {
     "id": "tg_premium_9",
@@ -95,9 +95,9 @@
     "price": 2550,
     "old": 3290,
     "icon": "premium",
-    "img": "",
+    "img": "/images/1337F.jpg",
     "hit": false,
-    "hidden": true
+    "hidden": false
   },
   {
     "id": "tg_premium_12",
@@ -108,9 +108,9 @@
     "price": 3050,
     "old": 4090,
     "icon": "premium",
-    "img": "",
+    "img": "/images/100r.jpg",
     "hit": false,
-    "hidden": true
+    "hidden": false
   },
   {
     "id": "c7",
@@ -121,7 +121,7 @@
     "price": 450,
     "old": 700,
     "icon": "design",
-    "img": "",
+    "img": "/images/аватаркааним.jpg",
     "hit": false
   },
   {
@@ -133,7 +133,7 @@
     "price": 690,
     "old": 990,
     "icon": "brush",
-    "img": "",
+    "img": "/images/баннер.jpg",
     "hit": false
   },
   {
@@ -145,7 +145,7 @@
     "price": 4990,
     "old": 6900,
     "icon": "code",
-    "img": "",
+    "img": "/images/ленд.jpg",
     "hit": false
   },
   {
@@ -157,7 +157,7 @@
     "price": 8990,
     "old": 12000,
     "icon": "globe",
-    "img": "",
+    "img": "/images/bot.jpg",
     "hit": false
   },
   {
@@ -169,7 +169,7 @@
     "price": 12990,
     "old": 18000,
     "icon": "shop",
-    "img": "",
+    "img": "/images/busines.png",
     "hit": false
   },
   {
@@ -181,7 +181,7 @@
     "price": 5990,
     "old": 8500,
     "icon": "box",
-    "img": "",
+    "img": "/images/auto.jpg",
     "hit": false
   },
   {

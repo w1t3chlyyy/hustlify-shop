@@ -3683,7 +3683,7 @@ function getCategorySvg(cat){
   return '<svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>';
 }
 
-function thumbHtml(p){ return p && p.img ? `<img src="${p.img}" alt="${p.name}" style="width:100%;height:100%;object-fit:contain;border-radius:10px;">` : getCategorySvg(p ? p.cat : ''); }
+function thumbHtml(p){ return p && p.img ? `<img src="${p.img}" alt="${p.name}" style="width:100%;height:100%;object-fit:${p.section==='case'?'contain':'cover'};border-radius:10px;">` : getCategorySvg(p ? p.cat : ''); }
 function money(n){ return (n || 0).toLocaleString('ru-RU') + ' ₽'; }
 
 function productCard(p, isCase){
@@ -3695,7 +3695,7 @@ function productCard(p, isCase){
       <button class="wish ${inWish?'active':''}" data-wish="${p.id}" aria-label="В избранное">
         <svg viewBox="0 0 24 24" fill="${inWish?'#ffffff':'none'}" stroke="${inWish?'#ffffff':'currentColor'}" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
       </button>
-      <div class="obj${p.img?' has-photo':''}" style="font-size:64px;display:flex;align-items:center;justify-content:center;">${p.img ? `<img src="${p.img}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;">` : getCategorySvg(p.cat)}</div>
+      <div class="obj${p.img?' has-photo':''}" style="font-size:64px;display:flex;align-items:center;justify-content:center;">${p.img ? `<img src="${p.img}" alt="${p.name}" style="width:100%;height:100%;object-fit:${isCase?'contain':'cover'};${isCase?'padding:14px;':''}">` : getCategorySvg(p.cat)}</div>
     </div>
     <div class="product-info">
       <h4>${p.name}</h4>
@@ -3719,8 +3719,8 @@ function renderFilters(){
   ).join('');
 }
 
-let catalogVisibleCount = 8;
-let catalogExpanded = false;
+let catalogVisibleCount = 20;
+let catalogExpanded = true;
 
 /* ================= STARS & PREMIUM CONFIGURATOR ================= */
 let selectedStarsCount = 250;
@@ -4090,7 +4090,7 @@ function openProductModal(id){
   document.getElementById('pmName').textContent = p.name;
   document.getElementById('pmCat').textContent = p.cat || (p.section==='case' ? 'Кейс Hustlify' : 'Товар');
   document.getElementById('pmMedia').innerHTML = p.img
-    ? `<img src="${p.img}" alt="${p.name}">`
+    ? `<img src="${p.img}" alt="${p.name}" style="width:100%;height:100%;object-fit:${p.section==='case'?'contain':'cover'};${p.section==='case'?'padding:18px;':''}">`
     : `<div class="dobj">${getCategorySvg(p.cat)}</div>`;
   document.getElementById('pmDesc').textContent = `${p.desc}. Подробности по срокам и условиям уточняйте у менеджера после оформления заказа — мы свяжемся с вами по указанному контакту.`;
   document.getElementById('pmPrice').innerHTML = `<span class="now">${money(p.price)}</span><span class="old">${money(p.old)}</span>`;
@@ -4453,8 +4453,8 @@ document.getElementById('filterRow').addEventListener('click', e=>{
   const btn = e.target.closest('[data-filter]');
   if(!btn) return;
   activeFilter = btn.dataset.filter;
-  catalogExpanded = false;
-  catalogVisibleCount = 8;
+  catalogExpanded = true;
+  catalogVisibleCount = 20;
   renderFilters(); renderCatalog(); bindProductEvents();
 });
 
