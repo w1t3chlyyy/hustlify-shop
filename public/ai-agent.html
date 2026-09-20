@@ -163,9 +163,19 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
   margin:24px auto;
   padding:0 24px 30px;
   min-height:calc(100vh - 120px);
+  min-height:calc(100dvh - 120px);
 }
 @media(max-width:1080px){
   .ai-app-container{grid-template-columns:1fr;padding:0 16px 20px;}
+}
+@media(max-width:860px){
+  .ai-sidebar{display:none;}
+  .ai-app-container{grid-template-columns:1fr;margin:12px auto;padding:0 12px 16px;}
+  .nav-left a:not(.active){display:none;}
+  .chat-topbar{padding:14px 16px;}
+  .chips-bar{padding:10px 16px;}
+  .chat-messages{padding:16px;}
+  .chat-input-bar{padding:12px 16px;}
 }
 
 /* Chat Main Pane */
@@ -703,6 +713,38 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
   const calcValText = document.getElementById('calcValText');
   const calcMatchText = document.getElementById('calcMatchText');
   const askBudgetAI = document.getElementById('askBudgetAI');
+
+  (function initMobileInputLock(){
+    const mq = window.matchMedia('(max-width: 860px)');
+    let lockedScrollY = 0;
+    let isLocked = false;
+
+    function lockScroll(){
+      if(isLocked || !mq.matches) return;
+      isLocked = true;
+      lockedScrollY = window.scrollY || window.pageYOffset;
+      const b = document.body.style;
+      b.position = 'fixed';
+      b.top = -lockedScrollY + 'px';
+      b.left = '0'; b.right = '0'; b.width = '100%';
+    }
+    function unlockScroll(){
+      if(!isLocked) return;
+      isLocked = false;
+      const b = document.body.style;
+      b.position = ''; b.top = ''; b.left = ''; b.right = ''; b.width = '';
+      const html = document.documentElement;
+      html.style.scrollBehavior = 'auto';
+      window.scrollTo(0, lockedScrollY);
+      html.style.scrollBehavior = '';
+    }
+
+    chatInput.addEventListener('focus', lockScroll);
+    chatInput.addEventListener('blur', () => setTimeout(unlockScroll, 50));
+
+    const onMQ = () => { if(!mq.matches) unlockScroll(); };
+    if(mq.addEventListener) mq.addEventListener('change', onMQ); else mq.addListener(onMQ);
+  })();
 
   let history = [];
   let isGenerating = false;
