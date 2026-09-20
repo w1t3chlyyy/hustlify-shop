@@ -1821,6 +1821,17 @@ app.post('/api/ai/chat', async (req, res) => {
     }
     products = products.filter(p => !p.hidden && !p.deleted);
 
+    let news = [];
+    if (supabase) {
+      try {
+        const { data } = await supabase.from('news').select('*').order('created_at', { ascending: false }).limit(5);
+        if (data) news = data;
+      } catch (e) {}
+    }
+    if (!news.length) {
+      news = readJsonFile('news.json').slice(0, 5);
+    }
+
     const { apiKey, model, customBaseUrl } = getQwenConfig();
     const systemPrompt = buildSystemPrompt(products);
 
