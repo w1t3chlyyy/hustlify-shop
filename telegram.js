@@ -16,8 +16,7 @@
  * в первого бота, как и раньше. Ничего ломать не нужно.
  *
  * НАСТРОЙКА (займёт 2 минуты):
- * 1) В Telegram напишите @BotFather → команда /newbot → придумайте имя
- *    и username бота. BotFather пришлёт токен вида
+ * 1) В Telegram напишите @BotFather → команда /newbot → следуйте подсказкам → получите токен вида
  *    123456789:AAExxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
  *    Впишите его в .env как TELEGRAM_BOT_TOKEN (для первого бота)
  *    и/или TELEGRAM_BOT_TOKEN_2 (для второго бота).
