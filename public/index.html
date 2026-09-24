@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Hustlify — Сервис По Созданию Бизнеса с 0 Под Ключ</title>
 <meta name="description" content="Платформа и маркетплейс готовых IT-бизнесов и стартапов с витриной товаров, корзиной, калькулятором окупаемости и готовыми решениями под ключ">
+<meta property="og:title" content="Hustlify — Сервис По Созданию Бизнеса с 0 Под Ключ">
+<meta property="og:description" content="Платформа и маркетплейс готовых IT-бизнесов и стартапов с витриной товаров, корзиной, калькулятором окупаемости и готовыми решениями под ключ">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Unbounded:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -3471,21 +3473,20 @@ Telegram: Напишите в личные сообщения на аккаун�
 
 <div class="search-modal" id="payModal" style="top:50%;transform:translate(-50%,calc(-50% - 16px));">
   <div class="search-input-row" style="justify-content:space-between;">
-    <h3 style="font-size:17px;">Выберите способ оплаты</h3>
+    <h3 style="font-size:17px;">Оплата через RollyPay</h3>
     <button class="close-x" id="payClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   </div>
-  <div style="padding:22px 24px 26px;display:flex;flex-direction:column;gap:12px;">
+  <div style="padding:22px 24px 26px;display:flex;flex-direction:column;gap:14px;">
     <div id="payDiscountLine" style="color:var(--white);font-weight:600;font-size:12.5px;display:none;"></div>
-    <div style="color:var(--gray);font-size:13.5px;margin-bottom:6px;">К оплате: <b id="payTotal" style="color:var(--white);"></b></div>
-    <button class="btn btn-white" id="payCryptoBot" style="justify-content:center;">
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12l4 6-10 12L2 9l4-6z"/></svg>
-      Оплатить через CryptoBot
+    <div style="color:var(--gray);font-size:13.5px;">К оплате: <b id="payTotal" style="color:var(--white);font-size:18px;"></b></div>
+    <div style="background:var(--bg-soft);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:12.5px;color:var(--gray);line-height:1.5;">
+      Безопасный платежный шлюз <b style="color:var(--white);">RollyPay</b>: моментальная оплата через <b style="color:var(--white);">СБП</b>, банковские карты <b style="color:var(--white);">МИР / Visa / MasterCard</b> и криптовалюту (<b style="color:var(--white);">USDT</b>).
+    </div>
+    <button class="btn btn-white" id="payRollyPay" style="justify-content:center;padding:14px 20px;font-size:15px;font-weight:600;gap:10px;">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+      Оплатить через RollyPay
     </button>
-    <button class="btn btn-outline" id="payRequisites" style="justify-content:center;">
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-      Оплатить по реквизитам
-    </button>
-    <div id="payHint" style="color:var(--gray-dim);font-size:12px;margin-top:4px;"></div>
+    <div id="payHint" style="color:var(--gray-dim);font-size:12.5px;text-align:center;min-height:16px;"></div>
   </div>
 </div>
 
@@ -4355,16 +4356,19 @@ document.getElementById('checkoutContinueBtn').onclick = async ()=>{
     document.getElementById('payHint').textContent = '';
     closeAll();
     openDrawer(payModal);
+    startPayment('rollypay');
   }catch(e){
     err.textContent = 'Сервер недоступен. Запустите backend (node server.js)';
   }
 };
 document.getElementById('payClose').onclick = closeAll;
 
-async function startPayment(provider){
+async function startPayment(provider = 'rollypay'){
   if(!currentOrder) return;
   const hint = document.getElementById('payHint');
-  hint.textContent = 'Создаём платёж...';
+  const btn = document.getElementById('payRollyPay');
+  if(btn) { btn.disabled = true; btn.style.opacity = '0.75'; }
+  hint.textContent = 'Перенаправляем в платёжный шлюз RollyPay...';
   try{
     const res = await fetch(`/api/payments/${provider}/create`, {
       method:'POST',
@@ -4372,71 +4376,89 @@ async function startPayment(provider){
       body: JSON.stringify({ orderId: currentOrder.id })
     });
     const data = await res.json();
-    if(!res.ok){ hint.textContent = data.error || 'Платёжная система не настроена на сервере (проверьте .env)'; return; }
+    if(!res.ok || !data.payUrl){
+      hint.textContent = data.error || 'Ошибка связи с RollyPay (проверьте настройки)';
+      if(btn) { btn.disabled = false; btn.style.opacity = '1'; }
+      return;
+    }
     cart = []; updateBadges(); renderCartDrawer();
     window.location.href = data.payUrl;
   }catch(e){
     hint.textContent = 'Не удалось связаться с сервером оплаты';
+    if(btn) { btn.disabled = false; btn.style.opacity = '1'; }
   }
 }
-document.getElementById('payCryptoBot').onclick = ()=> startPayment('cryptobot');
+const payRollyPayBtn = document.getElementById('payRollyPay');
+if(payRollyPayBtn) payRollyPayBtn.onclick = () => startPayment('rollypay');
+const payCryptoBotBtn = document.getElementById('payCryptoBot');
+if(payCryptoBotBtn) payCryptoBotBtn.onclick = () => startPayment('cryptobot');
 
 const requisitesModal = document.getElementById('requisitesModal');
 const receiptSentModal = document.getElementById('receiptSentModal');
 
-document.getElementById('payRequisites').onclick = async ()=>{
-  if(!currentOrder) return;
-  const reqDetails = document.getElementById('reqDetails');
-  const reqErr = document.getElementById('reqErr');
-  reqErr.textContent = '';
-  document.getElementById('receiptFile').value = '';
-  document.getElementById('reqTotal').textContent = money(currentOrder.total);
-  reqDetails.innerHTML = 'Загружаем реквизиты…';
-  closeAll();
-  openDrawer(requisitesModal);
-  try{
-    const res = await fetch('/api/requisites');
-    const r = await res.json();
-    if(!res.ok || !r){ reqDetails.textContent = 'Не удалось загрузить реквизиты. Попробуйте позже.'; return; }
-    reqDetails.innerHTML = `
-      ${r.card_number ? `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> Карта: <b>${r.card_number}</b></div>` : ''}
-      ${r.bank_name ? `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 10h18M5 10v11M9 10v11M15 10v11M19 10v11M12 2l10 7H2l10-7z"/></svg> Банк: <b>${r.bank_name}</b></div>` : ''}
-      ${r.recipient_name ? `<div style="display:flex;align-items:center;gap:8px;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Получатель: <b>${r.recipient_name}</b></div>` : ''}
-      ${r.comment ? `<div style="margin-top:8px;color:var(--gray);font-size:13px;">${r.comment}</div>` : ''}
-    `;
-  }catch(e){
-    reqDetails.textContent = 'Не удалось связаться с сервером.';
-  }
-};
-document.getElementById('requisitesClose').onclick = closeAll;
-
-document.getElementById('submitReceiptBtn').onclick = async ()=>{
-  if(!currentOrder) return;
-  const fileInput = document.getElementById('receiptFile');
-  const reqErr = document.getElementById('reqErr');
-  reqErr.textContent = '';
-  if(!fileInput.files || fileInput.files.length===0){
-    reqErr.textContent = 'Прикрепите файл чека (фото или PDF)';
-    return;
-  }
-  const btn = document.getElementById('submitReceiptBtn');
-  btn.disabled = true;
-  btn.textContent = 'Отправляем…';
-  try{
-    const fd = new FormData();
-    fd.append('receipt', fileInput.files[0]);
-    const res = await fetch(`/api/orders/${currentOrder.id}/receipt`, { method:'POST', body: fd });
-    const data = await res.json();
-    if(!res.ok){ reqErr.textContent = data.error || 'Не удалось отправить чек'; btn.disabled=false; btn.textContent='Отправить чек на проверку'; return; }
-    cart = []; updateBadges(); renderCartDrawer();
+const payRequisitesBtn = document.getElementById('payRequisites');
+if(payRequisitesBtn){
+  payRequisitesBtn.onclick = async ()=>{
+    if(!currentOrder) return;
+    const reqDetails = document.getElementById('reqDetails');
+    const reqErr = document.getElementById('reqErr');
+    if(reqErr) reqErr.textContent = '';
+    const fileInp = document.getElementById('receiptFile');
+    if(fileInp) fileInp.value = '';
+    const reqTotal = document.getElementById('reqTotal');
+    if(reqTotal) reqTotal.textContent = money(currentOrder.total);
+    if(reqDetails) reqDetails.innerHTML = 'Загружаем реквизиты…';
     closeAll();
-    openDrawer(receiptSentModal);
-  }catch(e){
-    reqErr.textContent = 'Сервер недоступен, попробуйте ещё раз';
-  }
-  btn.disabled = false;
-  btn.textContent = 'Отправить чек на проверку';
-};
+    openDrawer(requisitesModal);
+    try{
+      const res = await fetch('/api/requisites');
+      const r = await res.json();
+      if(!res.ok || !r){ if(reqDetails) reqDetails.textContent = 'Не удалось загрузить реквизиты. Попробуйте позже.'; return; }
+      if(reqDetails){
+        reqDetails.innerHTML = `
+          ${r.card_number ? `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> Карта: <b>${r.card_number}</b></div>` : ''}
+          ${r.bank_name ? `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 10h18M5 10v11M9 10v11M15 10v11M19 10v11M12 2l10 7H2l10-7z"/></svg> Банк: <b>${r.bank_name}</b></div>` : ''}
+          ${r.recipient_name ? `<div style="display:flex;align-items:center;gap:8px;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Получатель: <b>${r.recipient_name}</b></div>` : ''}
+          ${r.comment ? `<div style="margin-top:8px;color:var(--gray);font-size:13px;">${r.comment}</div>` : ''}
+        `;
+      }
+    }catch(e){
+      if(reqDetails) reqDetails.textContent = 'Не удалось связаться с сервером.';
+    }
+  };
+}
+const reqCloseBtn = document.getElementById('requisitesClose');
+if(reqCloseBtn) reqCloseBtn.onclick = closeAll;
+
+const submitReceiptBtn = document.getElementById('submitReceiptBtn');
+if(submitReceiptBtn){
+  submitReceiptBtn.onclick = async ()=>{
+    if(!currentOrder) return;
+    const fileInput = document.getElementById('receiptFile');
+    const reqErr = document.getElementById('reqErr');
+    if(reqErr) reqErr.textContent = '';
+    if(!fileInput || !fileInput.files || fileInput.files.length===0){
+      if(reqErr) reqErr.textContent = 'Прикрепите файл чека (фото или PDF)';
+      return;
+    }
+    submitReceiptBtn.disabled = true;
+    submitReceiptBtn.textContent = 'Отправляем…';
+    try{
+      const fd = new FormData();
+      fd.append('receipt', fileInput.files[0]);
+      const res = await fetch(`/api/orders/${currentOrder.id}/receipt`, { method:'POST', body: fd });
+      const data = await res.json();
+      if(!res.ok){ if(reqErr) reqErr.textContent = data.error || 'Не удалось отправить чек'; submitReceiptBtn.disabled=false; submitReceiptBtn.textContent='Отправить чек на проверку'; return; }
+      cart = []; updateBadges(); renderCartDrawer();
+      closeAll();
+      openDrawer(receiptSentModal);
+    }catch(e){
+      if(reqErr) reqErr.textContent = 'Сервер недоступен, попробуйте ещё раз';
+    }
+    submitReceiptBtn.disabled = false;
+    submitReceiptBtn.textContent = 'Отправить чек на проверку';
+  };
+}
 document.getElementById('receiptSentClose').onclick = closeAll;
 
 function renderSearch(q){

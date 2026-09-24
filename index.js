@@ -96,9 +96,27 @@ const uploadHeroVideo = multer({
 });
 
 const app = express();
-app.use(express.json());
+app.use(express.json({
+  verify: (req, res, buf) => {
+    req.rawBody = buf;
+  }
+}));
+
+// Clean URLs middleware: перенаправляем запросы *.html на чистые URL без расширения (301 Permanent Redirect)
+app.use((req, res, next) => {
+  if (req.method === 'GET' && req.path.endsWith('.html')) {
+    const cleanPath = req.path.slice(0, -5);
+    const queryString = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+    if (cleanPath === '/index' || cleanPath === '') {
+      return res.redirect(301, '/' + queryString);
+    }
+    return res.redirect(301, cleanPath + queryString);
+  }
+  next();
+});
+
 app.use(cookieParser());
-app.use(express.static('public'));
+app.use(express.static('public', { extensions: ['html'] }));
 
 app.post('/api/upload-hero-video', uploadHeroVideo.single('video'), (req, res) => {
   if (!req.file) {
@@ -125,24 +143,30 @@ app.post('/api/upload-hero-video', uploadHeroVideo.single('video'), (req, res) =
   return res.json({ success: true, message: 'Оригинальное видео успешно установлено в главный экран!' });
 });
 
-app.get('/upload.html', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'upload.html'));
-});
-
+/* ================= CLEAN URL ROUTES ================= */
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
-app.get('/admin.html', (req, res) => {
+app.get(['/admin', '/admin.html'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+app.get(['/cases', '/cases.html'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'cases.html'));
+});
+app.get(['/ai-agent', '/ai-agent.html'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'ai-agent.html'));
+});
+app.get(['/oferta', '/offer', '/oferta.html', '/offer.html'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'offer.html'));
+});
+app.get(['/upload', '/upload.html'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'upload.html'));
 });
 app.get(['/payment-success', '/payment-success.html', '/success', '/order-success', '/order-success.html'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'payment-success.html'));
 });
 app.get(['/payment-fail', '/payment-fail.html', '/payment-cancel', '/payment-cancel.html', '/fail', '/cancel'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'payment-fail.html'));
-});
-app.get(['/oferta', '/offer', '/oferta.html', '/offer.html'], (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'offer.html'));
 });
 
 const PORT = 3000;
@@ -1187,6 +1211,291 @@ app.put('/api/admin/orders/:id', requireAdmin, async (req, res) => {
   res.json(updatedOrder);
 });
 
+/* ================= ROLLYPAY PAYMENT GATEWAY ================= */
+const ROLLYPAY_API_KEY = process.env.ROLLYPAY_API_KEY || 'yFqR2Klx7yDvDobQJ5-a90xUgDZvHHL7XjX5WXbdH3c';
+const ROLLYPAY_SIGNING_SECRET = process.env.ROLLYPAY_SIGNING_SECRET || 'ixBpA66RKOXOX_wAVWHaF67h5-8EiS3yz2nts3Z47i8';
+const ROLLYPAY_TERMINAL_ID = process.env.ROLLYPAY_TERMINAL_ID || 'ba78c039-c69a-4fe4-a45a-46fc164f0f04';
+
+async function createRollyPayInvoice(order) {
+  const totalNum = Number(order.total) || 0;
+  const amountStr = totalNum.toFixed(2);
+
+  const payload = {
+    amount: amountStr,
+    order_id: String(order.id),
+    payment_currency: 'RUB',
+    description: `Заказ #${order.id} на Hustlify`,
+    terminal_id: ROLLYPAY_TERMINAL_ID,
+    redirect_url: `${PUBLIC_URL}/payment-success?order=${order.id}`,
+    success_redirect_url: `${PUBLIC_URL}/payment-success?order=${order.id}`,
+    fail_redirect_url: `${PUBLIC_URL}/payment-fail?order=${order.id}`,
+    metadata: {
+      order_id: String(order.id),
+      contact: order.contact || ''
+    }
+  };
+
+  if (order.contact) {
+    payload.customer_id = String(order.contact).slice(0, 100);
+  }
+
+  const resp = await fetch('https://rollypay.io/api/v1/payments', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-Key': ROLLYPAY_API_KEY
+    },
+    body: JSON.stringify(payload)
+  });
+
+  const data = await resp.json();
+  if (!resp.ok || (!data.pay_url && !data.url)) {
+    console.error('RollyPay API response error:', data);
+    throw new Error(data.error || data.message || 'Ошибка создания платежа в RollyPay');
+  }
+
+  return {
+    ...data,
+    pay_url: data.pay_url || data.url
+  };
+}
+
+app.post(['/api/payments/rollypay/create', '/api/payments/create'], async (req, res) => {
+  try {
+    const { orderId } = req.body;
+    if (!orderId) {
+      return res.status(400).json({ error: 'Параметр orderId обязателен' });
+    }
+
+    let order = null;
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('orders')
+          .select('*')
+          .eq('id', orderId)
+          .single();
+        if (!error && data) order = data;
+      } catch (e) {}
+    }
+
+    if (!order) {
+      const orders = readJsonFile('orders.json');
+      order = orders.find(x => x.id === orderId);
+    }
+
+    if (!order) return res.status(404).json({ error: 'Заказ не найден' });
+
+    const rpData = await createRollyPayInvoice(order);
+
+    const paymentInfo = {
+      provider: 'rollypay',
+      paymentId: rpData.payment_id,
+      payUrl: rpData.pay_url,
+      token: rpData.token,
+      amount: rpData.amount,
+      status: rpData.status || 'created'
+    };
+
+    if (supabase) {
+      try {
+        await supabase
+          .from('orders')
+          .update({ payment: paymentInfo })
+          .eq('id', orderId);
+      } catch (e) {}
+    }
+
+    const orders = readJsonFile('orders.json');
+    const idx = orders.findIndex(x => x.id === orderId);
+    if (idx !== -1) {
+      orders[idx].payment = paymentInfo;
+      writeJsonFile('orders.json', orders);
+    }
+
+    res.json({
+      success: true,
+      payUrl: rpData.pay_url,
+      paymentId: rpData.payment_id
+    });
+  } catch (e) {
+    console.error('RollyPay creation failed:', e.message);
+    res.status(500).json({ error: e.message || 'Не удалось создать платеж в RollyPay' });
+  }
+});
+
+/* ================= WEBHOOK ROLLYPAY ================= */
+app.post('/api/webhooks/rollypay', async (req, res) => {
+  try {
+    const rawBody = req.rawBody ? req.rawBody.toString('utf-8') : (typeof req.body === 'string' ? req.body : JSON.stringify(req.body));
+    const signature = (req.headers['x-signature'] || req.headers['signature'] || '').trim();
+    const timestamp = (req.headers['x-timestamp'] || req.headers['timestamp'] || '').trim();
+
+    // Верификация подписи HMAC-SHA256 (timestamp + "." + rawBody)
+    if (ROLLYPAY_SIGNING_SECRET && signature && timestamp) {
+      try {
+        const signed = timestamp + '.' + rawBody;
+        const expected = crypto.createHmac('sha256', ROLLYPAY_SIGNING_SECRET).update(signed).digest('hex');
+        const valid = expected.length === signature.length &&
+          crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature));
+        if (!valid) {
+          console.warn('RollyPay webhook: Недействительная подпись X-Signature');
+          return res.status(403).json({ error: 'Invalid signature' });
+        }
+      } catch (sigErr) {
+        console.error('Ошибка проверки подписи webhook:', sigErr.message);
+        return res.status(403).json({ error: 'Signature verification failure' });
+      }
+    }
+
+    let payload;
+    try {
+      payload = typeof req.body === 'object' && req.body !== null && !Buffer.isBuffer(req.body) ? req.body : JSON.parse(rawBody);
+    } catch (e) {
+      payload = req.body || {};
+    }
+
+    const eventType = (payload.event_type || payload.event || payload.type || '').toLowerCase();
+    const status = (payload.status || (payload.data && payload.data.status) || '').toLowerCase();
+    const orderId = payload.order_id || 
+                    payload.orderId || 
+                    (payload.data && (payload.data.order_id || payload.data.orderId)) ||
+                    (payload.payment && payload.payment.order_id) ||
+                    (payload.metadata && payload.metadata.order_id);
+
+    const isPaid = status === 'paid' || 
+                   eventType === 'payment.paid' || 
+                   eventType === 'paid';
+
+    const isCancelled = status === 'canceled' || 
+                        status === 'expired' || 
+                        eventType === 'payment.canceled' || 
+                        eventType === 'payment.expired';
+
+    const paymentId = payload.payment_id || (payload.data && payload.data.payment_id);
+
+    if (orderId && isPaid) {
+      let order = null;
+      if (supabase) {
+        try {
+          await supabase
+            .from('orders')
+            .update({
+              status: 'paid',
+              payment: {
+                provider: 'rollypay',
+                paymentId,
+                amount: payload.amount,
+                currency: payload.currency || 'RUB',
+                raw: payload
+              },
+              paid_at: new Date().toISOString()
+            })
+            .eq('id', orderId);
+
+          const { data } = await supabase
+            .from('orders')
+            .select('*')
+            .eq('id', orderId)
+            .single();
+          if (data) order = data;
+        } catch (e) {}
+      }
+
+      if (!order) {
+        const orders = readJsonFile('orders.json');
+        const idx = orders.findIndex(x => x.id === orderId);
+        if (idx !== -1) {
+          orders[idx].status = 'paid';
+          orders[idx].payment = {
+            provider: 'rollypay',
+            paymentId,
+            amount: payload.amount,
+            currency: payload.currency || 'RUB',
+            raw: payload
+          };
+          orders[idx].paid_at = new Date().toISOString();
+          writeJsonFile('orders.json', orders);
+          order = orders[idx];
+        }
+      }
+
+      if (order) {
+        console.log(`[RollyPay] Заказ #${order.id} успешно оплачен!`);
+        await notifyOrderPaid(order);
+      }
+    } else if (orderId && isCancelled) {
+      if (supabase) {
+        try {
+          await supabase
+            .from('orders')
+            .update({
+              status: 'cancelled',
+              payment: {
+                provider: 'rollypay',
+                paymentId,
+                status,
+                raw: payload
+              }
+            })
+            .eq('id', orderId);
+        } catch (e) {}
+      }
+
+      const orders = readJsonFile('orders.json');
+      const idx = orders.findIndex(x => x.id === orderId);
+      if (idx !== -1) {
+        orders[idx].status = 'cancelled';
+        orders[idx].payment = {
+          provider: 'rollypay',
+          paymentId,
+          status,
+          raw: payload
+        };
+        writeJsonFile('orders.json', orders);
+      }
+    }
+
+    res.status(200).send('OK');
+  } catch (e) {
+    console.error('RollyPay webhook handler error:', e);
+    res.status(400).json({ error: 'Webhook processing error' });
+  }
+});
+
+/* ================= CRYPTOBOT & OTHER PAYMENTS ================= */
+app.post('/api/payments/:provider/create', async (req, res, next) => {
+  const { provider } = req.params;
+  if (provider === 'rollypay') {
+    // Already handled by /api/payments/rollypay/create, but in case:
+    req.url = '/api/payments/rollypay/create';
+    return app._router.handle(req, res, next);
+  }
+  if (provider === 'cryptobot' && process.env.CRYPTOBOT_TOKEN) {
+    return next();
+  }
+  // По умолчанию направляем все оплаты в RollyPay
+  try {
+    const { orderId } = req.body;
+    let order = null;
+    if (supabase) {
+      try {
+        const { data } = await supabase.from('orders').select('*').eq('id', orderId).single();
+        if (data) order = data;
+      } catch (e) {}
+    }
+    if (!order) {
+      const orders = readJsonFile('orders.json');
+      order = orders.find(x => x.id === orderId);
+    }
+    if (!order) return res.status(404).json({ error: 'Заказ не найден' });
+    const rpData = await createRollyPayInvoice(order);
+    return res.json({ payUrl: rpData.pay_url, paymentId: rpData.payment_id });
+  } catch (e) {
+    return res.status(500).json({ error: e.message || 'Ошибка RollyPay' });
+  }
+});
+
 /* ================= CRYPTOBOT PAYMENT ================= */
 app.post('/api/payments/cryptobot/create', async (req, res) => {
   try {
@@ -1569,7 +1878,7 @@ ${newsListStr}
 ПРИНЦИПЫ ПРОДАЮЩЕЙ КОНСУЛЬТАЦИИ:
 1. Выгода и ROI: Всегда показывай конкретные цифры окупаемости (обычно 7-21 день) и чистый ежемесячный доход (от 35 000 до 150 000 ₽).
 2. Легкий старт "Под ключ": Подчеркивай, что клиенту не нужно программировать. Мы передаем готовую систему с подробной инструкцией за 24–72 часа.
-3. Снятие страхов и возражений: Напоминай про официальные чеки, безопасную оплату (СБП, МИР или моментальный CryptoBot), 24/7 сопровождение специалистов @HustlifyHelp и отзывы в @HustlifyRep.
+3. Снятие страхов и возражений: Напоминай про официальные чеки, безопасную оплату через платежный шлюз RollyPay (СБП, карты МИР, Visa, MasterCard, USDT), 24/7 сопровождение специалистов @HustlifyHelp и отзывы в @HustlifyRep.
 4. Создание срочности и триггер действия: Призывай бронировать место на запуск сегодня, пока действуют акционные цены в Каталоге, актуальные новости и промокоды на скидку.
 5. Call to Action (CTA): Всегда завершай ответ призывом перейти к оформлению выбранного товара в каталоге или написать менеджеру @HustlifyHelp!
 

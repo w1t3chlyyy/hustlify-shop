@@ -1,58 +1,59 @@
-# Инструкция по быстрому возврату CryptoBot и оплаты по реквизитам
+# Интеграция платёжной системы RollyPay
 
-RollyPay стал единственным видимым способом оплаты в чекауте (клиент сам выбирает
-СБП / карту / USDT прямо на странице оплаты RollyPay — переключать методы на сайте
-не нужно). Backend CryptoBot и оплаты по реквизитам никуда не делся — эндпоинты
-`/api/payments/cryptobot/create`, `/api/webhooks/cryptobot`, `/api/orders/:id/receipt`,
-`/api/requisites` в `index.js` полностью рабочие и не менялись. Скрыты только кнопки
-на фронте, в `public/index.html`.
+Все способы оплаты на платформе переведены на платёжный шлюз **RollyPay**.
+Покупатель оформляет заказ и переходит на защищённую форму оплаты RollyPay, где может выбрать любой удобный для него метод:
+- **СБП (Система быстрых платежей)** по QR-коду и ссылке
+- **Банковские карты** (МИР, Visa, Mastercard)
+- **Криптовалюта** (USDT и др.)
 
 ---
 
-## 1. Вернуть кнопку CryptoBot (1 минута)
+## 1. Реквизиты кассы RollyPay
 
-Откройте `public/index.html`, найдите модалку `payModal` и блок:
+- **Terminal ID:** `ba78c039-c69a-4fe4-a45a-46fc164f0f04`
+- **API Key:** `yFqR2Klx7yDvDobQJ5-a90xUgDZvHHL7XjX5WXbdH3c`
+- **Signing Secret (секрет подписи):** `ixBpA66RKOXOX_wAVWHaF67h5-8EiS3yz2nts3Z47i8`
 
-```html
-<!-- CRYPTOBOT & REQUISITES PAYMENT BUTTONS (HIDDEN - See PAYMENT_METHODS_RESTORE_GUIDE.md)
-<button class="btn btn-white" id="payCryptoBot" style="justify-content:center;">
-  ...
-</button>
-<button class="btn btn-outline" id="payRequisites" style="justify-content:center;">
-  ...
-</button>
--->
+Переменные окружения в `.env`:
+```env
+ROLLYPAY_TERMINAL_ID=ba78c039-c69a-4fe4-a45a-46fc164f0f04
+ROLLYPAY_API_KEY=yFqR2Klx7yDvDobQJ5-a90xUgDZvHHL7XjX5WXbdH3c
+ROLLYPAY_SIGNING_SECRET=ixBpA66RKOXOX_wAVWHaF67h5-8EiS3yz2nts3Z47i8
 ```
 
-Снимите HTML-комментарий `<!--` и `-->` вокруг блока — кнопки снова появятся в
-окне выбора оплаты рядом с кнопкой RollyPay.
+*(В `index.js` также прописаны резервные значения по умолчанию на случай отсутствия переменных окружения)*
 
-Затем в `<script>` этой же страницы найдите:
+---
 
-```js
-/* CRYPTOBOT & REQUISITES (HIDDEN - See PAYMENT_METHODS_RESTORE_GUIDE.md)
-document.getElementById('payCryptoBot').onclick = ()=> startPayment('cryptobot');
-document.getElementById('payRequisites').onclick = async ()=>{
-  ...
-};
-*/
-```
+## 2. Настройки в личном кабинете кассы RollyPay
 
-Уберите `/*` и `*/` — обработчики клика заработают.
+- **Адрес для вебхуков (Callback URL):** `https://ВАШ-ДОМЕН/api/webhooks/rollypay`
+- **После успешной оплаты (Success Redirect):** `https://ВАШ-ДОМЕН/payment-success.html`
+- **После неуспешной оплаты (Fail Redirect):** `https://ВАШ-ДОМЕН/payment-fail.html`
+- **Ссылка на поддержку (Support URL):** `https://t.me/HustlifyHelp`
 
-Убедитесь, что в `.env` заполнен `CRYPTOBOT_TOKEN` (получить в `@CryptoBot` →
-«Crypto Pay» → «Create App») — без него сервер вернёт ошибку «CRYPTOBOT_TOKEN не
-настроен на сервере».
+---
 
-## 2. Вернуть оплату по реквизитам
+## 3. Серверные маршруты
 
-Восстанавливается тем же снятием комментария из п.1 — кнопка `payRequisites` и её
-обработчик (открывает окно с реквизитами, принимает загрузку чека) идут в том же
-блоке. Сами реквизиты редактируются в админке, вкладка «Реквизиты» — они не менялись
-и не терялись.
+### Создание платежа:
+- `POST /api/payments/rollypay/create` (или `POST /api/payments/create`)
+  Тело запроса:
+  ```json
+  { "orderId": "hustlify_1727..." }
+  ```
+  Ответ:
+  ```json
+  {
+    "success": true,
+    "payUrl": "https://pay.rollypay.io/pay/...",
+    "paymentId": "..."
+  }
+  ```
 
-## 3. Если нужны все способы сразу — вместе с RollyPay
-
-Просто выполните п.1–2 и оставьте кнопку `payRollyPay` нетронутой — в модалке
-`payModal` будет сразу три варианта оплаты. Дополнительный код не нужен, все три
-обработчика независимы друг от друга.
+### Приём вебхуков:
+- `POST /api/webhooks/rollypay`
+  - Проверяет заголовок `X-Signature` по формуле: `HMAC-SHA256(signing_secret, X-Timestamp + "." + rawBody)`
+  - При событии `payment.paid` (или статусе `paid`) переводит заказ в статус `paid`
+  - Отправляет уведомление в Telegram администраторам
+  - Сохраняет данные платежа в базе данных и `data/orders.json`

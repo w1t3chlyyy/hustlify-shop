@@ -99,14 +99,16 @@ npm start
 переходит по `pay_url` и сам выбирает удобный метод (СБП, карта, USDT) прямо на странице оплаты.
 
 Настройка:
-1. Получите `api_key` и `signing_secret` в личном кабинете RollyPay при создании кассы (или у партнёра/поддержки RollyPay, если кабинета нет).
-2. Впишите их в `.env` как `ROLLYPAY_API_KEY` и `ROLLYPAY_SIGNING_SECRET`.
-3. В настройках кассы RollyPay укажите:
+1. Заполните переменные в `.env`:
+   - `ROLLYPAY_TERMINAL_ID=ba78c039-c69a-4fe4-a45a-46fc164f0f04`
+   - `ROLLYPAY_API_KEY=yFqR2Klx7yDvDobQJ5-a90xUgDZvHHL7XjX5WXbdH3c`
+   - `ROLLYPAY_SIGNING_SECRET=ixBpA66RKOXOX_wAVWHaF67h5-8EiS3yz2nts3Z47i8`
+2. В настройках кассы RollyPay укажите:
    - **Адрес для вебхуков:** `https://ВАШ-ДОМЕН/api/webhooks/rollypay`
    - **После успешной оплаты:** `https://ВАШ-ДОМЕН/payment-success.html`
    - **После неуспешной оплаты:** `https://ВАШ-ДОМЕН/payment-fail.html`
-   - **Поддержка для покупателя:** ссылка на ваш Telegram-саппорт
-4. Перезапустите сервер.
+   - **Поддержка для покупателя:** `https://t.me/HustlifyHelp`
+3. Перезапустите сервер (`npm start` или `node server.js`).
 
 CryptoBot и оплата по реквизитам остаются полностью рабочими на бэкенде, но скрыты
 на фронте. Как быстро вернуть их в чекаут (если понадобится второй/третий способ оплаты

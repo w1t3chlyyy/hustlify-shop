@@ -2,12 +2,12 @@
   "name": "hustlify-shop",
   "version": "1.0.0",
   "description": "Hustlify storefront + admin panel + Supabase",
-  "main": "index.js",
+  "main": "server.js",
   "type": "commonjs",
   "scripts": {
     "build": "echo 'Build complete'",
-    "start": "node index.js",
-    "dev": "node index.js",
+    "start": "node server.js",
+    "dev": "node server.js",
     "lint": "node --check index.js server.js telegram.js get-chat-id.js"
   },
   "dependencies": {
