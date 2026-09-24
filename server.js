@@ -6,4 +6,3 @@ if (require.main === module) {
 }
 
 module.exports = require('./index.js');
-
