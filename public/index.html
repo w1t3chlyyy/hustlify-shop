@@ -2191,10 +2191,15 @@ footer .flinks a:hover{color:var(--white);}
   /* 2-column compact product cards */
   .pgrid{gap:8px;}
   .product{border-radius:12px;}
-  .product-media{aspect-ratio:1/0.85;}
-.product-media .obj:not(.case-obj):not(.has-photo){width:68%;height:68%;} /* 68% только для иконок без фото */
-.product-media .obj.has-photo{width:100%;height:100%;}                     /* фото на всю рамку */
-.obj.case-obj{padding:5px;}
+/* Товары */
+.product-media{aspect-ratio:1/0.85;}
+.product-media .obj:not(.case-obj):not(.has-photo){width:68%;height:68%;}
+.product-media .obj.has-photo{width:100%;height:100%;}
+
+/* Кейсы: рамка повторяет пропорцию фото, отступ одинаковый со всех сторон */
+.product-media:has(.case-obj){aspect-ratio:auto;}
+.product-media .obj.case-obj{width:100%;height:auto !important;padding:6px;}
+.product-media .obj.case-obj img{width:100% !important;height:auto !important;object-fit:contain;}
   .tag-hit{top:8px;left:8px;padding:3px 8px;font-size:9.5px;border-radius:6px;}
   .wish{top:8px;right:8px;width:28px;height:28px;}
   .wish svg{width:13px;height:13px;}
