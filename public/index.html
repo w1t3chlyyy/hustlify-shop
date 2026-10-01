@@ -1682,7 +1682,7 @@ header .wrap{
   overflow:hidden;border-radius:16px;background:var(--bg-soft);border:1px solid var(--line);
 }
 .wheel-track{
-  display:flex;transition:transform 8.5s cubic-bezier(.12,.7,.1,1);
+  display:flex;transition:transform 11.5s cubic-bezier(0.05, 0.88, 0.08, 1);will-change:transform;
 }
 .wheel-seg{
   flex:0 0 120px;width:120px;min-width:120px;padding:34px 0;text-align:center;
@@ -2820,12 +2820,10 @@ body.page-leaving {
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
         <span>Кейсы клиентов</span>
       </a>
-      <!-- ROULETTE NAV LINK (HIDDEN - See ROULETTE_RESTORE_GUIDE.md)
       <a href="#roulette" class="mobile-nav-link">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24M14.83 9.17l4.24-4.24M14.83 14.83l4.24 4.24M9.17 14.83l-4.24 4.24"/></svg>
         <span>Колесо бонусов</span>
       </a>
-      -->
       <a href="#about" class="mobile-nav-link">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
         <span>О нас и основатели</span>
@@ -3134,7 +3132,6 @@ body.page-leaving {
   </div>
 </section>
 
-<!-- ROULETTE SECTION (HIDDEN - See ROULETTE_RESTORE_GUIDE.md)
 <section class="roulette-section" id="roulette">
   <div class="wrap">
     <div class="roulette-card reveal">
@@ -3158,7 +3155,6 @@ body.page-leaving {
     </div>
   </div>
 </section>
--->
 
 <section class="section">
   <div class="wrap">
@@ -3253,7 +3249,6 @@ body.page-leaving {
 Обратите внимание: валюту платежа вы выбираете на этапе оформления. Комиссия сети при переводе криптовалюты оплачивается покупателем.
         </div>
       </div>
-      <!-- ROULETTE FAQ (HIDDEN - See ROULETTE_RESTORE_GUIDE.md)
       <div class="faq-item">
         <div class="faq-q">
           <span>Когда и как можно крутить рулетку скидок?</span>
@@ -3269,7 +3264,6 @@ body.page-leaving {
 Как активировать: Найдите виджет с рулеткой на главной странице или в карточке товара. Нажмите «Крутить», чтобы узнать свой персональный промокод на скидку.
         </div>
       </div>
-      -->
       <div class="faq-item">
         <div class="faq-q">
           <span>Возможен ли возврат товара?</span>
@@ -4543,8 +4537,9 @@ function initRoulette(){
   if(!wheelTrack) return;
 
   const WHEEL_PATTERN = [5,10,15,25];
-  const wheelValues = Array.from({length:40}, (_,i)=> WHEEL_PATTERN[i % WHEEL_PATTERN.length]);
-  const WIN_MIN = 12, WIN_MAX = 21;   // в этом диапазоне выбирается выигрышный сегмент
+  const wheelValues = Array.from({length:120}, (_,i)=> WHEEL_PATTERN[i % WHEEL_PATTERN.length]);
+  const WIN_MIN = 76, WIN_MAX = 95;   // длинный прокрут через ~80 сегментов: от очень быстрого старта к плавной остановке
+  const SPIN_DURATION_MS = 11500;
   const REST_INDEX = 6;               // сегмент под указателем в покое
   let restIndex = REST_INDEX;
   const wheelMask  = wheelTrack.parentElement;
@@ -4612,7 +4607,7 @@ function initRoulette(){
       const candidates = wheelValues.map((v,i)=>i).filter(i => wheelValues[i]===discount && i>=WIN_MIN && i<=WIN_MAX);
       const winnerIndex = candidates.length ? candidates[Math.floor(Math.random()*candidates.length)] : WIN_MIN;
       restIndex = winnerIndex;
-      wheelTrack.style.transition = 'transform 8.5s cubic-bezier(.12,.7,.1,1)';
+      wheelTrack.style.transition = `transform ${SPIN_DURATION_MS / 1000}s cubic-bezier(0.05, 0.88, 0.08, 1)`;
       wheelTrack.style.transform = `translateX(-${wheelOffsetFor(winnerIndex)}px)`;
 
       setTimeout(()=>{
@@ -4624,7 +4619,7 @@ function initRoulette(){
         spinning = false;
         setSpinLock(Date.now());
         refreshSpinLock();
-      }, 8600);
+      }, SPIN_DURATION_MS + 100);
     });
   }
 

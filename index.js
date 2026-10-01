@@ -2142,7 +2142,7 @@ app.post('/api/ai/chat', async (req, res) => {
     }
 
     const { apiKey, model, customBaseUrl } = getQwenConfig();
-    const systemPrompt = buildSystemPrompt(products);
+    const systemPrompt = buildSystemPrompt(products, news);
 
     // 1. Try Google Gemini API if GEMINI_API_KEY or GOOGLE_API_KEY is available
     const gemini = getGeminiClient();
