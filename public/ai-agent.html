@@ -342,32 +342,39 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
 .recommended-box{
   margin-top:14px;
   display:grid;
-  grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns:1fr;
   gap:10px;
 }
 .rec-card{
-  background:rgba(0,0,0,0.5);
-  border:1px solid rgba(255,255,255,0.15);
-  border-radius:12px;
-  padding:12px;
+  background:rgba(0,0,0,0.55);
+  border:1px solid rgba(255,255,255,0.22);
+  border-radius:14px;
+  padding:12px 14px;
   display:flex;
-  flex-direction:column;
+  align-items:center;
   justify-content:space-between;
-  gap:8px;
+  gap:14px;
   transition:all .2s;
 }
 .rec-card:hover{
-  border-color:rgba(255,255,255,0.4);
+  border-color:rgba(255,255,255,0.5);
   transform:translateY(-2px);
-  background:rgba(255,255,255,0.04);
+  background:rgba(255,255,255,0.06);
 }
-.rec-card-title{font-size:13px;font-weight:700;font-family:'Unbounded',sans-serif;}
-.rec-card-desc{font-size:11.5px;color:var(--gray);line-height:1.4;}
-.rec-card-foot{display:flex;align-items:center;justify-content:space-between;margin-top:4px;}
-.rec-card-price{font-weight:800;font-size:13px;color:#fff;}
+.rec-card-left{display:flex;align-items:center;gap:12px;min-width:0;flex:1;}
+.rec-card-thumb{width:54px;height:54px;border-radius:10px;object-fit:cover;flex-shrink:0;border:1px solid rgba(255,255,255,0.15);background:#111;}
+.rec-card-title{font-size:13.5px;font-weight:700;font-family:'Unbounded',sans-serif;margin-bottom:3px;color:#fff;}
+.rec-card-desc{font-size:12px;color:var(--gray);line-height:1.35;}
+.rec-card-foot{display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:6px;flex-shrink:0;}
+.rec-card-price{font-weight:800;font-size:14px;color:#fff;font-family:'Unbounded',sans-serif;white-space:nowrap;}
+.rec-card-old{font-size:11px;color:var(--gray-dim);text-decoration:line-through;font-weight:500;margin-left:6px;}
 .rec-card-btn{
-  padding:5px 10px;border-radius:6px;background:#fff;color:#000;
-  font-size:11px;font-weight:700;text-decoration:none;display:inline-block;
+  padding:7px 14px;border-radius:100px;background:#fff;color:#000;
+  font-size:11.5px;font-weight:700;text-decoration:none;display:inline-block;white-space:nowrap;
+}
+@media(max-width:560px){
+  .rec-card{flex-direction:column;align-items:stretch;}
+  .rec-card-foot{flex-direction:row;align-items:center;justify-content:space-between;margin-top:4px;}
 }
 
 /* Typing indicator */
@@ -591,13 +598,28 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
         <div class="msg-bubble">
           <p>Приветствую! Я — <strong>Hustlify Agent</strong>, ваш персональный бизнес-архитектор и консультант.</p>
           <p>Я знаю всё о готовых IT-бизнесах, Telegram Mini Apps, ботах, тарифах, сроках и гарантиях в сервисе <strong>Hustlify</strong>.</p>
-          <p>Чем могу вам помочь?</p>
+          <p>Задайте абсолютно любой вопрос — я отвечу по делу и помогу запустить систему, которая выведет вас на <strong>65 000 – 150 000+ ₽ чистой прибыли в месяц</strong>:</p>
           <ul>
             <li>Подобрать готовый стартап или магазин под ваш бюджет</li>
-            <li>Рассчитать предварительную окупаемость и сроки запуска (от 24 часов)</li>
-            <li>Объяснить детали разработки Telegram Mini App или бота автовыдачи</li>
+            <li>Рассчитать окупаемость (от 7–14 дней) и сроки запуска (от 24 часов)</li>
+            <li>Выстроить систему под ключ и вывести ваш проект на крупные платформы</li>
             <li>Проконсультировать по верификациям криптокошельков и безопасной оплате</li>
           </ul>
+          <div class="recommended-box">
+            <div class="rec-card">
+              <div class="rec-card-left">
+                <img src="/images/4case.png" alt="Кейс «Премиум»" class="rec-card-thumb">
+                <div>
+                  <div class="rec-card-title">Кейс «Премиум»</div>
+                  <div class="rec-card-desc">Полностью выстраиваем систему. Выходим на крупные платформы.</div>
+                </div>
+              </div>
+              <div class="rec-card-foot">
+                <div class="rec-card-price">4 289 ₽ <span class="rec-card-old">5 500 ₽</span></div>
+                <a href="/#cases" class="rec-card-btn">Забрать кейс →</a>
+              </div>
+            </div>
+          </div>
           <div class="msg-footer">
             <span>Hustlify Agent</span>
             <div class="msg-actions">
@@ -792,7 +814,22 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4M8 15h.01M16 15h.01"/></svg>
           </div>
           <div class="msg-bubble">
-            <p>Диалог очищен. Чем я могу помочь вам сейчас?</p>
+            <p>Диалог очищен. Задавайте абсолютно любой вопрос — отвечу на всё и помогу запустить ваш прибыльный проект под ключ!</p>
+            <div class="recommended-box">
+              <div class="rec-card">
+                <div class="rec-card-left">
+                  <img src="/images/4case.png" alt="Кейс «Премиум»" class="rec-card-thumb">
+                  <div>
+                    <div class="rec-card-title">Кейс «Премиум»</div>
+                    <div class="rec-card-desc">Полностью выстраиваем систему. Выходим на крупные платформы.</div>
+                  </div>
+                </div>
+                <div class="rec-card-foot">
+                  <div class="rec-card-price">4 289 ₽ <span class="rec-card-old">5 500 ₽</span></div>
+                  <a href="/#cases" class="rec-card-btn">Забрать кейс →</a>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       `;
@@ -876,6 +913,17 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
     }
   }
 
+  const DEFAULT_PREMIUM_CASE = {
+    id: 'k4',
+    name: 'Кейс «Премиум»',
+    section: 'case',
+    cat: 'Кейсы',
+    desc: 'Полностью выстраиваем систему. Выходим на крупные платформы.',
+    price: 4289,
+    old: 5500,
+    img: '/images/4case.png'
+  };
+
   // Append formatted message
   function appendMessage(role, rawContent, recommended = [], provider = '') {
     const row = document.createElement('div');
@@ -887,21 +935,32 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
       'ВЫ';
 
     let recHtml = '';
-    if (role === 'bot' && recommended && recommended.length > 0) {
+    if (role === 'bot') {
+      const items = (recommended && recommended.length > 0) ? recommended : [DEFAULT_PREMIUM_CASE];
       recHtml = `
         <div class="recommended-box">
-          ${recommended.map(p => `
+          ${items.map(p => {
+            const isCase = p.section === 'case' || p.id === 'k4' || /кейс/i.test(p.name || '');
+            const title = /кейс/i.test(p.name || '') ? p.name : (isCase ? `Кейс «${p.name}»` : p.name);
+            const img = p.img || '/images/4case.png';
+            const link = isCase ? '/#cases' : '/#catalog';
+            const btnLabel = isCase ? 'Забрать кейс →' : 'В каталог →';
+            const oldHtml = p.old ? `<span class="rec-card-old">${Number(p.old).toLocaleString('ru-RU')} ₽</span>` : '';
+            return `
             <div class="rec-card">
-              <div>
-                <div class="rec-card-title">${p.name}</div>
-                <div class="rec-card-desc">${p.desc || ''}</div>
+              <div class="rec-card-left">
+                <img src="${img}" alt="${title}" class="rec-card-thumb">
+                <div>
+                  <div class="rec-card-title">${title}</div>
+                  <div class="rec-card-desc">${p.desc || ''}</div>
+                </div>
               </div>
               <div class="rec-card-foot">
-                <div class="rec-card-price">${p.price ? p.price.toLocaleString('ru-RU') + ' ₽' : ''}</div>
-                <a href="/#catalog" class="rec-card-btn">В каталог</a>
+                <div class="rec-card-price">${p.price ? Number(p.price).toLocaleString('ru-RU') + ' ₽' : ''} ${oldHtml}</div>
+                <a href="${link}" class="rec-card-btn">${btnLabel}</a>
               </div>
             </div>
-          `).join('')}
+          `;}).join('')}
         </div>
       `;
     }
