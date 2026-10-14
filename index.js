@@ -988,19 +988,12 @@ app.post('/api/survey/promo', async (req, res) => {
 
 // Проверка промокода
 app.get('/api/promo/check/:code', async (req, res) => {
-  const reqCode = String(req.params.code).toUpperCase().trim();
-  if (supabase) {
-    try {
-      const { data, error } = await supabase
-        .from('promocodes')
-        .select('*')
-        .eq('code', reqCode)
-        .eq('used', false)
-        .gt('expires_at', new Date().toISOString())
-        .single();
-      if (!error && data) return res.json({ valid: true, discount: data.discount });
-    } catch (e) {}
-  }
+  const code = String(req.params.code).toUpperCase().trim();
+  const found = await findPromo(code);
+  const err = checkPromo(found && found.promo);
+  if (err) return res.json({ valid: false, error: err });
+  res.json({ valid: true, discount: found.promo.discount });
+});
 
   const promos = readJsonFile('promocodes.json');
   const p = promos.find(x => x.code === reqCode && !x.used && new Date(x.expires_at) > new Date());
@@ -1119,38 +1112,13 @@ app.post('/api/orders', async (req, res) => {
   let appliedPromo = null;
   if (promoCode) {
     const codeClean = String(promoCode).toUpperCase().trim();
-    let validPromo = false;
-    if (supabase) {
-      try {
-        const { data: promo } = await supabase
-          .from('promocodes')
-          .select('*')
-          .eq('code', codeClean)
-          .eq('used', false)
-          .gt('expires_at', new Date().toISOString())
-          .single();
-        if (promo) {
-          discountPercent = promo.discount;
-          appliedPromo = promo.code;
-          validPromo = true;
-        }
-      } catch (e) {}
-    }
-
-    if (!validPromo) {
-      const promos = readJsonFile('promocodes.json');
-      const p = promos.find(x => x.code === codeClean && !x.used && new Date(x.expires_at) > new Date());
-      if (p) {
-        discountPercent = p.discount;
-        appliedPromo = p.code;
-        validPromo = true;
-      }
-    }
-
-    if (!validPromo) {
-      return res.status(400).json({ error: 'Промокод недействителен, истёк или уже использован' });
-    }
+    const found = await findPromo(codeClean);
+    const err = checkPromo(found && found.promo);
+    if (err) return res.status(400).json({ error: err });
+    discountPercent = Number(found.promo.discount) || 0;
+    appliedPromo = codeClean;
   }
+  
 
   const total = Math.round(itemsTotal * (1 - discountPercent / 100));
   const orderId = 'ord_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -1182,16 +1150,7 @@ app.post('/api/orders', async (req, res) => {
     writeJsonFile('orders.json', orders);
   }
 
-  if (appliedPromo) {
-    if (supabase) {
-      try {
-        await supabase.from('promocodes').update({ used: true, order_id: orderId }).eq('code', appliedPromo);
-      } catch (e) {}
-    }
-    const promos = readJsonFile('promocodes.json');
-    const pr = promos.find(x => x.code === appliedPromo);
-    if (pr) { pr.used = true; pr.order_id = orderId; writeJsonFile('promocodes.json', promos); }
-  }
+   if (appliedPromo) await consumePromo(appliedPromo, orderId);
 
   try {
     await notifyNewOrder(order);
@@ -1782,15 +1741,91 @@ app.post('/api/orders/:id/receipt', upload.single('receipt'), async (req, res) =
   }
 });
 
-/* ================= PROMO CHECK (для админки) ================= */
+/* ================= ADMIN: PROMOCODES CRUD ================= */
 app.get('/api/admin/promocodes', requireAdmin, async (req, res) => {
   if (supabase) {
     try {
-      const { data } = await supabase.from('promocodes').select('*').order('created_at', { ascending: false });
-      if (data) return res.json(data);
+      const { data, error } = await supabase.from('promocodes').select('*').order('created_at', { ascending: false });
+      if (!error && data) return res.json(data);
     } catch (e) {}
   }
-  res.json(readJsonFile('promocodes.json'));
+  res.json(readJsonFile('promocodes.json').slice().reverse());
+});
+
+app.post('/api/admin/promocodes', requireAdmin, async (req, res) => {
+  const b = req.body || {};
+  const discount = Number(b.discount);
+  if (!discount || discount < 1 || discount > 100) {
+    return res.status(400).json({ error: 'Скидка должна быть от 1 до 100%' });
+  }
+  const type = b.type === 'multi' ? 'multi' : 'single';
+  const code = (String(b.code || '').toUpperCase().replace(/[^A-Z0-9_-]/g, '') || genOpaqueCode()).slice(0, 40);
+
+  let maxUses = null;
+  if (type === 'multi' && b.max_uses) {
+    maxUses = parseInt(b.max_uses);
+    if (!maxUses || maxUses < 1) return res.status(400).json({ error: 'Лимит использований должен быть ≥ 1' });
+  }
+
+  let expiresAt = null;
+  if (b.days) {
+    const d = Number(b.days);
+    if (!d || d <= 0) return res.status(400).json({ error: 'Некорректное число дней' });
+    expiresAt = new Date(Date.now() + d * 24 * 60 * 60 * 1000).toISOString();
+  } else if (b.expires_at) {
+    const d = new Date(b.expires_at);
+    if (isNaN(d.getTime())) return res.status(400).json({ error: 'Некорректная дата окончания' });
+    if (d <= new Date()) return res.status(400).json({ error: 'Дата окончания уже в прошлом' });
+    expiresAt = d.toISOString();
+  }
+
+  if (await findPromo(code)) return res.status(400).json({ error: 'Такой промокод уже существует' });
+
+  const promo = {
+    code, discount, type,
+    max_uses: maxUses,
+    used_count: 0,
+    used: false,
+    active: true,
+    expires_at: expiresAt,
+    note: String(b.note || '').slice(0, 200),
+    created_at: new Date().toISOString()
+  };
+
+  if (supabase) {
+    try {
+      const { error } = await supabase.from('promocodes').insert([promo]);
+      if (error) console.error('Supabase insert promo error:', error.message);
+    } catch (e) { console.error('Supabase insert promo error:', e.message); }
+  }
+  const promos = readJsonFile('promocodes.json');
+  promos.push(promo);
+  writeJsonFile('promocodes.json', promos);
+  res.json(promo);
+});
+
+app.put('/api/admin/promocodes/:code', requireAdmin, async (req, res) => {
+  const code = String(req.params.code).toUpperCase();
+  const patch = {};
+  if (req.body.active !== undefined) patch.active = !!req.body.active;
+  if (req.body.reset_usage) { patch.used = false; patch.used_count = 0; }
+
+  if (supabase) {
+    try { await supabase.from('promocodes').update(patch).eq('code', code); } catch (e) {}
+  }
+  const promos = readJsonFile('promocodes.json');
+  const idx = promos.findIndex(x => x.code === code);
+  if (idx !== -1) { Object.assign(promos[idx], patch); writeJsonFile('promocodes.json', promos); }
+  res.json({ ok: true });
+});
+
+app.delete('/api/admin/promocodes/:code', requireAdmin, async (req, res) => {
+  const code = String(req.params.code).toUpperCase();
+  if (supabase) {
+    try { await supabase.from('promocodes').delete().eq('code', code); } catch (e) {}
+  }
+  writeJsonFile('promocodes.json', readJsonFile('promocodes.json').filter(x => x.code !== code));
+  res.json({ ok: true });
 });
 
 /* ================= CALCULATOR ================= */
