@@ -42,7 +42,7 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;}
 .logout-btn{border:1px solid var(--line);padding:10px 20px;border-radius:100px;font-size:13px;background:none;color:var(--white);cursor:pointer;transition:all .2s;}
 .logout-btn:hover{background:rgba(255,255,255,.06);}
 
-.tabs{display:flex;gap:8px;margin:28px 0;}
+.tabs{display:flex;gap:8px;margin:28px 0;flex-wrap:wrap;}
 .tab{padding:11px 20px;border-radius:100px;font-size:13.5px;font-weight:500;color:var(--gray);border:1px solid var(--line);cursor:pointer;background:none;transition:all .2s;}
 .tab.active{background:var(--white);color:var(--bg);border-color:transparent;}
 
@@ -143,6 +143,7 @@ td.num{font-family:'Unbounded';font-weight:600;}
       <button class="tab" data-tab="partners">Партнёры</button>
       <button class="tab" data-tab="news">Новости</button>
       <button class="tab" data-tab="orders">Заказы</button>
+      <button class="tab" data-tab="promocodes">Промокоды</button>
       <button class="tab" data-tab="requisites">Реквизиты</button>
     </div>
 
@@ -316,6 +317,17 @@ td.num{font-family:'Unbounded';font-weight:600;}
       </table>
     </div>
 
+    <div class="panel" id="panel-promocodes">
+      <div class="toolbar">
+        <div style="color:var(--gray);font-size:13.5px;" id="promoCount"></div>
+        <button class="add-btn" id="addPromoBtn">+ Создать промокод</button>
+      </div>
+      <table>
+        <thead><tr><th>Код</th><th>Скидка</th><th>Тип</th><th>Использований</th><th>Действует до</th><th>Статус</th><th></th></tr></thead>
+        <tbody id="promoTbody"></tbody>
+      </table>
+    </div>
+
     <div class="panel" id="panel-requisites">
       <div style="max-width:520px;">
         <h4 style="font-size:15px;font-weight:700;margin-bottom:14px;color:var(--white);">Реквизиты для оплаты</h4>
@@ -448,9 +460,54 @@ td.num{font-family:'Unbounded';font-weight:600;}
   </div>
 </div>
 
+<div class="modal" id="promoModal">
+  <div class="modal-head"><h3>Новый промокод</h3></div>
+  <div class="modal-body">
+    <div class="grid2">
+      <div class="field"><label>Код (пусто — сгенерировать)</label><input id="pr_code" placeholder="SUMMER25" style="text-transform:uppercase;"></div>
+      <div class="field"><label>Скидка, %</label><input id="pr_discount" type="number" min="1" max="100" placeholder="15"></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Тип</label>
+        <select id="pr_type" style="width:100%;padding:13px 16px;border-radius:12px;background:var(--bg);border:1px solid var(--line);color:var(--white);">
+          <option value="single">Одноразовый</option>
+          <option value="multi">Многоразовый</option>
+        </select>
+      </div>
+      <div class="field" id="pr_maxWrap" style="display:none;"><label>Лимит использований (пусто — без лимита)</label><input id="pr_max" type="number" min="1" placeholder="100"></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Срок действия</label>
+        <select id="pr_expmode" style="width:100%;padding:13px 16px;border-radius:12px;background:var(--bg);border:1px solid var(--line);color:var(--white);">
+          <option value="none">Бессрочный</option>
+          <option value="days">Через N дней</option>
+          <option value="date">До даты и времени</option>
+        </select>
+      </div>
+      <div class="field" id="pr_daysWrap" style="display:none;"><label>Количество дней</label><input id="pr_days" type="number" min="1" placeholder="7"></div>
+      <div class="field" id="pr_dateWrap" style="display:none;"><label>Действует до</label><input id="pr_date" type="datetime-local"></div>
+    </div>
+    <div class="field"><label>Заметка (для себя)</label><input id="pr_note" placeholder="Например: блогер Иван"></div>
+    <div id="promoErr" style="color:var(--red);font-size:13px;min-height:18px;"></div>
+  </div>
+  <div class="modal-foot">
+    <button class="cancel-btn" id="cancelPromoModal">Отмена</button>
+    <button class="save-btn" id="savePromo">Создать</button>
+  </div>
+</div>
+
 <script>
 let editingId = null;
 let products = [];
+
+/* ---------------- HELPERS (определены раньше, чтобы были доступны всем разделам) ---------------- */
+function escapeHtmlAdmin(str){
+  return String(str == null ? '' : str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+var FLAG_EYE = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+var FLAG_EYE_OFF = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a21.86 21.86 0 0 1 5.06-6.06M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a21.86 21.86 0 0 1-2.16 3.19M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg>';
+var FLAG_X = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>';
+var FLAG_RESTORE = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>';
 
 /* ---------------- AUTH ---------------- */
 async function checkAuth(){
@@ -458,7 +515,12 @@ async function checkAuth(){
   if(res.ok){ showDash(); } else { showLogin(); }
 }
 function showLogin(){ document.getElementById('loginScreen').style.display='flex'; document.getElementById('dash').style.display='none'; }
-function showDash(){ document.getElementById('loginScreen').style.display='none'; document.getElementById('dash').style.display='block'; loadProducts(); loadRates(); loadProjects(); loadPartners(); loadNews(); loadOrders(); loadRequisites(); }
+function showDash(){
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('dash').style.display='block';
+  loadProducts(); loadRates(); loadProjects(); loadPartners(); loadNews();
+  loadOrders(); loadPromos(); loadRequisites();
+}
 
 document.getElementById('loginSubmit').onclick = async ()=>{
   const login = document.getElementById('loginUser').value;
@@ -492,6 +554,7 @@ document.querySelectorAll('#mainTabs .tab').forEach(t=>{
     if(t.dataset.tab === 'stars-premium') loadRates();
     if(t.dataset.tab === 'projects') loadProjects();
     if(t.dataset.tab === 'partners') loadPartners();
+    if(t.dataset.tab === 'promocodes') loadPromos();
   };
 });
 
@@ -507,8 +570,6 @@ document.querySelectorAll('#sectionFilter .tab').forEach(t=>{
 });
 
 /* ---------------- API HELPER ---------------- */
-// Единая обёртка: если сессия истекла (401) — сразу возвращаем на экран логина
-// вместо того, чтобы молча падать при попытке отрисовать данные.
 async function adminFetch(url, opts){
   const res = await fetch(url, opts);
   if(res.status === 401){ showLogin(); throw new Error('unauthorized'); }
@@ -663,7 +724,6 @@ function openNewsModal(id){
 function closeNewsModal(){ overlay.classList.remove('open'); newsModal.classList.remove('open'); }
 document.getElementById('addNewsBtn').onclick = ()=> openNewsModal(null);
 document.getElementById('cancelNewsModal').onclick = closeNewsModal;
-// делаем клик по фону закрывающим оба модальных окна
 overlay.onclick = ()=>{ closeModal(); closeNewsModal(); };
 
 document.getElementById('saveNews').onclick = async ()=>{
@@ -931,10 +991,6 @@ var ratesFlags = {
   9: { hidden:false, deleted:false }, 12: { hidden:false, deleted:false }
 };
 var FLAG_LABEL = { stars:'Telegram Звёзды', 3:'Premium 3 мес.', 6:'Premium 6 мес.', 9:'Premium 9 мес.', 12:'Premium 12 мес.' };
-var FLAG_EYE = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
-var FLAG_EYE_OFF = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a21.86 21.86 0 0 1 5.06-6.06M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a21.86 21.86 0 0 1-2.16 3.19M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg>';
-var FLAG_X = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>';
-var FLAG_RESTORE = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>';
 
 function flagBox(key){
   if(key === 'stars') return document.querySelector('#panel-stars-premium .rates-grid .rate-card');
@@ -1006,10 +1062,6 @@ let projectsItems = [];
 let editingProjectId = null;
 const projectModalAdmin = document.getElementById('projectModalAdmin');
 const TYPE_LABEL = { site: 'Сайт', telegram: 'Telegram' };
-
-function escapeHtmlAdmin(str){
-  return String(str == null ? '' : str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-}
 
 async function loadProjects(){
   try{
@@ -1206,6 +1258,129 @@ async function deletePartner(id){
 
 // клик по фону закрывает любые открытые модальные окна
 overlay.addEventListener('click', ()=>{ closeProjectModalAdmin(); closePartnerModal(); });
+
+/* ---------------- PROMOCODES ---------------- */
+let promoItems = [];
+const promoModal = document.getElementById('promoModal');
+
+function promoStatus(p){
+  const exp = p.expires_at || p.expiresAt;
+  const type = p.type || 'single';
+  const used = Number(p.used_count || 0);
+  if(p.active === false) return {t:'Отключён', c:'var(--gray)'};
+  if(exp && new Date(exp) <= new Date()) return {t:'Истёк', c:'var(--red)'};
+  if(type==='single' && (p.used || used>=1)) return {t:'Использован', c:'var(--gray)'};
+  if(type==='multi' && p.max_uses && used >= p.max_uses) return {t:'Лимит исчерпан', c:'var(--red)'};
+  return {t:'Активен', c:'var(--green)'};
+}
+
+async function loadPromos(){
+  try{
+    const res = await adminFetch('/api/admin/promocodes');
+    promoItems = await res.json();
+    if(!res.ok){ promoItems = []; }
+  }catch(e){ return; }
+  document.getElementById('promoCount').textContent = promoItems.length + ' промокодов';
+  const tbody = document.getElementById('promoTbody');
+  if(!promoItems.length){ tbody.innerHTML = '<tr><td colspan="7"><div class="empty">Промокодов пока нет</div></td></tr>'; return; }
+  tbody.innerHTML = promoItems.map(p=>{
+    const st = promoStatus(p);
+    const type = p.type || 'single';
+    const exp = p.expires_at || p.expiresAt;
+    const used = Number(p.used_count || (p.used ? 1 : 0));
+    const usage = type==='multi' ? (used + ' / ' + (p.max_uses || '∞')) : (used ? '1 / 1' : '0 / 1');
+    const isOff = p.active === false;
+    return `<tr>
+      <td style="font-family:monospace;font-size:13px;">${escapeHtmlAdmin(p.code)}${p.note ? `<div style="color:var(--gray-dim);font-size:11.5px;font-family:Inter;">${escapeHtmlAdmin(p.note)}</div>` : ''}</td>
+      <td class="num">-${p.discount}%</td>
+      <td>${type==='multi' ? 'Многоразовый' : 'Одноразовый'}</td>
+      <td>${usage}</td>
+      <td style="color:var(--gray);font-size:12.5px;">${exp ? new Date(exp).toLocaleString('ru-RU') : 'Бессрочно'}</td>
+      <td><span style="color:${st.c};font-size:12.5px;font-weight:600;">${st.t}</span></td>
+      <td><div class="row-actions">
+        <button class="icon-btn-sm" data-pcopy="${escapeHtmlAdmin(p.code)}" title="Скопировать код"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
+        <button class="icon-btn-sm" data-ptog="${escapeHtmlAdmin(p.code)}" data-off="${isOff?1:0}" title="${isOff?'Включить':'Отключить'}">${isOff?FLAG_EYE_OFF:FLAG_EYE}</button>
+        <button class="icon-btn-sm danger" data-pdelp="${escapeHtmlAdmin(p.code)}" title="Удалить">${FLAG_X}</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+
+  tbody.querySelectorAll('[data-pcopy]').forEach(b=> b.onclick = ()=> navigator.clipboard.writeText(b.dataset.pcopy).catch(()=>{}));
+  tbody.querySelectorAll('[data-ptog]').forEach(b=> b.onclick = async ()=>{
+    try{
+      await adminFetch('/api/admin/promocodes/' + encodeURIComponent(b.dataset.ptog), {
+        method:'PUT', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ active: b.dataset.off === '1' })
+      });
+      loadPromos();
+    }catch(e){}
+  });
+  tbody.querySelectorAll('[data-pdelp]').forEach(b=> b.onclick = async ()=>{
+    if(!confirm('Удалить промокод ' + b.dataset.pdelp + '?')) return;
+    try{
+      await adminFetch('/api/admin/promocodes/' + encodeURIComponent(b.dataset.pdelp), { method:'DELETE' });
+      loadPromos();
+    }catch(e){}
+  });
+}
+
+function syncPromoForm(){
+  document.getElementById('pr_maxWrap').style.display = document.getElementById('pr_type').value==='multi' ? '' : 'none';
+  const m = document.getElementById('pr_expmode').value;
+  document.getElementById('pr_daysWrap').style.display = m==='days' ? '' : 'none';
+  document.getElementById('pr_dateWrap').style.display = m==='date' ? '' : 'none';
+}
+document.getElementById('pr_type').onchange = syncPromoForm;
+document.getElementById('pr_expmode').onchange = syncPromoForm;
+
+function openPromoModal(){
+  ['pr_code','pr_discount','pr_max','pr_days','pr_date','pr_note'].forEach(id=> document.getElementById(id).value = '');
+  document.getElementById('pr_type').value = 'single';
+  document.getElementById('pr_expmode').value = 'none';
+  document.getElementById('promoErr').textContent = '';
+  syncPromoForm();
+  overlay.classList.add('open'); promoModal.classList.add('open');
+}
+function closePromoModal(){ overlay.classList.remove('open'); promoModal.classList.remove('open'); }
+document.getElementById('addPromoBtn').onclick = openPromoModal;
+document.getElementById('cancelPromoModal').onclick = closePromoModal;
+overlay.addEventListener('click', closePromoModal);
+
+document.getElementById('savePromo').onclick = async ()=>{
+  const errEl = document.getElementById('promoErr');
+  errEl.textContent = '';
+  const mode = document.getElementById('pr_expmode').value;
+  const body = {
+    code: document.getElementById('pr_code').value.trim(),
+    discount: Number(document.getElementById('pr_discount').value),
+    type: document.getElementById('pr_type').value,
+    max_uses: document.getElementById('pr_max').value || null,
+    note: document.getElementById('pr_note').value.trim()
+  };
+  if(mode === 'days') body.days = document.getElementById('pr_days').value;
+  if(mode === 'date'){
+    const v = document.getElementById('pr_date').value;
+    if(!v){ errEl.textContent = 'Укажите дату окончания'; return; }
+    body.expires_at = new Date(v).toISOString();
+  }
+  if(!body.discount){ errEl.textContent = 'Укажите скидку'; return; }
+  if(mode === 'days' && !body.days){ errEl.textContent = 'Укажите количество дней'; return; }
+
+  const btn = document.getElementById('savePromo');
+  btn.disabled = true;
+  try{
+    const res = await adminFetch('/api/admin/promocodes', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)
+    });
+    const data = await res.json().catch(()=>({}));
+    if(!res.ok){ errEl.textContent = data.error || 'Не удалось создать промокод'; btn.disabled = false; return; }
+    closePromoModal();
+    loadPromos();
+  }catch(e){
+    if(e.message !== 'unauthorized') errEl.textContent = 'Сервер недоступен';
+  }
+  btn.disabled = false;
+};
 
 checkAuth();
 </script>
