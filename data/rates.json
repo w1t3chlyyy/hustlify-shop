@@ -1,0 +1,14 @@
+{
+  "tg_stars": {
+    "price": 2.5,
+    "old": 3.5,
+    "hidden": false,
+    "deleted": false
+  },
+  "tg_premium_3": {
+    "price": 1000,
+    "old": 1300,
+    "hidden": true,
+    "deleted": false
+  }
+}
