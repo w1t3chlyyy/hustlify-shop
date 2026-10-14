@@ -739,14 +739,21 @@ async function createRollyPayInvoice(order, req) {
 
   const response = await fetch('https://rollypay.io/api/v1/payments', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-API-Key': config.apiKey },
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-Key': config.apiKey,
+      'X-Nonce': crypto.randomUUID()
+    },
     body: JSON.stringify(payload)
   });
-  const result = await response.json().catch(() => ({}));
+  const responseBody = await response.text();
+  let result = {};
+  try { result = JSON.parse(responseBody); } catch (e) {}
   const payUrl = result.pay_url || result.url;
   if (!response.ok || !payUrl) {
-    console.error('RollyPay invoice request failed:', response.status, result.error || result.message || 'invalid response');
-    throw new Error(result.error || result.message || 'Не удалось создать платёж RollyPay');
+    const detail = result.error || result.message || responseBody.slice(0, 300) || 'empty response';
+    console.error('RollyPay invoice request failed:', response.status, detail);
+    throw new Error(result.error || result.message || `RollyPay вернул HTTP ${response.status}`);
   }
   return Object.assign({}, result, { pay_url: payUrl });
 }

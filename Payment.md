@@ -36,6 +36,8 @@ ROLLYPAY_SIGNING_SECRET=ваш_signing_secret
 
 ## 3. Серверные маршруты
 
+При создании платежа сервер отправляет `X-API-Key` и уникальный `X-Nonce` (UUID) в каждом запросе. RollyPay отклоняет запросы без nonce или с повторно использованным nonce.
+
 ### Создание платежа:
 - `POST /api/payments/rollypay/create` (или `POST /api/payments/create`)
   Тело запроса:
