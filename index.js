@@ -1008,6 +1008,48 @@ app.get('/api/promo/check/:code', async (req, res) => {
   res.json({ valid: true, discount: p.discount });
 });
 
+/* ================= PROMO HELPERS ================= */
+async function findPromo(code) {
+  if (supabase) {
+    try {
+      const { data, error } = await supabase.from('promocodes').select('*').eq('code', code).maybeSingle();
+      if (!error && data) return { source: 'db', promo: data };
+    } catch (e) {}
+  }
+  const p = readJsonFile('promocodes.json').find(x => x.code === code);
+  return p ? { source: 'file', promo: p } : null;
+}
+
+// возвращает текст ошибки или null, если код можно применить
+function checkPromo(p) {
+  if (!p) return 'Промокод не найден';
+  if (p.active === false) return 'Промокод отключён';
+  const exp = p.expires_at || p.expiresAt;
+  if (exp && new Date(exp) <= new Date()) return 'Срок действия промокода истёк';
+  const type = p.type || 'single';
+  const used = Number(p.used_count || 0);
+  if (type === 'single' && (p.used || used >= 1)) return 'Промокод уже использован';
+  if (type === 'multi' && p.max_uses && used >= Number(p.max_uses)) return 'Лимит использований промокода исчерпан';
+  return null;
+}
+
+async function consumePromo(code, orderId) {
+  const found = await findPromo(code);
+  if (!found) return;
+  const p = found.promo;
+  const type = p.type || 'single';
+  const used_count = Number(p.used_count || 0) + 1;
+  const patch = { used_count, order_id: orderId };
+  if (type === 'single' || (p.max_uses && used_count >= Number(p.max_uses))) patch.used = true;
+
+  if (supabase) {
+    try { await supabase.from('promocodes').update(patch).eq('code', code); } catch (e) {}
+  }
+  const promos = readJsonFile('promocodes.json');
+  const idx = promos.findIndex(x => x.code === code);
+  if (idx !== -1) { Object.assign(promos[idx], patch); writeJsonFile('promocodes.json', promos); }
+}
+
 /* ================= ORDERS ================= */
 app.post('/api/orders', async (req, res) => {
   const { items, contact, promoCode } = req.body || {};
