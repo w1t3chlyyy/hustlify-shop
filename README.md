@@ -129,8 +129,13 @@ create table if not exists public.products (
   img text default '',
   icon text default 'star',
   hit boolean default false,
+  hidden boolean not null default false,
+  deleted boolean not null default false,
   created_at timestamptz default now()
 );
+
+alter table public.products add column if not exists hidden boolean not null default false;
+alter table public.products add column if not exists deleted boolean not null default false;
 
 insert into public.products (id, name, price, category, old_price, description, section, img, icon, hit)
 values 
@@ -139,19 +144,26 @@ values
   ('tg_premium_6', 'Telegram Premium — 6 месяцев', 1790, 'Звезды&Премиум', 2290, 'Официальная подписка Telegram Premium на 6 месяцев с гарантией', 'catalog', '/images/1000p.jpg', 'premium', true),
   ('tg_premium_9', 'Telegram Premium — 9 месяцев', 2490, 'Звезды&Премиум', 3190, 'Официальная подписка Telegram Premium на 9 месяцев', 'catalog', '/images/1000p.jpg', 'premium', false),
   ('tg_premium_12', 'Telegram Premium — 12 месяцев', 2990, 'Звезды&Премиум', 3990, 'Официальная подписка Telegram Premium на 1 год с максимальной выгодой', 'catalog', '/images/1000p.jpg', 'premium', false)
-on conflict (id) do update set
-  price = excluded.price,
-  old_price = excluded.old_price,
-  category = excluded.category,
-  section = excluded.section,
-  name = excluded.name,
-  description = excluded.description,
-  img = excluded.img,
-  icon = excluded.icon,
-  hit = excluded.hit;
+on conflict (id) do nothing;
 ```
 
-### 2. Таблица `requisites`
+### 2. Таблица `news`
+Новости админ-панели сохраняются в Supabase, чтобы не теряться при перезапуске Vercel. Создайте таблицу в **Supabase → SQL Editor**:
+```sql
+create table if not exists public.news (
+  id text primary key,
+  tag text not null default '',
+  stamp text not null default '',
+  title text not null default '',
+  headline text not null default '',
+  body text not null default '',
+  created_at timestamptz not null default now()
+);
+```
+
+Если таблица уже существует, проверьте наличие всех перечисленных колонок. При создании новой таблицы импортируйте в неё актуальные новости до первого запуска админ-панели.
+
+### 3. Таблица `requisites`
 Оплата по реквизитам использует таблицу `requisites` (одна строка с реквизитами,
 которую вы редактируете в админке) и Storage-бакет `receipts` (туда
 складываются загруженные клиентами чеки).
@@ -175,7 +187,7 @@ on conflict (id) do nothing;
 обходит RLS, так что дополнительные политики не обязательны. Если вы всё же
 включите RLS на этой таблице, service-role ключ продолжит работать как есть.
 
-### 3. Storage-бакет `receipts` — в Supabase → Storage → **New bucket**:
+### 4. Storage-бакет `receipts` — в Supabase → Storage → **New bucket**:
 - Имя: `receipts`
 - **Public bucket**: включить (чтобы ссылка на чек открывалась в Telegram и в
   админке без дополнительной авторизации). Путь к файлу содержит случайный

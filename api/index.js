@@ -20,12 +20,14 @@ module.exports = async (req, res) => {
       let raw = req.body || '';
       if (req.isBase64) raw = Buffer.from(raw, 'base64').toString('utf8');
       if (typeof raw === 'string' && raw.length) {
+        if (!req.rawBody) req.rawBody = Buffer.from(raw, 'utf8');
         const ct = (req.headers['content-type'] || '').toLowerCase();
         if (ct.includes('application/json')) {
           try { req.body = JSON.parse(raw); } catch (e) { /* пусть сам разберёт */ }
         }
       } else if (raw && typeof raw === 'object') {
         req.body = raw;
+        if (!req.rawBody) req.rawBody = Buffer.from(JSON.stringify(raw));
       }
     } catch (e) {
       console.error('serverless body parse error:', e && e.message);
