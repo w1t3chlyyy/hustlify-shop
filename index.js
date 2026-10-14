@@ -1053,4 +1053,6 @@ function startServer(port) {
 
 if (require.main === module) startServer();
 
-module.exports = { app, startServer };
+app.app = app;
+app.startServer = startServer;
+module.exports = app;
