@@ -163,7 +163,51 @@ create table if not exists public.news (
 
 Если таблица уже существует, проверьте наличие всех перечисленных колонок. При создании новой таблицы импортируйте в неё актуальные новости до первого запуска админ-панели.
 
-### 3. Таблица `requisites`
+### 3. Таблицы `projects` и `partners`
+Портфолио и партнёры также сохраняются в Supabase. Создайте таблицы и добавьте начальные записи в **Supabase → SQL Editor**:
+```sql
+create table if not exists public.projects (
+  id text primary key,
+  title text not null default '',
+  type text not null default 'telegram',
+  url text not null default '',
+  btn text not null default '',
+  portfolio text not null default '',
+  image text not null default '',
+  hidden boolean not null default false,
+  short_desc text not null default '',
+  full_desc text not null default '',
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.partners (
+  id text primary key,
+  name text not null default '',
+  url text not null default '',
+  logo text not null default '',
+  created_at timestamptz not null default now()
+);
+
+insert into public.projects (id, title, type, url, btn, portfolio, image, hidden, short_desc, full_desc)
+values
+  ('apex', 'Apex Core', 'site', 'https://apex-core.site', 'Перейти на сайт', '', 'images/projects/apex.png', false, 'Сервис AI агентов для вашего бизнеса. <b>Продажи будут идти даже когда ты спишь</b>', 'Сервис для быстрого внедрения автономных AI-агентов в ваш бизнес. Автоматизирует консультации, продажи и обработку входящих заявок 24/7. Процесс подключения максимально упрощен и занимает около 5 минут без сложного кода.'),
+  ('flux', 'Flux Studio', 'telegram', 'https://t.me/+zhWLLWIaVeI2Y2Yy', 'Подробнее в Telegram', 'https://t.me/+0Bd2iyw1aOU4NDEy', 'images/projects/flux.png', false, 'Студия дизайна. Упаковка бизнеса под ключ с 0. <b>Зацепи клиента стилем!</b>', 'Студия визуального оформления: аватарки, баннеры, полная упаковка бренда с нуля. Помогаем каналу или проекту выглядеть узнаваемо и профессионально с первого касания.'),
+  ('vieto', 'Vieto Store', 'telegram', 'https://t.me/VietoFullStore', 'Подробнее в Telegram', '', 'images/projects/vieto.png', false, 'Магазин цифровых продуктов. От верификаций до звёзд и премиума в Telegram. <b>Автовыдача 24/7</b>', 'Магазин цифровых продуктов: верификации криптокошельков, бирж и Telegram-сервисов, накрутка активности в соцсетях. Работает в формате автовыдачи 24/7 — заказ обрабатывается без ожидания менеджера в рабочее время.'),
+  ('cursor', 'Cursor Market', 'telegram', 'https://t.me/CursorRobot', 'Подробнее в Telegram', '', 'images/projects/cursor.png', false, 'Витрина, которая поможет вашему оформлению. Премиум/NFT/Звёзды. <b>Стань привлекательнее в Telegram</b>', 'Витрина премиум-атрибутики Telegram: юзернеймы, NFT, подарки и звёзды. Помогаем собрать заметный, статусный профиль.')
+on conflict (id) do nothing;
+
+insert into public.partners (id, name, url, logo)
+values
+  ('ptn1', 'Партнер1', '#', ''),
+  ('ptn2', 'Партнер2', '#', ''),
+  ('ptn3', 'Партнер3', '#', ''),
+  ('ptn4', 'Партнер4', '#', ''),
+  ('ptn5', 'Партнер5', '#', ''),
+  ('ptn6', 'Партнер6', '#', '')
+on conflict (id) do nothing;
+```
+
+### 4. Таблица `requisites`
 Оплата по реквизитам использует таблицу `requisites` (одна строка с реквизитами,
 которую вы редактируете в админке) и Storage-бакет `receipts` (туда
 складываются загруженные клиентами чеки).
@@ -176,8 +220,13 @@ create table if not exists public.requisites (
   bank_name text default '',
   recipient_name text default '',
   comment text default '',
+  self_employed_name text default '',
+  self_employed_inn text default '',
   updated_at timestamptz default now()
 );
+
+alter table public.requisites add column if not exists self_employed_name text default '';
+alter table public.requisites add column if not exists self_employed_inn text default '';
 
 insert into public.requisites (id, card_number, bank_name, recipient_name, comment)
 values (1, '', '', '', '')
@@ -187,7 +236,7 @@ on conflict (id) do nothing;
 обходит RLS, так что дополнительные политики не обязательны. Если вы всё же
 включите RLS на этой таблице, service-role ключ продолжит работать как есть.
 
-### 4. Storage-бакет `receipts` — в Supabase → Storage → **New bucket**:
+### 5. Storage-бакет `receipts` — в Supabase → Storage → **New bucket**:
 - Имя: `receipts`
 - **Public bucket**: включить (чтобы ссылка на чек открывалась в Telegram и в
   админке без дополнительной авторизации). Путь к файлу содержит случайный

@@ -184,7 +184,13 @@ function setCat(item, value) { item.cat = value || ''; item.category = value || 
 async function readCollection(table, file) {
   if (!table || !supabase) return readJsonFile(file);
   const { data, error } = await supabase.from(table).select('*').order('created_at', { ascending: false });
-  if (error) throw error;
+  if (error) {
+    if (['PGRST205', '42P01'].includes(error.code)) {
+      console.warn(`Supabase table ${table} is missing; using ${file} until migration is applied`);
+      return readJsonFile(file);
+    }
+    throw error;
+  }
   return (data || []).map(item => itemFromDb(table, item));
 }
 
@@ -285,6 +291,17 @@ function dbFromItem(table, item) {
       headline: item.headline || '', body: item.body || '', created_at: item.created_at || item.createdAt || new Date().toISOString()
     };
   }
+  if (table === 'projects') {
+    return {
+      id: item.id, title: item.title || '', type: item.type || 'telegram', url: item.url || '',
+      btn: item.btn || item.btnText || item.buttonText || '', portfolio: item.portfolio || item.portfolioUrl || '',
+      image: item.image || '', hidden: !!item.hidden, short_desc: item.shortDesc || item.short_desc || '',
+      full_desc: item.fullDesc || item.full_desc || '', created_at: item.created_at || new Date().toISOString()
+    };
+  }
+  if (table === 'partners') {
+    return { id: item.id, name: item.name || '', url: item.url || '', logo: item.logo || '', created_at: item.created_at || new Date().toISOString() };
+  }
   return item;
 }
 
@@ -300,6 +317,13 @@ function itemFromDb(table, row) {
   }
   if (table === 'news') {
     return Object.assign({}, row, { createdAt: row.created_at || row.createdAt || null });
+  }
+  if (table === 'projects') {
+    return Object.assign({}, row, {
+      btn: row.btn || '', btnText: row.btn || '', buttonText: row.btn || '',
+      portfolio: row.portfolio || '', portfolioUrl: row.portfolio || '',
+      shortDesc: row.short_desc || '', fullDesc: row.full_desc || ''
+    });
   }
   return row;
 }
@@ -341,14 +365,14 @@ mountCollection({
 
 /* ================= ПРОЕКТЫ ================= */
 mountCollection({
-  urlPath: 'projects', table: null, file: 'projects.json', prefix: 'proj', publicGet: true,
+  urlPath: 'projects', table: 'projects', file: 'projects.json', prefix: 'proj', publicGet: true,
   transform: (b) => ({
     id: b.id,
     title: String(b.title || '').trim(),
     type: b.type === 'site' ? 'site' : 'telegram',
     url: String(b.url || '').trim(),
-    btn: String(b.btn || b.btnText || '').trim(),
-    portfolio: String(b.portfolio || '').trim(),
+    btn: String(b.btn || b.btnText || b.buttonText || '').trim(),
+    portfolio: String(b.portfolio || b.portfolioUrl || '').trim(),
     image: String(b.image || '').trim(),
     hidden: !!b.hidden,
     shortDesc: String(b.shortDesc || '').trim(),
@@ -359,12 +383,13 @@ mountCollection({
 
 /* ================= ПАРТНЁРЫ ================= */
 mountCollection({
-  urlPath: 'partners', table: null, file: 'partners.json', prefix: 'pt', publicGet: true,
+  urlPath: 'partners', table: 'partners', file: 'partners.json', prefix: 'pt', publicGet: true,
   transform: (b) => ({
     id: b.id,
     name: String(b.name || '').trim(),
     url: String(b.url || '').trim(),
-    logo: String(b.logo || '').trim()
+    logo: String(b.logo || '').trim(),
+    created_at: b.created_at || new Date().toISOString()
   })
 });
 
@@ -385,26 +410,51 @@ function readRequisites() {
   return Object.assign({}, REQUISITES_DEFAULTS);
 }
 
-app.get('/api/requisites', (req, res) => res.json(readRequisites()));
-app.get('/api/admin/requisites', requireAdmin, (req, res) => res.json(readRequisites()));
+async function getRequisites() {
+  if (supabase) {
+    const { data, error } = await supabase.from('requisites').select('*').eq('id', 1).maybeSingle();
+    if (error) {
+      if (['PGRST205', '42P01'].includes(error.code)) return readRequisites();
+      throw error;
+    }
+    if (data) return Object.assign({}, REQUISITES_DEFAULTS, data);
+  }
+  return readRequisites();
+}
+
+app.get('/api/requisites', async (req, res) => {
+  try { res.json(await getRequisites()); }
+  catch (e) { console.error('GET /api/requisites storage error:', e.message); res.status(503).json({ error: 'Реквизиты временно недоступны' }); }
+});
+app.get('/api/admin/requisites', requireAdmin, async (req, res) => {
+  try { res.json(await getRequisites()); }
+  catch (e) { console.error('GET /api/admin/requisites storage error:', e.message); res.status(503).json({ error: 'Реквизиты временно недоступны' }); }
+});
 
 app.put('/api/admin/requisites', requireAdmin, async (req, res) => {
-  const b = req.body || {};
-  const rq = Object.assign({}, readRequisites());
-  for (const k of Object.keys(REQUISITES_DEFAULTS)) {
-    if (b[k] != null) rq[k] = String(b[k]);
-  }
-  rq.updated_at = new Date().toISOString();
-  writeJsonFile('requisites.json', rq);
-  if (supabase) {
-    try {
-      await supabase.from('requisites').upsert({
+  try {
+    const b = req.body || {};
+    const rq = Object.assign({}, await getRequisites());
+    for (const k of Object.keys(REQUISITES_DEFAULTS)) {
+      if (b[k] != null) rq[k] = String(b[k]);
+    }
+    rq.updated_at = new Date().toISOString();
+    if (supabase) {
+      const { error } = await supabase.from('requisites').upsert({
         id: 1, card_number: rq.card_number, bank_name: rq.bank_name,
-        recipient_name: rq.recipient_name, comment: rq.comment, updated_at: rq.updated_at
+        recipient_name: rq.recipient_name, comment: rq.comment,
+        self_employed_name: rq.self_employed_name, self_employed_inn: rq.self_employed_inn,
+        updated_at: rq.updated_at
       });
-    } catch (e) {}
+      if (error) throw error;
+    } else {
+      writeJsonFile('requisites.json', rq);
+    }
+    res.json(rq);
+  } catch (e) {
+    console.error('PUT /api/admin/requisites storage error:', e.message);
+    res.status(503).json({ error: 'Не удалось сохранить реквизиты' });
   }
-  res.json(rq);
 });
 
 /* ================= КУРСЫ ЗВЁЗД / PREMIUM =================
@@ -505,27 +555,79 @@ function orderTotal(o) {
   return Number(o.total != null ? o.total : (o.amount || 0));
 }
 
-app.get('/api/admin/orders', requireAdmin, (req, res) => {
-  const orders = readJsonFile('orders.json').map(o => Object.assign({}, o, { total: orderTotal(o) }));
-  res.json(orders);
+async function getOrderById(id) {
+  if (supabase) {
+    const { data, error } = await supabase.from('orders').select('*').eq('id', id).maybeSingle();
+    if (error) throw error;
+    if (data) return Object.assign({}, data, { total: orderTotal(data) });
+  }
+  const order = readJsonFile('orders.json').find(item => String(item.id) === String(id));
+  return order ? Object.assign({}, order, { total: orderTotal(order) }) : null;
+}
+
+async function getOrders() {
+  if (supabase) {
+    const { data, error } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    return (data || []).map(order => Object.assign({}, order, { total: orderTotal(order) }));
+  }
+  return readJsonFile('orders.json').map(order => Object.assign({}, order, { total: orderTotal(order) }));
+}
+
+app.get('/api/admin/orders', requireAdmin, async (req, res) => {
+  try {
+    res.json(await getOrders());
+  } catch (e) {
+    console.error('GET /api/admin/orders storage error:', e.message);
+    res.status(503).json({ error: 'Не удалось загрузить заказы из базы данных' });
+  }
 });
 
 app.put('/api/admin/orders/:id', requireAdmin, async (req, res) => {
-  const orders = readJsonFile('orders.json');
-  const idx = orders.findIndex(o => String(o.id) === String(req.params.id));
-  if (idx === -1) return res.status(404).json({ error: 'Заказ не найден' });
   const status = req.body && req.body.status;
   if (!['pending', 'moderation', 'paid', 'canceled'].includes(status)) {
     return res.status(400).json({ error: 'Недопустимый статус' });
   }
-  orders[idx].status = status;
-  orders[idx].updated_at = new Date().toISOString();
-  writeJsonFile('orders.json', orders);
-  if (supabase) {
-    try { await supabase.from('orders').update({ status }).eq('id', req.params.id); } catch (e) {}
+  try {
+    let order;
+    if (supabase) {
+      const { data, error } = await supabase.from('orders').update({ status }).eq('id', req.params.id).select('*').maybeSingle();
+      if (error) throw error;
+      order = data;
+    } else {
+      const orders = readJsonFile('orders.json');
+      const idx = orders.findIndex(item => String(item.id) === String(req.params.id));
+      if (idx !== -1) {
+        orders[idx].status = status;
+        orders[idx].updated_at = new Date().toISOString();
+        writeJsonFile('orders.json', orders);
+        order = orders[idx];
+      }
+    }
+    if (!order) return res.status(404).json({ error: 'Заказ не найден' });
+    if (status === 'paid') notifyOrderPaidSafe(order);
+    res.json(Object.assign({ total: orderTotal(order) }, order));
+  } catch (e) {
+    console.error('PUT /api/admin/orders storage error:', e.message);
+    res.status(503).json({ error: 'Не удалось обновить заказ' });
   }
-  if (status === 'paid') notifyOrderPaidSafe(orders[idx]);
-  res.json(Object.assign({ total: orderTotal(orders[idx]) }, orders[idx]));
+});
+
+app.get('/api/orders/:id', async (req, res) => {
+  try {
+    const order = await getOrderById(req.params.id);
+    if (!order) return res.status(404).json({ error: 'Заказ не найден' });
+    const items = Array.isArray(order.items) ? order.items : [];
+    res.json({
+      id: order.id,
+      itemTitle: items.map(item => item.name || item.id).join(', '),
+      amount: orderTotal(order),
+      status: order.status
+    });
+  } catch (e) {
+    console.error('GET /api/orders/:id storage error:', e.message);
+    res.status(503).json({ error: 'Не удалось загрузить заказ' });
+  }
 });
 
 app.post('/api/orders', async (req, res) => {
@@ -575,17 +677,21 @@ app.post('/api/orders', async (req, res) => {
       status: 'pending',
       created_at: new Date().toISOString()
     };
-    const orders = readJsonFile('orders.json');
-    orders.unshift(order);
-    writeJsonFile('orders.json', orders);
     if (supabase) {
-      try {
-        await supabase.from('orders').insert([{
-          id: order.id, items: order.items, contact: order.contact,
-          amount: order.amount, promo_code: order.promo_code,
-          discount_percent: order.discount_percent, status: 'pending'
-        }]);
-      } catch (e) {}
+      const { error } = await supabase.from('orders').insert([{
+        id: order.id, items: order.items, contact: order.contact,
+        amount: order.amount, promo_code: order.promo_code,
+        discount_percent: order.discount_percent, status: 'pending',
+        created_at: order.created_at
+      }]);
+      if (error) {
+        console.error('POST /api/orders database insert failed:', error.message);
+        return res.status(503).json({ error: 'Не удалось сохранить заказ. Попробуйте ещё раз' });
+      }
+    } else {
+      const orders = readJsonFile('orders.json');
+      orders.unshift(order);
+      writeJsonFile('orders.json', orders);
     }
     if (appliedCode) await consumePromo(appliedCode, order.id);
     notifyNewOrderSafe(order);
@@ -712,13 +818,14 @@ app.post('/api/webhooks/rollypay', async (req, res) => {
     const orderId = payload.order_id || payload.orderId || data.order_id || data.orderId || (payload.metadata && payload.metadata.order_id);
     if (!orderId) return res.status(400).json({ error: 'Webhook order_id is required' });
 
-    let order = null;
-    if (supabase) {
-      const { data: storedOrder, error } = await supabase.from('orders').select('*').eq('id', orderId).maybeSingle();
-      if (error) console.error('RollyPay webhook order lookup failed:', error.message);
-      else order = storedOrder;
+    let order;
+    try {
+      order = await getOrderById(orderId);
+    } catch (e) {
+      console.error('RollyPay webhook order lookup failed:', e.message);
+      return res.status(503).json({ error: 'Заказ временно недоступен' });
     }
-    const orders = readJsonFile('orders.json');
+    const orders = supabase ? [] : readJsonFile('orders.json');
     const orderIndex = orders.findIndex(item => String(item.id) === String(orderId));
     if (!order && orderIndex !== -1) order = orders[orderIndex];
     if (!order) return res.status(404).json({ error: 'Заказ не найден' });
@@ -746,7 +853,7 @@ app.post('/api/webhooks/rollypay', async (req, res) => {
           payment: paymentInfo,
           ...(paid ? { paid_at: new Date().toISOString() } : {})
         }).eq('id', orderId);
-        if (error) console.error('RollyPay webhook order sync failed:', error.message);
+        if (error) throw error;
       }
       if (orderIndex !== -1) {
         orders[orderIndex].status = nextStatus;
@@ -763,7 +870,7 @@ app.post('/api/webhooks/rollypay', async (req, res) => {
     res.status(200).send('OK');
   } catch (e) {
     console.error('RollyPay webhook processing failed:', e.message);
-    res.status(400).json({ error: 'Webhook processing error' });
+    res.status(503).json({ error: 'Webhook processing error' });
   }
 });
 
@@ -776,11 +883,10 @@ app.post('/api/orders/:id/receipt', (req, res) => {
     if (!req.file) return res.status(400).json({ error: 'Прикрепите файл чека' });
 
     try {
-      const orders = readJsonFile('orders.json');
-      const index = orders.findIndex(order => String(order.id) === String(req.params.id));
-      if (index === -1) return res.status(404).json({ error: 'Заказ не найден' });
-
-      const order = orders[index];
+      const order = await getOrderById(req.params.id);
+      if (!order) return res.status(404).json({ error: 'Заказ не найден' });
+      const orders = supabase ? null : readJsonFile('orders.json');
+      const index = orders ? orders.findIndex(item => String(item.id) === String(req.params.id)) : -1;
       if (!['pending', 'moderation'].includes(order.status)) {
         return res.status(409).json({ error: 'Для этого заказа нельзя загрузить чек' });
       }
@@ -814,15 +920,13 @@ app.post('/api/orders/:id/receipt', (req, res) => {
       order.payment = Object.assign({}, order.payment || {}, { receiptUrl, fileName: req.file.originalname });
       order.status = 'moderation';
       order.updated_at = new Date().toISOString();
-      writeJsonFile('orders.json', orders);
 
       if (supabase) {
-        try {
-          const { error } = await supabase.from('orders').update({ status: order.status, payment: order.payment }).eq('id', order.id);
-          if (error) console.error('Receipt order sync failed:', error.message);
-        } catch (e) {
-          console.error('Receipt order sync failed:', e.message);
-        }
+        const { error } = await supabase.from('orders').update({ status: order.status, payment: order.payment }).eq('id', order.id);
+        if (error) throw error;
+      } else if (index !== -1) {
+        orders[index] = order;
+        writeJsonFile('orders.json', orders);
       }
 
       notifyReceiptUploadedSafe(order);
