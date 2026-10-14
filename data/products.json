@@ -53,12 +53,13 @@
     "section": "catalog",
     "cat": "Звезды&Премиум",
     "desc": "Официальные звёзды Telegram от 25 до 10 000 шт. для подарков, контента и каналов",
-    "price": 2.7,
-    "old": 3.8,
+    "price": 2.5,
+    "old": 3.5,
     "icon": "star",
     "img": "/images/1000p.jpg",
     "hit": true,
-    "hidden": false
+    "hidden": false,
+    "deleted": false
   },
   {
     "id": "tg_premium_3",
@@ -66,12 +67,13 @@
     "section": "catalog",
     "cat": "Звезды&Премиум",
     "desc": "Официальная подписка Telegram Premium на 3 месяца",
-    "price": 1050,
-    "old": 1390,
+    "price": 1000,
+    "old": 1300,
     "icon": "premium",
     "img": "/images/офподкл.jpg",
     "hit": false,
-    "hidden": false
+    "hidden": true,
+    "deleted": false
   },
   {
     "id": "tg_premium_6",
