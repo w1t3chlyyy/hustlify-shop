@@ -171,8 +171,8 @@ create table if not exists public.projects (
   title text not null default '',
   type text not null default 'telegram',
   url text not null default '',
-  btn text not null default '',
-  portfolio text not null default '',
+  button_text text not null default '',
+  portfolio_url text not null default '',
   image text not null default '',
   hidden boolean not null default false,
   short_desc text not null default '',
@@ -188,7 +188,7 @@ create table if not exists public.partners (
   created_at timestamptz not null default now()
 );
 
-insert into public.projects (id, title, type, url, btn, portfolio, image, hidden, short_desc, full_desc)
+insert into public.projects (id, title, type, url, button_text, portfolio_url, image, hidden, short_desc, full_desc)
 values
   ('apex', 'Apex Core', 'site', 'https://apex-core.site', 'Перейти на сайт', '', 'images/projects/apex.png', false, 'Сервис AI агентов для вашего бизнеса. <b>Продажи будут идти даже когда ты спишь</b>', 'Сервис для быстрого внедрения автономных AI-агентов в ваш бизнес. Автоматизирует консультации, продажи и обработку входящих заявок 24/7. Процесс подключения максимально упрощен и занимает около 5 минут без сложного кода.'),
   ('flux', 'Flux Studio', 'telegram', 'https://t.me/+zhWLLWIaVeI2Y2Yy', 'Подробнее в Telegram', 'https://t.me/+0Bd2iyw1aOU4NDEy', 'images/projects/flux.png', false, 'Студия дизайна. Упаковка бизнеса под ключ с 0. <b>Зацепи клиента стилем!</b>', 'Студия визуального оформления: аватарки, баннеры, полная упаковка бренда с нуля. Помогаем каналу или проекту выглядеть узнаваемо и профессионально с первого касания.'),
@@ -198,12 +198,9 @@ on conflict (id) do nothing;
 
 insert into public.partners (id, name, url, logo)
 values
-  ('ptn1', 'Партнер1', '#', ''),
-  ('ptn2', 'Партнер2', '#', ''),
-  ('ptn3', 'Партнер3', '#', ''),
-  ('ptn4', 'Партнер4', '#', ''),
-  ('ptn5', 'Партнер5', '#', ''),
-  ('ptn6', 'Партнер6', '#', '')
+  ('ptnmu3z062uhj48', 'Ahelpo AI', 'https://ahelpo.tech', '/images/ahelpo.PNG'),
+  ('ptnmu3yzvvru8au', '1337 | Биржа', 'https://t.me/F1337Bot', '/images/1337F.jpg'),
+  ('ptnmu3yzi47e41e', 'Nexa Exchange', 'https://t.me/NexaExchangeBot', '/images/nexa.jpg')
 on conflict (id) do nothing;
 ```
 

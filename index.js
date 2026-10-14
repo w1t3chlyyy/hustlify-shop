@@ -294,7 +294,8 @@ function dbFromItem(table, item) {
   if (table === 'projects') {
     return {
       id: item.id, title: item.title || '', type: item.type || 'telegram', url: item.url || '',
-      btn: item.btn || item.btnText || item.buttonText || '', portfolio: item.portfolio || item.portfolioUrl || '',
+      button_text: item.btn || item.btnText || item.buttonText || item.button_text || '',
+      portfolio_url: item.portfolio || item.portfolioUrl || item.portfolio_url || '',
       image: item.image || '', hidden: !!item.hidden, short_desc: item.shortDesc || item.short_desc || '',
       full_desc: item.fullDesc || item.full_desc || '', created_at: item.created_at || new Date().toISOString()
     };
@@ -319,9 +320,11 @@ function itemFromDb(table, row) {
     return Object.assign({}, row, { createdAt: row.created_at || row.createdAt || null });
   }
   if (table === 'projects') {
+    const buttonText = row.button_text || row.btn || row.btnText || row.buttonText || '';
+    const portfolioUrl = row.portfolio_url || row.portfolio || row.portfolioUrl || '';
     return Object.assign({}, row, {
-      btn: row.btn || '', btnText: row.btn || '', buttonText: row.btn || '',
-      portfolio: row.portfolio || '', portfolioUrl: row.portfolio || '',
+      btn: buttonText, btnText: buttonText, buttonText,
+      portfolio: portfolioUrl, portfolioUrl,
       shortDesc: row.short_desc || '', fullDesc: row.full_desc || ''
     });
   }
@@ -371,8 +374,8 @@ mountCollection({
     title: String(b.title || '').trim(),
     type: b.type === 'site' ? 'site' : 'telegram',
     url: String(b.url || '').trim(),
-    btn: String(b.btn || b.btnText || b.buttonText || '').trim(),
-    portfolio: String(b.portfolio || b.portfolioUrl || '').trim(),
+    btn: String(b.btn || b.btnText || b.buttonText || b.button_text || '').trim(),
+    portfolio: String(b.portfolio || b.portfolioUrl || b.portfolio_url || '').trim(),
     image: String(b.image || '').trim(),
     hidden: !!b.hidden,
     shortDesc: String(b.shortDesc || '').trim(),
