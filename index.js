@@ -534,7 +534,7 @@ app.post('/api/orders', async (req, res) => {
     if (!Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ error: 'Корзина пуста' });
     }
-    const products = readJsonFile('products.json');
+    const products = await readCollection('products', 'products.json');
     let itemsTotal = 0;
     const lines = [];
     for (const it of items) {
