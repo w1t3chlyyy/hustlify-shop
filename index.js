@@ -20,12 +20,45 @@ const express = require('express');
 const cookieParser = require('cookie-parser');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const multer = require('multer');
 
 const app = express();
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.set('trust proxy', true); // корректный req.ip за Render/NGINX/Vercel
+
+const uploadReceipt = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (req, file, callback) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'application/pdf'];
+    if (!allowedTypes.includes(file.mimetype)) {
+      return callback(new Error('Поддерживаются JPG, PNG, WEBP, GIF и PDF'));
+    }
+    callback(null, true);
+  }
+}).single('receipt');
+
+const heroVideoUploadDir = path.join(__dirname, 'public', 'uploads', 'video');
+const uploadHeroVideo = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, callback) => {
+      try {
+        fs.mkdirSync(heroVideoUploadDir, { recursive: true });
+        callback(null, heroVideoUploadDir);
+      } catch (error) {
+        callback(error);
+      }
+    },
+    filename: (req, file, callback) => callback(null, `${crypto.randomBytes(16).toString('hex')}.tmp`)
+  }),
+  limits: { fileSize: 150 * 1024 * 1024 },
+  fileFilter: (req, file, callback) => {
+    if (file.mimetype !== 'video/mp4') return callback(new Error('Поддерживается только видео MP4'));
+    callback(null, true);
+  }
+}).single('video');
 
 /* ================= ХРАНИЛИЩЕ (JSON-файлы) ================= */
 const DATA_DIR = process.env.DATA_DIR
@@ -79,6 +112,9 @@ function notifyNewOrderSafe(order) {
 }
 function notifyOrderPaidSafe(order) {
   try { if (tg.notifyOrderPaid) Promise.resolve(tg.notifyOrderPaid(order)).catch(() => {}); } catch (e) {}
+}
+function notifyReceiptUploadedSafe(order) {
+  try { if (tg.notifyReceiptUploaded) Promise.resolve(tg.notifyReceiptUploaded(order)).catch(() => {}); } catch (e) {}
 }
 
 /* ================= СТАТИКА ================= */
@@ -482,6 +518,102 @@ app.post('/api/orders', async (req, res) => {
     console.error('POST /api/orders error:', e);
     res.status(500).json({ error: 'Не удалось создать заказ' });
   }
+});
+
+app.post('/api/orders/:id/receipt', (req, res) => {
+  uploadReceipt(req, res, async (uploadError) => {
+    if (uploadError) {
+      const status = uploadError instanceof multer.MulterError && uploadError.code === 'LIMIT_FILE_SIZE' ? 413 : 400;
+      return res.status(status).json({ error: uploadError.message });
+    }
+    if (!req.file) return res.status(400).json({ error: 'Прикрепите файл чека' });
+
+    try {
+      const orders = readJsonFile('orders.json');
+      const index = orders.findIndex(order => String(order.id) === String(req.params.id));
+      if (index === -1) return res.status(404).json({ error: 'Заказ не найден' });
+
+      const order = orders[index];
+      if (!['pending', 'moderation'].includes(order.status)) {
+        return res.status(409).json({ error: 'Для этого заказа нельзя загрузить чек' });
+      }
+
+      const extensions = {
+        'image/jpeg': 'jpg',
+        'image/png': 'png',
+        'image/webp': 'webp',
+        'image/gif': 'gif',
+        'application/pdf': 'pdf'
+      };
+      const fileName = `${Date.now()}-${crypto.randomBytes(8).toString('hex')}.${extensions[req.file.mimetype]}`;
+      let receiptUrl;
+
+      if (supabase) {
+        const storagePath = `${order.id}/${fileName}`;
+        const { error } = await supabase.storage.from('receipts').upload(storagePath, req.file.buffer, {
+          contentType: req.file.mimetype,
+          upsert: false
+        });
+        if (error) throw error;
+        receiptUrl = supabase.storage.from('receipts').getPublicUrl(storagePath).data.publicUrl;
+      } else {
+        const uploadDir = path.join(__dirname, 'public', 'uploads', 'receipts');
+        fs.mkdirSync(uploadDir, { recursive: true });
+        fs.writeFileSync(path.join(uploadDir, fileName), req.file.buffer);
+        const baseUrl = String(process.env.PUBLIC_URL || `${req.protocol}://${req.get('host')}`).replace(/\/+$/, '');
+        receiptUrl = `${baseUrl}/uploads/receipts/${fileName}`;
+      }
+
+      order.payment = Object.assign({}, order.payment || {}, { receiptUrl, fileName: req.file.originalname });
+      order.status = 'moderation';
+      order.updated_at = new Date().toISOString();
+      writeJsonFile('orders.json', orders);
+
+      if (supabase) {
+        try {
+          const { error } = await supabase.from('orders').update({ status: order.status, payment: order.payment }).eq('id', order.id);
+          if (error) console.error('Receipt order sync failed:', error.message);
+        } catch (e) {
+          console.error('Receipt order sync failed:', e.message);
+        }
+      }
+
+      notifyReceiptUploadedSafe(order);
+      res.json({ ok: true, receiptUrl });
+    } catch (e) {
+      console.error('POST /api/orders/:id/receipt error:', e);
+      res.status(500).json({ error: 'Не удалось сохранить чек' });
+    }
+  });
+});
+
+app.post('/api/upload-hero-video', requireAdmin, (req, res) => {
+  uploadHeroVideo(req, res, (uploadError) => {
+    if (uploadError) {
+      if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+      const status = uploadError instanceof multer.MulterError && uploadError.code === 'LIMIT_FILE_SIZE' ? 413 : 400;
+      return res.status(status).json({ error: uploadError.message });
+    }
+    if (!req.file) return res.status(400).json({ error: 'Выберите MP4-файл' });
+
+    try {
+      const header = Buffer.alloc(8);
+      const descriptor = fs.openSync(req.file.path, 'r');
+      fs.readSync(descriptor, header, 0, header.length, 0);
+      fs.closeSync(descriptor);
+      if (header.toString('ascii', 4, 8) !== 'ftyp') {
+        fs.unlinkSync(req.file.path);
+        return res.status(400).json({ error: 'Файл не является корректным MP4-видео' });
+      }
+
+      fs.renameSync(req.file.path, path.join(__dirname, 'public', 'images', 'hero_video.mp4'));
+      res.json({ ok: true });
+    } catch (e) {
+      if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+      console.error('POST /api/upload-hero-video error:', e);
+      res.status(500).json({ error: 'Не удалось установить видео' });
+    }
+  });
 });
 
 /* ================= ПРОМОКОДЫ (рулетка) ================= */

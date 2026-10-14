@@ -121,13 +121,13 @@
   <div class="card">
     <div class="logo">Hustlify Hardware</div>
     <h1>Установка оригинального видео</h1>
-    <p>Перетащите сюда ваш видеофайл (.mp4, .mov, .webm) для моментальной установки на главный экран.</p>
+    <p>Войдите в админ-панель, затем загрузите MP4-видео размером до 150 МБ.</p>
 
     <div class="drop-zone" id="dropZone">
       <span class="icon">🎬</span>
       <div class="drop-text">Нажмите или перетащите видео сюда</div>
-      <div class="drop-sub">MP4, MOV или WEBM (до 150 МБ)</div>
-      <input type="file" id="fileInput" accept="video/mp4,video/quicktime,video/webm">
+      <div class="drop-sub">MP4 (до 150 МБ)</div>
+      <input type="file" id="fileInput" accept="video/mp4">
     </div>
 
     <div class="progress-bar" id="progressBar">
@@ -149,6 +149,20 @@
     const progressBar = document.getElementById('progressBar');
     const progressFill = document.getElementById('progressFill');
     const statusText = document.getElementById('statusText');
+
+    fetch('/api/admin/me').then(response => {
+      if (!response.ok) {
+        statusText.className = 'status error';
+        statusText.textContent = 'Сначала войдите в админ-панель, затем откройте эту страницу снова.';
+        dropZone.style.pointerEvents = 'none';
+        selectBtn.disabled = true;
+      }
+    }).catch(() => {
+      statusText.className = 'status error';
+      statusText.textContent = 'Не удалось проверить вход в админ-панель.';
+      dropZone.style.pointerEvents = 'none';
+      selectBtn.disabled = true;
+    });
 
     selectBtn.addEventListener('click', () => fileInput.click());
     dropZone.addEventListener('click', () => fileInput.click());

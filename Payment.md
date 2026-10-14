@@ -10,18 +10,18 @@
 
 ## 1. Реквизиты кассы RollyPay
 
-- **Terminal ID:** `ba78c039-c69a-4fe4-a45a-46fc164f0f04`
-- **API Key:** `yFqR2Klx7yDvDobQJ5-a90xUgDZvHHL7XjX5WXbdH3c`
-- **Signing Secret (секрет подписи):** `ixBpA66RKOXOX_wAVWHaF67h5-8EiS3yz2nts3Z47i8`
+- **Terminal ID:** получите в личном кабинете RollyPay
+- **API Key:** получите в личном кабинете RollyPay
+- **Signing Secret (секрет подписи):** получите в личном кабинете RollyPay
 
 Переменные окружения в `.env`:
 ```env
-ROLLYPAY_TERMINAL_ID=ba78c039-c69a-4fe4-a45a-46fc164f0f04
-ROLLYPAY_API_KEY=yFqR2Klx7yDvDobQJ5-a90xUgDZvHHL7XjX5WXbdH3c
-ROLLYPAY_SIGNING_SECRET=ixBpA66RKOXOX_wAVWHaF67h5-8EiS3yz2nts3Z47i8
+ROLLYPAY_TERMINAL_ID=ваш_terminal_id
+ROLLYPAY_API_KEY=ваш_api_key
+ROLLYPAY_SIGNING_SECRET=ваш_signing_secret
 ```
 
-*(В `index.js` также прописаны резервные значения по умолчанию на случай отсутствия переменных окружения)*
+Задайте все три значения через переменные окружения. Не храните реальные ключи в коде или документации.
 
 ---
 
