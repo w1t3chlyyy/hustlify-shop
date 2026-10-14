@@ -683,7 +683,8 @@ app.post('/api/orders', async (req, res) => {
     if (supabase) {
       const { error } = await supabase.from('orders').insert([{
         id: order.id, items: order.items, contact: order.contact,
-        amount: order.amount, promo_code: order.promo_code,
+        items_total: Math.round(order.items_total), total: order.total,
+        promo_code: order.promo_code,
         discount_percent: order.discount_percent, status: 'pending',
         created_at: order.created_at
       }]);
