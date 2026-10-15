@@ -145,6 +145,7 @@ td.num{font-family:'Unbounded';font-weight:600;}
       <button class="tab" data-tab="orders">Заказы</button>
       <button class="tab" data-tab="promocodes">Промокоды</button>
       <button class="tab" data-tab="requisites">Реквизиты</button>
+      <button class="tab" data-tab="settings">Настройки</button>
     </div>
 
     <div class="panel active" id="panel-products">
@@ -355,6 +356,25 @@ td.num{font-family:'Unbounded';font-weight:600;}
         <button class="add-btn" id="saveRequisites">Сохранить реквизиты</button>
       </div>
     </div>
+
+    <div class="panel" id="panel-settings">
+      <div style="max-width:520px;">
+        <h4 style="font-size:15px;font-weight:700;margin-bottom:14px;color:var(--white);">Отображение блоков на сайте</h4>
+        <div class="rate-card" style="padding:20px;">
+          <label style="display:flex;align-items:center;justify-content:space-between;gap:16px;cursor:pointer;">
+            <span>
+              <span style="display:block;font-weight:600;font-size:14px;">Скрыть рулетку скидок</span>
+              <span style="display:block;color:var(--gray);font-size:12.5px;margin-top:4px;line-height:1.5;">
+                Убирает секцию рулетки, пункт «Колесо бонусов» в мобильном меню и вопрос про рулетку в FAQ. Выдача промокодов рулеткой тоже отключается.
+              </span>
+            </span>
+            <input type="checkbox" id="st_roulette_hidden" style="width:20px;height:20px;flex-shrink:0;cursor:pointer;">
+          </label>
+        </div>
+        <div id="settingsMsg" style="min-height:20px;margin:12px 0;font-size:13px;"></div>
+        <button class="add-btn" id="saveSettings">Сохранить настройки</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -519,7 +539,7 @@ function showDash(){
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('dash').style.display='block';
   loadProducts(); loadRates(); loadProjects(); loadPartners(); loadNews();
-  loadOrders(); loadPromos(); loadRequisites();
+  loadOrders(); loadPromos(); loadRequisites(); loadSettings();
 }
 
 document.getElementById('loginSubmit').onclick = async ()=>{
@@ -555,6 +575,7 @@ document.querySelectorAll('#mainTabs .tab').forEach(t=>{
     if(t.dataset.tab === 'projects') loadProjects();
     if(t.dataset.tab === 'partners') loadPartners();
     if(t.dataset.tab === 'promocodes') loadPromos();
+    if(t.dataset.tab === 'settings') loadSettings();
   };
 });
 
@@ -1380,6 +1401,30 @@ document.getElementById('savePromo').onclick = async ()=>{
     if(e.message !== 'unauthorized') errEl.textContent = 'Сервер недоступен';
   }
   btn.disabled = false;
+};
+
+/* ---------------- SETTINGS ---------------- */
+async function loadSettings(){
+  try{
+    const res = await adminFetch('/api/admin/settings');
+    const s = await res.json();
+    document.getElementById('st_roulette_hidden').checked = !!s.roulette_hidden;
+  }catch(e){}
+}
+document.getElementById('saveSettings').onclick = async ()=>{
+  const msg = document.getElementById('settingsMsg');
+  msg.textContent = '';
+  try{
+    const res = await adminFetch('/api/admin/settings', {
+      method:'PUT', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ roulette_hidden: document.getElementById('st_roulette_hidden').checked })
+    });
+    if(!res.ok){ const d = await res.json().catch(()=>({})); msg.style.color='var(--red)'; msg.textContent = d.error || 'Не удалось сохранить'; return; }
+    msg.style.color='var(--green)'; msg.textContent = 'Сохранено. Изменения уже применены на сайте.';
+  }catch(e){
+    if(e.message !== 'unauthorized'){ msg.style.color='var(--red)'; msg.textContent = 'Сервер недоступен'; }
+  }
+  setTimeout(()=> msg.textContent='', 3000);
 };
 
 checkAuth();
