@@ -3234,9 +3234,9 @@ body.page-leaving {
 
         </div>
       </div>
-      <div class="faq-item">
+            <div class="faq-item roulette-faq">
         <div class="faq-q">
-          <span>Какие способы оплаты доступны?</span>
+          <span>Когда и как можно крутить рулетку скидок?</span>
           <div class="faq-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg></div>
         </div>
         <div class="faq-a">
@@ -4675,7 +4675,19 @@ function initRoulette(){
   refreshSpinLock();
 }
 initRoulette();
-
+/* Скрытие рулетки по настройке из админки */
+(async function applyRouletteVisibility(){
+  try{
+    const res = await fetch('/api/settings');
+    if(!res.ok) return;
+    const s = await res.json();
+    if(!s.roulette_hidden) return;
+    const hide = el => { if(el) el.style.display = 'none'; };
+    hide(document.getElementById('roulette'));
+    document.querySelectorAll('a[href="#roulette"]').forEach(hide);
+    document.querySelectorAll('.roulette-faq').forEach(hide);
+  }catch(e){}
+})();
 function bindTilt(selector){
   document.querySelectorAll(selector).forEach(card=>{
     card.addEventListener('mousemove', e=>{
