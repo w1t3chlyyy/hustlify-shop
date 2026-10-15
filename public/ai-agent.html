@@ -867,7 +867,7 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
 
     // Client-side AbortController with 10s timeout to prevent hanging on network drops
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    const timeoutId = setTimeout(() => controller.abort(), 25000);
 
     try {
       const res = await fetch('/api/ai/chat', {
@@ -919,8 +919,8 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:2
     section: 'case',
     cat: 'Кейсы',
     desc: 'Полностью выстраиваем систему. Выходим на крупные платформы.',
-    price: 4289,
-    old: 5500,
+    price: 19890,
+    old: 69000,
     img: '/images/4case.png'
   };
 
