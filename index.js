@@ -978,6 +978,65 @@ app.post('/api/upload-hero-video', requireAdmin, (req, res) => {
   });
 });
 
+/* ================= НАСТРОЙКИ САЙТА (скрытие рулетки и т.п.) ================= */
+const SETTINGS_DEFAULTS = { roulette_hidden: false };
+
+function readSettingsFile() {
+  try {
+    const file = path.join(DATA_DIR, 'settings.json');
+    if (fs.existsSync(file)) {
+      const raw = JSON.parse(fs.readFileSync(file, 'utf8'));
+      if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+        return Object.assign({}, SETTINGS_DEFAULTS, raw);
+      }
+    }
+  } catch (e) {}
+  return Object.assign({}, SETTINGS_DEFAULTS);
+}
+
+async function getSettings() {
+  if (supabase) {
+    try {
+      const { data, error } = await supabase.from('settings').select('*').eq('id', 1).maybeSingle();
+      if (!error && data) return Object.assign({}, SETTINGS_DEFAULTS, { roulette_hidden: !!data.roulette_hidden });
+    } catch (e) {}
+  }
+  return readSettingsFile();
+}
+
+app.get('/api/settings', async (req, res) => {
+  try {
+    const s = await getSettings();
+    res.json({ roulette_hidden: !!s.roulette_hidden });
+  } catch (e) {
+    res.json(Object.assign({}, SETTINGS_DEFAULTS));
+  }
+});
+
+app.get('/api/admin/settings', requireAdmin, async (req, res) => {
+  res.json(await getSettings());
+});
+
+app.put('/api/admin/settings', requireAdmin, async (req, res) => {
+  try {
+    const b = req.body || {};
+    const next = Object.assign({}, await getSettings());
+    if (b.roulette_hidden != null) next.roulette_hidden = !!b.roulette_hidden;
+    if (supabase) {
+      try {
+        await supabase.from('settings').upsert({
+          id: 1, roulette_hidden: next.roulette_hidden, updated_at: new Date().toISOString()
+        });
+      } catch (e) {}
+    }
+    writeJsonFile('settings.json', next);
+    res.json(next);
+  } catch (e) {
+    console.error('PUT /api/admin/settings error:', e.message);
+    res.status(500).json({ error: 'Не удалось сохранить настройки' });
+  }
+});
+
 /* ================= ПРОМОКОДЫ (рулетка) ================= */
 const PROMO_WEIGHTS = [
   { discount: 5, weight: 40 },
@@ -1021,6 +1080,11 @@ const spinCooldown = new Map();
 // Генерация промокода (рулетка)
 app.post('/api/promo/generate', async (req, res) => {
   try {
+    const settings = await getSettings();
+    if (settings.roulette_hidden) {
+      return res.status(403).json({ error: 'Рулетка временно недоступна' });
+    }
+
     if (isRateLimited(req.ip)) {
       return res.status(429).json({ error: 'Слишком часто. Подождите немного' });
     }
