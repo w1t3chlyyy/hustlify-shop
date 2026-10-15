@@ -4779,7 +4779,7 @@ async function loadProjectsData(){
   try {
     const res = await fetch('/api/projects');
     if (!res.ok) return;
-    projectsData = await res.json();
+    projectsData = (await res.json()).filter(p => !p.hidden);
     renderProjects(projectsData);
   } catch(e) {}
 }
