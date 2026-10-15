@@ -3234,9 +3234,9 @@ body.page-leaving {
 
         </div>
       </div>
-            <div class="faq-item roulette-faq">
+      <div class="faq-item">
         <div class="faq-q">
-          <span>Когда и как можно крутить рулетку скидок?</span>
+          <span>Какие способы оплаты доступны?</span>
           <div class="faq-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg></div>
         </div>
         <div class="faq-a">
@@ -3249,7 +3249,7 @@ body.page-leaving {
 Обратите внимание: валюту платежа вы выбираете на этапе оформления. Комиссия сети при переводе криптовалюты оплачивается покупателем.
         </div>
       </div>
-      <div class="faq-item">
+      <div class="faq-item roulette-faq">
         <div class="faq-q">
           <span>Когда и как можно крутить рулетку скидок?</span>
           <div class="faq-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg></div>
@@ -4675,7 +4675,8 @@ function initRoulette(){
   refreshSpinLock();
 }
 initRoulette();
-/* Скрытие рулетки по настройке из админки */
+
+/* Скрытие рулетки по настройке из админки (вкладка «Настройки») */
 (async function applyRouletteVisibility(){
   try{
     const res = await fetch('/api/settings');
@@ -4688,6 +4689,7 @@ initRoulette();
     document.querySelectorAll('.roulette-faq').forEach(hide);
   }catch(e){}
 })();
+
 function bindTilt(selector){
   document.querySelectorAll(selector).forEach(card=>{
     card.addEventListener('mousemove', e=>{
