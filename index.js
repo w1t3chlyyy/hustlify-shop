@@ -1,15 +1,5 @@
 /* =====================================================================
  * hustlify-shop — сервер (Express) + админ API + промокоды + заказы
- * ---------------------------------------------------------------------
- * Ранее файл содержал только фрагмент промокодов без инициализации
- * приложения (app, supabase, readJsonFile были не определены). Ниже —
- * полноценный рабочий сервер:
- *   • статика из public/, JSON-хранилище в data/ (или DATA_DIR),
- *   • Supabase — если заданы SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY,
- *   • авторизация админа (ADMIN_LOGIN / ADMIN_PASSWORD_HASH, JWT-куки),
- *   • CRUD товаров/новостей/проектов/партнёров/реквизитов/заказов,
- *   • промокоды: рулетка, опрос, проверка, применение к заказам,
- *   • админ API промокодов (одноразовые, многоразовые, со сроком действия).
  * ===================================================================== */
 require('dotenv').config();
 
@@ -121,7 +111,9 @@ function notifyReceiptUploadedSafe(order) {
 }
 
 /* ================= СТАТИКА ================= */
-app.use(express.static(path.join(__dirname, 'public')));
+// extensions: ['html'] — чтобы /ai-agent и /cases открывали ai-agent.html и cases.html
+app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'] }));
+app.get('/oferta', (req, res) => res.sendFile(path.join(__dirname, 'public', 'offer.html')));
 
 /* ================= АДМИН-АВТОРИЗАЦИЯ ================= */
 const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(32).toString('hex');
@@ -129,7 +121,10 @@ const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(32).toString('he
 function adminToken(res, login) {
   const token = jwt.sign({ admin: login }, JWT_SECRET, { expiresIn: '12h' });
   res.cookie('admin_token', token, {
-    httpOnly: true, sameSite: 'lax', maxAge: 12 * 60 * 60 * 1000
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 12 * 60 * 60 * 1000
   });
   return token;
 }
@@ -145,7 +140,27 @@ function requireAdmin(req, res, next) {
   }
 }
 
+// Ограничение попыток входа: 8 неудачных попыток с одного IP за 15 минут
+const loginAttempts = new Map();
+const LOGIN_WINDOW_MS = 15 * 60 * 1000;
+const LOGIN_MAX_FAILS = 8;
+
+function loginBlocked(ip) {
+  const rec = loginAttempts.get(ip);
+  if (!rec) return false;
+  if (Date.now() - rec.first > LOGIN_WINDOW_MS) { loginAttempts.delete(ip); return false; }
+  return rec.fails >= LOGIN_MAX_FAILS;
+}
+function loginFail(ip) {
+  const rec = loginAttempts.get(ip);
+  if (!rec || Date.now() - rec.first > LOGIN_WINDOW_MS) loginAttempts.set(ip, { first: Date.now(), fails: 1 });
+  else rec.fails++;
+}
+
 app.post('/api/admin/login', (req, res) => {
+  if (loginBlocked(req.ip)) {
+    return res.status(429).json({ error: 'Слишком много попыток. Попробуйте позже' });
+  }
   const { login, password } = req.body || {};
   const envLogin = process.env.ADMIN_LOGIN;
   const envHash = process.env.ADMIN_PASSWORD_HASH;
@@ -155,7 +170,11 @@ app.post('/api/admin/login', (req, res) => {
   let ok = false;
   try { ok = login === envLogin && bcrypt.compareSync(String(password || ''), envHash); }
   catch (e) { ok = false; }
-  if (!ok) return res.status(401).json({ error: 'Неверный логин или пароль' });
+  if (!ok) {
+    loginFail(req.ip);
+    return res.status(401).json({ error: 'Неверный логин или пароль' });
+  }
+  loginAttempts.delete(req.ip);
   adminToken(res, login);
   res.json({ ok: true });
 });
@@ -172,15 +191,9 @@ function newId(prefix) {
   return `${prefix}_${Date.now().toString(36)}${crypto.randomBytes(3).toString('hex')}`;
 }
 
-// Нормализация товара: поле «категории» может называться cat или category
 function getCat(item) { return item.cat != null ? item.cat : (item.category != null ? item.category : ''); }
 function setCat(item, value) { item.cat = value || ''; item.category = value || ''; return item; }
 
-/**
- * Универсальный CRUD для JSON-коллекций с опциональным зеркалом в Supabase.
- * table — имя таблицы Supabase (или null), file — имя json-файла,
- * prefix — префикс id, transform(body) — маппинг полей клиента → хранилище.
- */
 async function readCollection(table, file) {
   if (!table || !supabase) return readJsonFile(file);
   const { data, error } = await supabase.from(table).select('*').order('created_at', { ascending: false });
@@ -194,13 +207,19 @@ async function readCollection(table, file) {
   return (data || []).map(item => itemFromDb(table, item));
 }
 
-function mountCollection({ urlPath, table, file, prefix, transform, publicGet = false }) {
+/**
+ * publicFilter — функция-фильтр для публичного GET (скрытые/удалённые записи
+ * не должны попадать на сайт). Админ-GET отдаёт всё.
+ */
+function mountCollection({ urlPath, table, file, prefix, transform, publicGet = false, publicFilter = null }) {
   const listAll = () => readCollection(table, file);
 
   if (publicGet) {
     app.get(`/api/${urlPath}`, async (req, res) => {
       try {
-        res.json(await listAll());
+        res.set('Cache-Control', 'no-store');
+        const all = await listAll();
+        res.json(publicFilter ? all.filter(publicFilter) : all);
       } catch (e) {
         console.error(`GET /api/${urlPath} storage error:`, e.message);
         res.status(503).json({ error: 'Данные временно недоступны' });
@@ -210,6 +229,7 @@ function mountCollection({ urlPath, table, file, prefix, transform, publicGet = 
 
   app.get(`/api/admin/${urlPath}`, requireAdmin, async (req, res) => {
     try {
+      res.set('Cache-Control', 'no-store');
       res.json(await listAll());
     } catch (e) {
       console.error(`GET /api/admin/${urlPath} storage error:`, e.message);
@@ -275,7 +295,6 @@ function mountCollection({ urlPath, table, file, prefix, transform, publicGet = 
   });
 }
 
-// Маппинг записи в формат таблицы Supabase (используется только для products)
 function dbFromItem(table, item) {
   if (table === 'products') {
     return {
@@ -294,8 +313,8 @@ function dbFromItem(table, item) {
   if (table === 'projects') {
     return {
       id: item.id, title: item.title || '', type: item.type || 'telegram', url: item.url || '',
-      button_text: item.btn || item.btnText || item.buttonText || item.button_text || '',
-      portfolio_url: item.portfolio || item.portfolioUrl || item.portfolio_url || '',
+      button_text: item.buttonText || item.btn || item.btnText || item.button_text || '',
+      portfolio_url: item.portfolioUrl || item.portfolio || item.portfolio_url || '',
       image: item.image || '', hidden: !!item.hidden, short_desc: item.shortDesc || item.short_desc || '',
       full_desc: item.fullDesc || item.full_desc || '', created_at: item.created_at || new Date().toISOString()
     };
@@ -331,9 +350,16 @@ function itemFromDb(table, row) {
   return row;
 }
 
+// Берём значение из первого переданного поля (даже если оно пустое — это осознанная очистка)
+function pickField(b, names) {
+  for (const n of names) if (b[n] != null) return String(b[n]).trim();
+  return '';
+}
+
 /* ================= ТОВАРЫ ================= */
 mountCollection({
   urlPath: 'products', table: 'products', file: 'products.json', prefix: 'p', publicGet: true,
+  publicFilter: p => !p.hidden && !p.deleted,
   transform: (b) => {
     const item = {
       id: b.id,
@@ -344,7 +370,9 @@ mountCollection({
       img: String(b.img || '').trim(),
       desc: String(b.desc || '').trim(),
       icon: String(b.icon || '').trim(),
-      hit: !!b.hit
+      hit: !!b.hit,
+      hidden: !!b.hidden,
+      deleted: !!b.deleted
     };
     setCat(item, b.cat != null ? b.cat : b.category);
     if (!item.name) throw new Error('Укажите название товара');
@@ -369,19 +397,24 @@ mountCollection({
 /* ================= ПРОЕКТЫ ================= */
 mountCollection({
   urlPath: 'projects', table: 'projects', file: 'projects.json', prefix: 'proj', publicGet: true,
-  transform: (b) => ({
-    id: b.id,
-    title: String(b.title || '').trim(),
-    type: b.type === 'site' ? 'site' : 'telegram',
-    url: String(b.url || '').trim(),
-    btn: String(b.btn || b.btnText || b.buttonText || b.button_text || '').trim(),
-    portfolio: String(b.portfolio || b.portfolioUrl || b.portfolio_url || '').trim(),
-    image: String(b.image || '').trim(),
-    hidden: !!b.hidden,
-    shortDesc: String(b.shortDesc || '').trim(),
-    fullDesc: String(b.fullDesc || '').trim(),
-    created_at: b.created_at || new Date().toISOString()
-  })
+  publicFilter: p => !p.hidden,
+  transform: (b) => {
+    const buttonText = pickField(b, ['buttonText', 'btnText', 'btn', 'button_text']);
+    const portfolioUrl = pickField(b, ['portfolioUrl', 'portfolio', 'portfolio_url']);
+    return {
+      id: b.id,
+      title: String(b.title || '').trim(),
+      type: b.type === 'site' ? 'site' : 'telegram',
+      url: String(b.url || '').trim(),
+      btn: buttonText, btnText: buttonText, buttonText,
+      portfolio: portfolioUrl, portfolioUrl,
+      image: String(b.image || '').trim(),
+      hidden: !!b.hidden,
+      shortDesc: String(b.shortDesc || '').trim(),
+      fullDesc: String(b.fullDesc || '').trim(),
+      created_at: b.created_at || new Date().toISOString()
+    };
+  }
 });
 
 /* ================= ПАРТНЁРЫ ================= */
@@ -396,7 +429,7 @@ mountCollection({
   })
 });
 
-/* ================= РЕКВИЗИТЫ (один объект, а не список) ================= */
+/* ================= РЕКВИЗИТЫ ================= */
 const REQUISITES_DEFAULTS = {
   card_number: '', bank_name: '', recipient_name: '', comment: '',
   self_employed_name: '', self_employed_inn: ''
@@ -460,11 +493,7 @@ app.put('/api/admin/requisites', requireAdmin, async (req, res) => {
   }
 });
 
-/* ================= КУРСЫ ЗВЁЗД / PREMIUM =================
- * Админка отдаёт/принимает структурированный объект:
- *   { stars: {price, old, hidden, deleted}, premium: {3:{...},6:{...},9:{...},12:{...}} }
- * Хранится в data/rates.json; цены дополнительно синхронизируются с товарами.
- * ========================================================== */
+/* ================= КУРСЫ ЗВЁЗД / PREMIUM ================= */
 const RATE_IDS = { stars: 'tg_stars', 3: 'tg_premium_3', 6: 'tg_premium_6', 9: 'tg_premium_9', 12: 'tg_premium_12' };
 
 function readRates(products = readJsonFile('products.json')) {
@@ -473,15 +502,23 @@ function readRates(products = readJsonFile('products.json')) {
     const file = path.join(DATA_DIR, 'rates.json');
     if (fs.existsSync(file)) saved = JSON.parse(fs.readFileSync(file, 'utf8')) || {};
   } catch (e) {}
-  const byId = id => products.find(p => String(p.id) === id) || {};
   const mk = (id, defPrice, defOld) => {
-    const p = byId(id);
+    const found = products.find(p => String(p.id) === id);
     const s = saved[id] || {};
+    // Если товар найден — доверяем только ему (rates.json может быть устаревшим)
+    if (found) {
+      return {
+        price: found.price != null ? Number(found.price) : defPrice,
+        old: found.old != null ? Number(found.old) : defOld,
+        hidden: !!found.hidden,
+        deleted: !!found.deleted
+      };
+    }
     return {
-      price: p.price != null ? Number(p.price) : (s.price != null ? s.price : defPrice),
-      old: p.old != null ? Number(p.old) : (s.old != null ? s.old : defOld),
-      hidden: !!(p.hidden || s.hidden),
-      deleted: !!(p.deleted || s.deleted)
+      price: s.price != null ? s.price : defPrice,
+      old: s.old != null ? s.old : defOld,
+      hidden: !!s.hidden,
+      deleted: !!s.deleted
     };
   };
   return {
@@ -492,6 +529,7 @@ function readRates(products = readJsonFile('products.json')) {
 
 app.get('/api/rates', async (req, res) => {
   try {
+    res.set('Cache-Control', 'no-store');
     res.json(readRates(await readCollection('products', 'products.json')));
   } catch (e) {
     console.error('GET /api/rates storage error:', e.message);
@@ -501,6 +539,7 @@ app.get('/api/rates', async (req, res) => {
 
 app.get('/api/admin/rates', requireAdmin, async (req, res) => {
   try {
+    res.set('Cache-Control', 'no-store');
     res.json(readRates(await readCollection('products', 'products.json')));
   } catch (e) {
     console.error('GET /api/admin/rates storage error:', e.message);
@@ -529,7 +568,6 @@ app.put('/api/admin/rates', requireAdmin, async (req, res) => {
         deleted: !!v.deleted
       };
       saved[RATE_IDS[key]] = rec;
-      // синхронизируем с товарами, чтобы изменения были видны в магазине
       const idx = items.findIndex(p => String(p.id) === RATE_IDS[key]);
       if (idx !== -1) {
         items[idx].price = rec.price;
@@ -644,18 +682,33 @@ app.post('/api/orders', async (req, res) => {
     const lines = [];
     for (const it of items) {
       const p = products.find(x => String(x.id) === String(it.id));
-      if (!p) return res.status(400).json({ error: 'Товар не найден: ' + it.id });
-      const qty = Math.max(1, Number(it.qty) || 1);
-      const unit = Number(p.price) || 0;
+      if (!p || p.hidden || p.deleted) {
+        return res.status(400).json({ error: 'Товар недоступен: ' + it.id });
+      }
+      let qty = Math.max(1, Math.min(100, Math.floor(Number(it.qty) || 1)));
+      let unit = Number(p.price) || 0;
+      let name = p.name;
+      let stars = null;
+
+      if (String(p.id) === 'tg_stars') {
+        // цена хранится за 1 звезду — считаем итог по количеству звёзд, как на витрине
+        stars = Math.floor(Number(it.stars));
+        if (!Number.isFinite(stars) || stars < 25 || stars > 10000) {
+          return res.status(400).json({ error: 'Количество звёзд: от 25 до 10 000' });
+        }
+        unit = Math.round(stars * unit);
+        qty = 1;
+        name = `Telegram Звёзды (${stars} шт.)`;
+      }
+
       itemsTotal += unit * qty;
       lines.push({
-        id: p.id, name: p.name, price: unit, qty,
-        stars: it.stars || null, months: it.months || null,
+        id: p.id, name, price: unit, qty,
+        stars, months: it.months || null,
         target: it.target || null, details: it.details || null
       });
     }
 
-    // Промокод: проверяем на сервере, размер скидки берём только из базы
     let discountPercent = 0;
     let appliedCode = null;
     if (promoCode) {
@@ -978,7 +1031,7 @@ app.post('/api/upload-hero-video', requireAdmin, (req, res) => {
   });
 });
 
-/* ================= НАСТРОЙКИ САЙТА (скрытие рулетки и т.п.) ================= */
+/* ================= НАСТРОЙКИ САЙТА ================= */
 const SETTINGS_DEFAULTS = { roulette_hidden: false };
 
 function readSettingsFile() {
@@ -1006,6 +1059,7 @@ async function getSettings() {
 
 app.get('/api/settings', async (req, res) => {
   try {
+    res.set('Cache-Control', 'no-store');
     const s = await getSettings();
     res.json({ roulette_hidden: !!s.roulette_hidden });
   } catch (e) {
@@ -1063,7 +1117,6 @@ function genOpaqueCode() {
   return code;
 }
 
-// Защита от накрутки
 const promoCooldown = new Map();
 function isRateLimited(ip) {
   const last = promoCooldown.get(ip) || 0;
@@ -1073,11 +1126,9 @@ function isRateLimited(ip) {
   return false;
 }
 
-// 1 прокрут в 24 часа
 const SPIN_LIMIT_MS = 24 * 60 * 60 * 1000;
 const spinCooldown = new Map();
 
-// Генерация промокода (рулетка)
 app.post('/api/promo/generate', async (req, res) => {
   try {
     const settings = await getSettings();
@@ -1132,10 +1183,11 @@ app.post('/api/promo/generate', async (req, res) => {
   }
 });
 
-/* ================= ОПРОС (анкета за скидку) ================= */
+/* ================= ОПРОС ================= */
 app.post('/api/survey/submit', async (req, res) => {
   try {
-    const answers = (req.body && req.body.answers) || {};
+    const rawAnswers = req.body && req.body.answers;
+    const answers = Array.isArray(rawAnswers) ? rawAnswers.slice(0, 20).map(a => String(a).slice(0, 200)) : [];
     const code = 'SURVEY20-' + crypto.randomBytes(4).toString('hex').toUpperCase();
     const discount = 20;
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
@@ -1166,7 +1218,6 @@ app.post('/api/survey/submit', async (req, res) => {
   }
 });
 
-// Генерация за опрос (старый адрес — сохранён для совместимости)
 app.post('/api/survey/promo', async (req, res) => {
   try {
     const code = 'SURVEY20-' + crypto.randomBytes(4).toString('hex').toUpperCase();
@@ -1243,7 +1294,6 @@ function checkPromo(p) {
     const max = Number(p.max_uses || 0);
     if (max > 0 && used >= max) return 'Лимит использований исчерпан';
   } else {
-    // одноразовый (и любой неизвестный тип считаем одноразовым)
     if (p.used || used >= 1) return 'Промокод уже использован';
   }
   return null;
@@ -1274,20 +1324,22 @@ async function consumePromo(code, orderId) {
   }
 }
 
-/* ================= АДМИН API ПРОМОКОДОВ =================
- * GET    /api/admin/promocodes          — список
- * POST   /api/admin/promocodes          — создать (single|multi; срок: expires_at | days | бессрочный)
- * PUT    /api/admin/promocodes/:code    — изменить (active, discount, max_uses, expires_at, note…)
- * DELETE /api/admin/promocodes/:code    — удалить
- * ======================================================== */
-
+/* ================= АДМИН API ПРОМОКОДОВ ================= */
 function normalizePromoInput(b, existing) {
   const out = Object.assign({}, existing || {});
 
   if (b.code != null || !existing) {
     const code = String(b.code || '').toUpperCase().replace(/[^A-Z0-9_-]/g, '').slice(0, 32);
-    if (!code) throw new Error('Код не может быть пустым');
-    out.code = code;
+    if (!code) {
+      if (!existing) {
+        // пустой код — генерируем автоматически (как подсказывает форма в админке)
+        out.code = genOpaqueCode();
+      } else {
+        throw new Error('Код не может быть пустым');
+      }
+    } else {
+      out.code = code;
+    }
   }
 
   if (b.discount != null || !existing) {
@@ -1303,7 +1355,7 @@ function normalizePromoInput(b, existing) {
     out.max_uses = 1;
   } else if (b.max_uses != null || !existing) {
     if (b.max_uses === '' || b.max_uses == null) {
-      out.max_uses = null; // без лимита
+      out.max_uses = null;
     } else {
       const m = Number(b.max_uses);
       if (!Number.isInteger(m) || m < 1) throw new Error('Лимит использований должен быть целым числом ≥ 1');
@@ -1311,7 +1363,6 @@ function normalizePromoInput(b, existing) {
     }
   }
 
-  // Срок действия: приоритет у явного expires_at, затем days; пусто — без изменений
   if (b.expires_at != null && b.expires_at !== '') {
     const dt = new Date(b.expires_at);
     if (isNaN(dt.getTime())) throw new Error('Некорректная дата окончания');
@@ -1321,7 +1372,7 @@ function normalizePromoInput(b, existing) {
     if (!Number.isFinite(days) || days < 1 || days > 3650) throw new Error('Количество дней должно быть от 1 до 3650');
     out.expires_at = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
   } else if (b.expires_at === '' || b.clear_expires === true) {
-    out.expires_at = null; // сделать бессрочным
+    out.expires_at = null;
   }
 
   if (b.note != null) out.note = String(b.note).slice(0, 200);
@@ -1329,31 +1380,6 @@ function normalizePromoInput(b, existing) {
   return out;
 }
 
-app.get('/api/admin/promocodes', requireAdmin, async (req, res) => {
-  try {
-    const local = readJsonFile('promocodes.json').map(normalizePromoRecord);
-    if (supabase) {
-      try {
-        const { data, error } = await supabase.from('promocodes').select('*').order('created_at', { ascending: false });
-        if (!error && Array.isArray(data)) {
-          // объединяем БД + локальные файлы (на случай гибридного хранения)
-          const merged = data.map(normalizePromoRecord);
-          for (const p of local) {
-            if (!merged.some(d => String(d.code).toUpperCase() === String(p.code).toUpperCase())) merged.push(p);
-          }
-          return res.json(merged);
-        }
-      } catch (e) {}
-    }
-    res.json(local);
-  } catch (e) {
-    console.error('GET /api/admin/promocodes error:', e);
-    res.status(500).json({ error: 'Не удалось загрузить промокоды' });
-  }
-});
-
-// Приводим запись любого происхождения (файл/Supabase/легаси) к единому виду,
-// чтобы таблица админки всегда корректно отображала скидку, тип и срок.
 function normalizePromoRecord(p) {
   const out = Object.assign({}, p);
   out.code = String(out.code || '').toUpperCase();
@@ -1371,6 +1397,28 @@ function normalizePromoRecord(p) {
   if (out.created_at == null) out.created_at = out.createdAt || null;
   return out;
 }
+
+app.get('/api/admin/promocodes', requireAdmin, async (req, res) => {
+  try {
+    const local = readJsonFile('promocodes.json').map(normalizePromoRecord);
+    if (supabase) {
+      try {
+        const { data, error } = await supabase.from('promocodes').select('*').order('created_at', { ascending: false });
+        if (!error && Array.isArray(data)) {
+          const merged = data.map(normalizePromoRecord);
+          for (const p of local) {
+            if (!merged.some(d => String(d.code).toUpperCase() === String(p.code).toUpperCase())) merged.push(p);
+          }
+          return res.json(merged);
+        }
+      } catch (e) {}
+    }
+    res.json(local);
+  } catch (e) {
+    console.error('GET /api/admin/promocodes error:', e);
+    res.status(500).json({ error: 'Не удалось загрузить промокоды' });
+  }
+});
 
 app.post('/api/admin/promocodes', requireAdmin, async (req, res) => {
   try {
@@ -1411,7 +1459,6 @@ app.put('/api/admin/promocodes/:code', requireAdmin, async (req, res) => {
     if (!found) return res.status(404).json({ error: 'Промокод не найден' });
 
     const updated = normalizePromoInput(req.body || {}, found.promo);
-    // счётчики использования меняются только через consumePromo, не через этот эндпоинт
     updated.used_count = Number(found.promo.used_count || 0);
     updated.used = !!found.promo.used;
 
@@ -1452,6 +1499,53 @@ app.delete('/api/admin/promocodes/:code', requireAdmin, async (req, res) => {
     res.json({ ok: true });
   } catch (e) {
     res.status(500).json({ error: 'Не удалось удалить промокод' });
+  }
+});
+
+/* ================= AI-АГЕНТ (Gemini) ================= */
+const aiCooldown = new Map();
+
+app.post('/api/ai/chat', async (req, res) => {
+  try {
+    const last = aiCooldown.get(req.ip) || 0;
+    if (Date.now() - last < 1500) {
+      return res.status(429).json({ error: 'Слишком часто. Подождите секунду' });
+    }
+    aiCooldown.set(req.ip, Date.now());
+
+    const message = String((req.body && req.body.message) || '').trim().slice(0, 1000);
+    if (!message) return res.status(400).json({ error: 'Пустое сообщение' });
+
+    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+    if (!apiKey) return res.status(503).json({ error: 'AI не настроен' });
+
+    const products = (await readCollection('products', 'products.json')).filter(p => !p.hidden && !p.deleted);
+    const catalog = products.map(p => `- ${p.name} (${p.cat}): ${p.price} ₽ — ${p.desc}`).join('\n');
+
+    let history = (Array.isArray(req.body.history) ? req.body.history : []).slice(-10).map(h => ({
+      role: h && h.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: String((h && h.content) || '').slice(0, 2000) }]
+    }));
+    // история Gemini должна начинаться с сообщения пользователя
+    while (history.length && history[0].role !== 'user') history.shift();
+
+    const { GoogleGenAI } = require('@google/genai');
+    const ai = new GoogleGenAI({ apiKey });
+    const r = await ai.models.generateContent({
+      model: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
+      contents: [...history, { role: 'user', parts: [{ text: message }] }],
+      config: {
+        maxOutputTokens: 700,
+        systemInstruction:
+          'Ты Hustlify Agent — консультант магазина готовых IT-бизнесов. Отвечай по-русски, кратко, по делу. ' +
+          'Не обещай гарантий дохода. Опирайся только на этот каталог, цены не выдумывай:\n' + catalog +
+          '\nСвязь с менеджером: @HustlifyHelp.'
+      }
+    });
+    res.json({ reply: r.text, recommended: [], provider: 'gemini' });
+  } catch (e) {
+    console.error('POST /api/ai/chat error:', e.message);
+    res.status(502).json({ error: 'AI временно недоступен' });
   }
 });
 
