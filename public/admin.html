@@ -161,7 +161,7 @@ td.num{font-family:'Unbounded';font-weight:600;}
         </div>
       </div>
       <table>
-        <thead><tr><th></th><th>Название</th><th>Раздел</th><th>Категория</th><th>Цена</th><th></th></tr></thead>
+        <thead><tr><th></th><th>Название</th><th>Раздел</th><th>Категория</th><th>Цена</th><th>Статус</th><th></th></tr></thead>
         <tbody id="productsTbody"></tbody>
       </table>
     </div>
@@ -398,6 +398,10 @@ td.num{font-family:'Unbounded';font-weight:600;}
     </div>
     <div class="field"><label>Ссылка на фото (необязательно)</label><input id="f_img" placeholder="/images/product.png или https://..."></div>
     <div class="field"><label>Описание</label><input id="f_desc"></div>
+    <div class="field" style="display:flex;align-items:center;gap:10px;margin-top:12px;">
+      <input type="checkbox" id="f_hidden" style="width:18px;height:18px;cursor:pointer;">
+      <label for="f_hidden" style="margin:0;cursor:pointer;font-size:13.5px;">Скрыть товар с сайта (не удаляя)</label>
+    </div>
     <div id="productErr" style="color:var(--red);font-size:13px;min-height:18px;"></div>
     <div class="hint">Фото можно положить в папку <b>public/images/</b> проекта и указать путь вида <code>/images/имя-файла.png</code>.</div>
   </div>
@@ -611,25 +615,43 @@ async function loadProducts(){
 
 function renderProductsTable(){
   const filtered = sectionFilterValue==='all' ? products : products.filter(p=>p.section===sectionFilterValue);
-  document.getElementById('productCount').textContent = filtered.length + ' из ' + products.length + ' товаров';
+  const hiddenCount = products.filter(p=>p.hidden).length;
+  document.getElementById('productCount').textContent = filtered.length + ' из ' + products.length + ' товаров' + (hiddenCount ? ` (${hiddenCount} скрыто)` : '');
   const tbody = document.getElementById('productsTbody');
-  if(filtered.length===0){ tbody.innerHTML = '<tr><td colspan="6"><div class="empty">Ничего нет в этом разделе</div></td></tr>'; return; }
+  if(filtered.length===0){ tbody.innerHTML = '<tr><td colspan="7"><div class="empty">Ничего нет в этом разделе</div></td></tr>'; return; }
   tbody.innerHTML = filtered.map(p=>`
-    <tr>
+    <tr style="${p.hidden ? 'opacity:.6;' : ''}">
       <td><div class="thumb">${p.img?`<img src="${p.img}">`:`<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>`}</div></td>
-      <td>${p.name}</td>
+      <td>${escapeHtmlAdmin(p.name)}</td>
       <td>${p.section==='case'?'Кейс':'Каталог'}</td>
-      <td>${p.cat||'—'}</td>
+      <td>${escapeHtmlAdmin(p.cat||'—')}</td>
       <td class="num">${money(p.price)}</td>
+      <td>${p.hidden ? '<span class="status-tag hidden-tag" style="display:inline-block;">Скрыт</span>' : '<span style="color:var(--green);font-size:12.5px;font-weight:600;">Виден</span>'}</td>
       <td>
         <div class="row-actions">
+          <button class="icon-btn-sm" data-toggle="${p.id}" title="${p.hidden ? 'Показать на сайте' : 'Скрыть с сайта'}">${p.hidden ? FLAG_EYE_OFF : FLAG_EYE}</button>
           <button class="icon-btn-sm" data-edit="${p.id}" title="Изменить"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
           <button class="icon-btn-sm danger" data-del="${p.id}" title="Удалить"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
         </div>
       </td>
     </tr>`).join('');
+  tbody.querySelectorAll('[data-toggle]').forEach(b=> b.onclick = ()=> toggleProductHidden(b.dataset.toggle));
   tbody.querySelectorAll('[data-edit]').forEach(b=> b.onclick = ()=> openModal(b.dataset.edit));
   tbody.querySelectorAll('[data-del]').forEach(b=> b.onclick = ()=> deleteProduct(b.dataset.del));
+}
+
+async function toggleProductHidden(id){
+  const p = products.find(x=>x.id===id);
+  if(!p) return;
+  try{
+    const res = await adminFetch(`/api/admin/products/${id}`, {
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ hidden: !p.hidden })
+    });
+    if(!res.ok){ const d = await res.json().catch(()=>({})); alert(d.error || 'Не удалось изменить видимость товара'); return; }
+    loadProducts();
+  }catch(e){}
 }
 
 const overlay = document.getElementById('overlay');
@@ -647,6 +669,7 @@ function openModal(id){
   document.getElementById('f_old').value = p?.old || '';
   document.getElementById('f_img').value = p?.img || '';
   document.getElementById('f_desc').value = p?.desc || '';
+  document.getElementById('f_hidden').checked = !!p?.hidden;
   overlay.classList.add('open'); productModal.classList.add('open');
 }
 function closeModal(){ overlay.classList.remove('open'); productModal.classList.remove('open'); }
@@ -666,6 +689,7 @@ document.getElementById('saveProduct').onclick = async ()=>{
     old: Number(document.getElementById('f_old').value) || 0,
     img: document.getElementById('f_img').value.trim(),
     desc: document.getElementById('f_desc').value.trim(),
+    hidden: document.getElementById('f_hidden').checked,
     hit: false
   };
   if(!body.name || !body.price){ errEl.textContent = 'Укажите название и цену'; return; }

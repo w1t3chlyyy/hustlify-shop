@@ -3,13 +3,16 @@
     "id": "c1",
     "name": "CryptoBot",
     "section": "catalog",
-    "cat": "Верификации",
-    "desc": "Верификация криптокошелька",
     "price": 880,
     "old": 1300,
-    "icon": "crypto",
     "img": "/images/cb.jpg",
-    "hit": false
+    "desc": "Верификация криптокошелька",
+    "icon": "crypto",
+    "hit": false,
+    "hidden": false,
+    "deleted": false,
+    "cat": "Верификации",
+    "category": "Верификации"
   },
   {
     "id": "c2",
