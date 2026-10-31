@@ -2981,6 +2981,10 @@ body.page-leaving {
   </div>
 </section>
 
+<script>
+/* единица макета без учёта ширины скроллбара: 1 px макета = clientWidth / 6085 */
+(function(){var r=document.documentElement;function s(){r.style.setProperty('--u',(r.clientWidth/6085)+'px');}s();addEventListener('resize',s);addEventListener('load',s);})();
+</script>
 
 <section class="section" id="cases">
   <div class="wrap">
