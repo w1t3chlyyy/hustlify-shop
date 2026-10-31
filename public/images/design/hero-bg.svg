@@ -1,19 +1,19 @@
-<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="5847" height="3189" viewBox="0 0 5847 3189" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="5847" height="2813" viewBox="0 0 5847 2813" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g id="Mask group">
-<mask id="mask0_0_19" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="5847" height="3189">
-<rect id="Rectangle 290" width="5847" height="3189" rx="200" fill="black"/>
+<mask id="mask0_0_17" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="5847" height="2813">
+<rect id="Rectangle 290" width="5847" height="2813" rx="200" fill="black"/>
 </mask>
-<g mask="url(#mask0_0_19)">
-<g id="Ellipse 106" filter="url(#filter0_f_0_19)">
-<path d="M4123.82 1185.31C4441.92 1546.31 3231.61 2669.63 2824.71 3028.18C2417.82 3386.73 1830.08 3384.75 1511.98 3023.75C1193.87 2662.75 1265.86 2079.44 1672.75 1720.89C2079.65 1362.34 3805.71 824.313 4123.82 1185.31Z" fill="#2F6BFF"/>
+<g mask="url(#mask0_0_17)">
+<g id="Ellipse 106" filter="url(#filter0_f_0_17)">
+<path d="M4123.82 1045.56C4441.92 1363.99 3231.61 2354.87 2824.71 2671.14C2417.82 2987.42 1830.08 2985.67 1511.98 2667.23C1193.87 2348.8 1265.86 1834.27 1672.75 1517.99C2079.65 1201.71 3805.71 727.123 4123.82 1045.56Z" fill="#2F6BFF"/>
 </g>
 </g>
 </g>
 <defs>
-<filter id="filter0_f_0_19" x="-1186.49" y="-1434.25" width="7862.96" height="7230.05" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<filter id="filter0_f_0_17" x="-1186.49" y="-1559.9" width="7862.96" height="6967.11" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
 <feFlood flood-opacity="0" result="BackgroundImageFix"/>
 <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
-<feGaussianBlur stdDeviation="1250" result="effect1_foregroundBlur_0_19"/>
+<feGaussianBlur stdDeviation="1250" result="effect1_foregroundBlur_0_17"/>
 </filter>
 </defs>
 </svg>

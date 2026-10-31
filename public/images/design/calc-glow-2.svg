@@ -1,12 +1,12 @@
 <svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="8382" height="4153" viewBox="0 0 8382 4153" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="Rectangle 302" filter="url(#filter0_f_0_5)">
+<g id="Rectangle 302" filter="url(#filter0_f_0_4)">
 <path d="M700 700C700 700 1192.44 2411.05 2114.76 2432.71C2609.01 2444.31 2796.78 1862.43 3276.51 1971.95C3713.05 2071.61 3628.87 2615.43 4053.88 2750.56C4581.18 2918.22 4865.56 2311.66 5420.45 2367.04C5909.02 2415.8 6064.75 2973.42 6546.06 2882.44C7236.29 2751.96 6630.6 1819.32 7037.15 1292.11C7242.87 1025.34 7682 700 7682 700V3453H700V700Z" fill="#010E2E"/>
 </g>
 <defs>
-<filter id="filter0_f_0_5" x="0" y="0" width="8382" height="4153" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<filter id="filter0_f_0_4" x="0" y="0" width="8382" height="4153" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
 <feFlood flood-opacity="0" result="BackgroundImageFix"/>
 <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
-<feGaussianBlur stdDeviation="350" result="effect1_foregroundBlur_0_5"/>
+<feGaussianBlur stdDeviation="350" result="effect1_foregroundBlur_0_4"/>
 </filter>
 </defs>
 </svg>

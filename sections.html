@@ -1,7 +1,5 @@
-<!-- Замените в public/index.html всё от <header>…</header> до конца секции новостей
-     (<section class="hero">, calc-section, #about, #partners, секция «Новостной поток»)
-     на этот блок. Остальные секции (cases, catalog, roulette, …) остаются как есть.
-     В <head> добавьте: <link rel="stylesheet" href="/css/redesign.css"> (после основного <style>). -->
+<!-- Замените в public/index.html блок от <section class="rd-hero"> до <section class="section" id="cases"> на этот.
+     (проще: положите файл рядом с update-redesign.js и выполните  node update-redesign.js) -->
 
 <section class="rd-hero" id="hero">
   <div class="rd-card">
@@ -30,7 +28,7 @@
     <div class="rd-globe"><img src="/images/design/hero-globe.png" alt=""></div>
 
     <h1 class="rd-title"><span>От голой идеи</span><span>до монетизации</span><span class="l3"><u>за 2 недели</u></span></h1>
-    <p class="rd-sub">Не трать время на поиски подрядчиков. Мы берём на себя всё: от идеи до первых денег.</p>
+    <p class="rd-sub">Не трать время на поиски подрядчиков.<br class="rd-br"> Мы берём на себя всё: от идеи до первых денег.</p>
     <div class="rd-cta">
       <a href="#cases" class="rd-btn blue">Кейсы</a>
       <a href="#catalog" class="rd-btn ghost">Каталог</a>
@@ -102,6 +100,14 @@
 </section>
 
 <script>
-/* единица макета без учёта ширины скроллбара: 1 px макета = clientWidth / 6085 */
+/* 1 px макета = clientWidth / 6085 (без учёта скроллбара) */
 (function(){var r=document.documentElement;function s(){r.style.setProperty('--u',(r.clientWidth/6085)+'px');}s();addEventListener('resize',s);addEventListener('load',s);})();
+/* бейджи корзины/избранного: в макете их нет — показываем только когда число > 0 */
+(function(){
+  function sync(el){ el.style.display = (el.textContent.trim()==='0') ? 'none' : ''; }
+  ['cartCount','wishCount'].forEach(function(id){
+    var el=document.getElementById(id); if(!el) return; sync(el);
+    new MutationObserver(function(){ sync(el); }).observe(el,{childList:true,characterData:true,subtree:true});
+  });
+})();
 </script>
