@@ -2781,6 +2781,7 @@ body.page-leaving {
   transition: opacity 0.28s var(--ease), transform 0.28s var(--ease), filter 0.28s var(--ease);
 }
 </style>
+<link rel="stylesheet" href="/redesign.css">
 </head>
 <body>
 
@@ -4109,7 +4110,7 @@ function bindProductEvents(){
     card.onclick = ()=> openProductModal(card.dataset.id);
   });
   bindTilt('.product');
-  observeReveal('.pgrid .product', 'reveal-pop');
+  
 }
 
 const productModal = document.getElementById('productModal');
@@ -6068,5 +6069,6 @@ document.querySelectorAll('a[href="/ai-agent"], a[href^="/ai-agent"]').forEach(l
 })();
 
 </script>
+<script src="/redesign.js"></script>
 </body>
 </html>
