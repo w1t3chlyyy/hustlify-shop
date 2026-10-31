@@ -1,0 +1,102 @@
+<!-- Замените в public/index.html всё от <header>…</header> до конца секции новостей
+     (<section class="hero">, calc-section, #about, #partners, секция «Новостной поток»)
+     на этот блок. Остальные секции (cases, catalog, roulette, …) остаются как есть.
+     В <head> добавьте: <link rel="stylesheet" href="/css/redesign.css"> (после основного <style>). -->
+
+<section class="rd-hero" id="hero">
+  <div class="rd-card">
+    <img class="rd-card-bg" src="/images/design/hero-bg.svg" alt="">
+    <img class="rd-3d" src="/images/design/hero-3d.png" alt="">
+
+    <div class="rd-nav-row">
+      <a href="/" class="rd-logo" aria-label="Hustlify"><img src="/images/design/logo.svg" alt="Hustlify"></a>
+      <nav class="rd-nav-links">
+        <a href="#calculator">Калькулятор</a>
+        <a href="#catalog">Каталог</a>
+        <a href="#about">О нас</a>
+        <a href="#faq">FAQ</a>
+        <a href="https://t.me/HustlifyHelp" target="_blank" rel="noopener">Поддержка</a>
+      </nav>
+      <div class="rd-nav-tools">
+        <button class="rd-ico" id="wishBtn" aria-label="Избранное" hidden><span class="badge" id="wishCount">0</span></button>
+        <button class="rd-ico" id="searchBtn" aria-label="Поиск"><img src="/images/design/icon-search.svg" alt=""></button>
+        <button class="rd-ico" id="cartBtn" aria-label="Корзина"><img src="/images/design/icon-cart.svg" alt=""><span class="badge" id="cartCount">0</span></button>
+        <button class="rd-ico" id="mobileMenuBtn" aria-label="Меню"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      </div>
+      <a href="#contacts" class="rd-contact-btn">Контакты</a>
+    </div>
+
+    <div class="rd-cube"><img src="/images/design/hero-cube.png" alt=""></div>
+    <div class="rd-globe"><img src="/images/design/hero-globe.png" alt=""></div>
+
+    <h1 class="rd-title"><span>От голой идеи</span><span>до монетизации</span><span class="l3"><u>за 2 недели</u></span></h1>
+    <p class="rd-sub">Не трать время на поиски подрядчиков. Мы берём на себя всё: от идеи до первых денег.</p>
+    <div class="rd-cta">
+      <a href="#cases" class="rd-btn blue">Кейсы</a>
+      <a href="#catalog" class="rd-btn ghost">Каталог</a>
+    </div>
+    <div class="rd-proof">
+      <div class="rd-avatars"><img src="/images/design/hero-avatars.png" alt=""></div>
+      <div class="rd-stat"><b>500+</b><span>клиентов уже выбрали нас</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="rd-calc" id="calculator">
+  <div class="rd-glow g1"><img src="/images/design/calc-glow-1.svg" alt=""></div>
+  <div class="rd-glow g2"><img src="/images/design/calc-glow-2.svg" alt=""></div>
+  <div class="rd-glow g3"><img src="/images/design/calc-glow-3.png" alt=""></div>
+
+  <h2 class="rd-h2">Калькулятор окупаемости готового бизнеса</h2>
+
+  <div class="rd-panel big invest">
+    <span class="rd-ph">Сумма инвестиций</span>
+    <span class="rd-budget-num" id="calcBudgetValue">50.000</span>
+    <span class="rd-pl lbl">Желаемый бюджет:</span>
+    <div class="rd-track">
+      <input type="range" id="calcSlider" min="10000" max="500000" step="5000" value="50000" aria-label="Бюджет">
+      <div class="rd-thumb"><img src="/images/design/slider-thumb.svg" alt=""></div>
+    </div>
+    <div class="rd-ticks"><span>10.000</span><span>500.000</span></div>
+  </div>
+
+  <div class="rd-panel big cat">
+    <span class="rd-ph">Категория бизнеса</span>
+    <div class="rd-pills">
+      <button class="rd-pill calc-cat-btn active" data-cat="ai">PropTech/Недвиж.</button>
+      <button class="rd-pill calc-cat-btn" data-cat="shop">E-Comerce/Маркет</button>
+      <button class="rd-pill calc-cat-btn" data-cat="crypto">HealthTech/Wellness</button>
+      <button class="rd-pill calc-cat-btn" data-cat="saas">Другое</button>
+    </div>
+  </div>
+
+  <div class="rd-metrics">
+    <div class="rd-panel m-a"><span class="rd-ph" id="calcRevenueNum">155.000₽</span><span class="rd-pl">Месячная выручка</span></div>
+    <div class="rd-panel m-b"><span class="rd-ph" id="calcRoiNum">350%</span><span class="rd-pl">Годовая доходность</span></div>
+    <div class="rd-panel m-c"><span class="rd-ph" id="calcPaybackNum">9 дней</span><span class="rd-pl">Срок окупаемости</span></div>
+    <div class="rd-panel m-d"><span class="rd-ph">100%</span><span class="rd-pl">Поддержки и сопровождения</span></div>
+  </div>
+  <button class="rd-cta-black" id="calcCtaBtn">Подобрать уникальный проект</button>
+</section>
+
+<section class="rd-about" id="about">
+  <h2 class="rd-h2">Наш сервис объединяет в себе<br>множество проектов</h2>
+  <div class="projects-wrap">
+    <button class="proj-nav prev" id="projPrev" aria-label="Предыдущий проект"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <div class="projects-track" id="projectsGrid"></div>
+    <button class="proj-nav next" id="projNext" aria-label="Следующий проект"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 6l6 6-6 6"/></svg></button>
+  </div>
+</section>
+
+<section class="rd-partners" id="partners">
+  <div class="partners-marquee" id="partnersMarquee"><div class="partners-track" id="partnersTrack"></div></div>
+</section>
+
+<section class="rd-news">
+  <h2 class="rd-h2">Будьте в курсе всех обновлений и событий</h2>
+  <div class="news-wrap">
+    <div class="news-track" id="newsTrack"></div>
+    <button class="news-nav prev" id="newsPrev" aria-label="Назад"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 6l6 6-6 6"/></svg></button>
+    <button class="news-nav next" id="newsNext" aria-label="Вперёд"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 6l6 6-6 6"/></svg></button>
+  </div>
+</section>
