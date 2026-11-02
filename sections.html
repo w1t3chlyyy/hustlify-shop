@@ -1,5 +1,5 @@
-<!-- sections.html: hero → калькулятор → проекты → партнёры → новости (часть 1) + кейсы → каталог → команда → процесс → отзывы → FAQ → контакты (часть 2).
-     Применяется скриптом update-redesign.js (node update-redesign.js). Подвал не трогается. -->
+<!-- Замените в public/index.html блок от <section class="rd-hero"> до <footer> на этот.
+     (проще: положите файл рядом с update-redesign.js и выполните  node update-redesign.js) -->
 
 <section class="rd-hero" id="hero">
   <div class="rd-card">
@@ -112,220 +112,225 @@
 })();
 </script>
 
-<!-- ================= ЧАСТЬ 2 (Figma 424:142) ================= -->
-<section class="rd-cases" id="cases">
-  <h2 class="rd2-h">Кейсы проекта Hustlify</h2>
-  <p class="rd2-sub">По самой выгодной цене</p>
-  <a href="/cases" target="_blank" rel="noopener" class="rd-cases-all">Закрытые кейсы</a>
-  <div class="rd-cases-grid" id="casesGrid"></div>
+<!-- ===== ЧАСТЬ 2 (Figma 424:142) ===== -->
+<div class="rd2" id="rd2">
+
+<section class="rd2-sec" id="cases">
+  <div class="rd2-w">
+    <div class="rd2-head rd2-head--cases">
+      <h2 class="rd2-h2">Кейсы проекта Hustlify</h2>
+      <p class="rd2-sub">По самой выгодной цене</p>
+      <a href="/cases" target="_blank" rel="noopener" class="rd2-btn-blue rd2-closed">Закрытые кейсы</a>
+    </div>
+    <div class="rd2-cases" id="casesGrid"></div>
+  </div>
 </section>
 
-<section class="rd-catalog" id="catalog">
-  <h2 class="rd2-h">Каталог сервиса</h2>
-  <p class="rd2-sub">Листай. Выбирай. Забирай готовый проект</p>
-  <div class="filter-row" id="filterRow"></div>
-  <div class="rd-cat-body">
-    <div id="catalogSpecialWrap" style="margin-bottom:34px;"></div>
+<section class="rd2-sec rd2-catalog" id="catalog">
+  <div class="rd2-w">
+    <div class="rd2-head rd2-head--catalog">
+      <h2 class="rd2-h2">Каталог сервиса</h2>
+      <p class="rd2-sub">Листай. Выбирай. Забирай готовый проект</p>
+    </div>
+    <div class="filter-row" id="filterRow"></div>
+    <div id="catalogSpecialWrap"></div>
     <div class="pgrid" id="catalogGrid"></div>
-    <div class="rd-more">
-      <button class="btn btn-outline" id="catalogMoreBtn">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" style="display:inline-block;vertical-align:-2px;margin-right:8px;"><path d="M12 5v14M5 12h14"/></svg>
-        Показать ещё
-      </button>
+    <div class="rd2-more-wrap"><button class="rd2-more" id="catalogMoreBtn" type="button">Показать еще</button></div>
+  </div>
+</section>
+
+<section class="rd2-sec rd2-whys" id="why">
+  <div class="rd2-w">
+    <div class="rd2-head rd2-head--why"><h2 class="rd2-h2">Почему выбирают нас?</h2></div>
+    <div class="rd2-why">
+ <div class="rd2-why-row r1">
+  <div class="rd2-cell big a"><h3 class="t">Экспресс<br>реализация</h3><p class="d">Быстрая сортировка и качественное исполнение</p><span class="rd2-img" style="width:calc(1254*var(--u));height:calc(1254*var(--u));right:0;top:calc(344*var(--u))"><img src="/images/design/p2/why-express.png" alt="" loading="lazy"></span></div>
+  <div class="rd2-cell big b"><h3 class="t">Поддержка<br>всегда рядом</h3><p class="d">24/7 живая команда на связи. От консультации до монетизации</p><span class="rd2-rot " style="--s:1384;--r:-4.21deg;right:calc(162.1*var(--u));top:calc(57.9*var(--u))"><img src="/images/design/p2/why-support.png" alt="" loading="lazy"></span></div>
+ </div>
+ <div class="rd2-why-row r2">
+  <div class="rd2-cell sm a"><h3 class="t">Удобная оплата</h3><p class="d">СБП / Криптовалюта / QR</p><span class="rd2-img" style="width:calc(1207*var(--u));height:calc(1207*var(--u));left:calc(230*var(--u));top:calc(451*var(--u))"><img src="/images/design/p2/why-pay.png" alt="" loading="lazy"></span></div>
+  <div class="rd2-cell sm c"><h3 class="t">Отзывы</h3><p class="d">Много отзывов от реальных клиентов</p><span class="rd2-rot " style="--s:1165.064;--r:-21.45deg;right:calc(72.5*var(--u));top:calc(402.9*var(--u))"><img src="/images/design/p2/why-reviews.png" alt="" loading="lazy"></span></div>
+  <div class="rd2-cell sm c"><h3 class="t">Опыт</h3><p class="d">Команда с опытом более 2 лет во всех сферах</p><span class="rd2-rot " style="--s:1168;--r:-29.36deg;right:calc(-34.3*var(--u));top:calc(530.3*var(--u))"><img src="/images/design/p2/why-exp.png" alt="" loading="lazy"></span></div>
+ </div>
+</div>
+  </div>
+</section>
+
+<section class="rd2-sec rd2-proc" id="process">
+  <div class="rd2-w">
+    <div class="rd2-head rd2-head--proc">
+      <h2 class="rd2-h2">Процесс работы</h2>
+      <p class="rd2-sub">Как мы создаём готовый бизнес, избегая сотен лишних правок</p>
+    </div>
+    <div class="rd2-steps"><div class="rd2-step"><span class="n">001</span><h3>Анализ конкурентов</h3><p>Смотрим, что работает у других — берём лучшее, добавляем своё</p><span class="rd2-rot " style="--s:1713.416;--r:163.04deg;--fy:-1;left:calc(50% + calc(-760.2*var(--u)));top:calc(356.6*var(--u))"><img src="/images/design/p2/proc-1.png" alt="" loading="lazy"></span></div><div class="rd2-step"><span class="n">002</span><h3>Стратегия</h3><p>Чёткий план: что делаем, зачем и какой результат ждать</p><span class="rd2-rot " style="--s:1768.055;--r:13.21deg;left:calc(50% + calc(-755.7*var(--u)));top:calc(324.6*var(--u))"><img src="/images/design/p2/proc-2.png" alt="" loading="lazy"></span></div><div class="rd2-step"><span class="n">003</span><h3>Реализация</h3><p>Делаем дизайн, настраиваем рекламу или SMM — без воды и лишних правок</p><span class="rd2-rot " style="--s:1569.83;--r:9.46deg;left:calc(50% + calc(-784.6*var(--u)));top:calc(297.3*var(--u))"><img src="/images/design/p2/proc-3.png" alt="" loading="lazy"></span></div><div class="rd2-step"><span class="n">004</span><h3>Передача файлов</h3><p>Передаем весь проект вам, все систему и разработку на ваши аккаунты</p><span class="rd2-rot " style="--s:1885.454;--r:-61.72deg;left:calc(50% + calc(-785.6*var(--u)));top:calc(445.1*var(--u))"><img src="/images/design/p2/proc-4.png" alt="" loading="lazy"></span></div></div>
+  </div>
+</section>
+
+<section class="rd2-sec rd2-reviews" id="reviews">
+  <div class="rd2-w">
+    <div class="rd2-head rd2-head--rev">
+      <h2 class="rd2-h2">Что говорят о нас</h2>
+      <p class="rd2-sub">Реальные отзывы от тех, кто уже доверил нам свой проект</p>
+      <a href="https://t.me/HustlifyRep" id="visionCtaLink" target="_blank" rel="noopener noreferrer" class="rd2-btn-blue rd2-allrev">Все отзывы</a>
+    </div>
+  </div>
+  <div class="vision-hero">
+    <div class="stage" id="stage"><div class="stage__glow"></div><div class="track" id="track"></div></div>
+  </div>
+</section>
+
+<section class="rd2-sec rd2-faqsec" id="faq">
+  <div class="rd2-w">
+    <div class="rd2-faq">
+      <div class="rd2-faq-img"><img src="/images/design/p2/faq-books.png" alt="" loading="lazy"></div>
+      <div>
+        <div class="rd2-faq-head">
+          <h2 class="rd2-h2">Вопросы и ответы</h2>
+          <p class="rd2-sub">Гарантии и безопасность сделки</p>
+        </div>
+        <div class="faq-grid"><div class="faq-item"><div class="faq-q"><span>Как оформить заказ?</span><div class="faq-icon"></div></div><div class="faq-a">Шаг 1: выберите товар и нажмите «В корзину».
+Шаг 2: откройте корзину, проверьте состав и сумму.
+Шаг 3: укажите контакт для связи и промокод (если есть).
+Шаг 4: оплатите заказ удобным способом.
+Шаг 5: после оплаты менеджер свяжется с вами и передаст результат.</div></div><div class="faq-item"><div class="faq-q"><span>Какие способы оплаты?</span><div class="faq-icon"></div></div><div class="faq-a">Оплата проходит через защищённый шлюз RollyPay: СБП, банковские карты МИР / Visa / MasterCard и криптовалюта (USDT). Способ выбирается на странице оплаты.</div></div><div class="faq-item"><div class="faq-q"><span>Возможен ли возврат товара?</span><div class="faq-icon"></div></div><div class="faq-a">Согласно нашей политике, возврат товара недоступен. После подтверждения и оплаты заказа все права на товар переходят к покупателю, и сделка считается окончательной. Внимательно проверяйте состав корзины перед оплатой.</div></div><div class="faq-item"><div class="faq-q"><span>Где отслеживать статус?</span><div class="faq-icon"></div></div><div class="faq-a">Для получения актуальной информации по заказу пишите менеджеру поддержки в Telegram: @HustlifyHelp.</div></div></div>
+      </div>
     </div>
   </div>
 </section>
 
-<section class="rd-team" id="team">
-  <div class="rd-team-card"></div>
-  <div class="rd-team-photo"><img src="/images/design/team-photo.png" alt="Тимур"></div>
-  <h3 class="rd-team-name">Тимур</h3>
-  <div class="rd-team-role"><img src="/images/design/team-dot.svg" alt=""><span>CEO Hustlify</span></div>
-  <p class="rd-team-quote">«Я создаю экосистемы, где дизайн встречает код, а&nbsp;хардкор&nbsp;— стиль»</p>
-  <p class="rd-team-bio">Владелец сети Hustlify&nbsp;— это не&nbsp;просто бренд, это образ мысли. Геймдев, который видит игровой процесс через призму UI/UX. Дизайнер, который мыслит механиками. Предприниматель, объединяющий всё это в&nbsp;единую сеть: от&nbsp;логотипа до&nbsp;последнего коммита в&nbsp;билд.</p>
-  <a href="https://t.me/w1t3chlyyy" target="_blank" rel="noopener" class="rd-team-btn">Написать</a>
-</section>
-
-<section class="rd-process" id="process">
-  <h2 class="rd2-h">Процесс работы</h2>
-  <p class="rd2-sub">Как мы&nbsp;создаём готовый бизнес, избегая сотен лишних правок</p>
-  <div class="rd-steps" id="processList">
-    <div class="pstep rd-step">
-      <span class="rd-sn">001</span>
-      <div class="rd-stc"><h3>Анализ конкурентов</h3><p>Смотрим, что работает у&nbsp;других&nbsp;— берём лучшее, добавляем своё</p></div>
-      <div class="rd-sdeco" style="--dl:39.79;--dt:446.76;--ds:1307.501;--dr:4.77deg"><img src="/images/design/process-1.png" alt=""></div>
-    </div>
-    <div class="pstep rd-step">
-      <span class="rd-sn">002</span>
-      <div class="rd-stc"><h3>Стратегия</h3><p>Чёткий план: что делаем, зачем и&nbsp;какой результат ждать</p></div>
-      <div class="rd-sdeco" style="--dl:18;--dt:513;--ds:1324;--dr:0deg"><img src="/images/design/process-2.png" alt=""></div>
-    </div>
-    <div class="pstep rd-step">
-      <span class="rd-sn">003</span>
-      <div class="rd-stc"><h3>Реализация</h3><p>Делаем дизайн, настраиваем рекламу или SMM&nbsp;— без&nbsp;воды и&nbsp;лишних правок</p></div>
-      <div class="rd-sdeco" style="--dl:62.75;--dt:477.87;--ds:1223.82;--dr:0.45deg"><img src="/images/design/process-3.png" alt=""></div>
-    </div>
-    <div class="pstep rd-step">
-      <span class="rd-sn">004</span>
-      <div class="rd-stc"><h3>Передача файлов</h3><p>Передаём весь проект вам, всю систему и&nbsp;разработку на&nbsp;ваши аккаунты</p></div>
-      <div class="rd-sdeco" style="--dl:-66.35;--dt:439.65;--ds:1387.156;--dr:-13.94deg"><img src="/images/design/process-4.png" alt=""></div>
+<section class="rd2-sec rd2-contacts" id="contacts">
+  <div class="rd2-w">
+    <div class="rd2-contact">
+      <span class="rd2-rot " style="--s:2091.968;--r:-13.45deg;left:calc(83.165% + calc(-1046*var(--u)));top:calc(-242.2*var(--u))"><img src="/images/design/p2/contact-support.png" alt="" loading="lazy"></span>
+      <h2>Мы на связи 24/7</h2>
+      <p>Ответим за пару минут. Работаем без выходных и праздников.</p>
+      <a class="rd2-cbtn tg" href="https://t.me/HustlifyHelp" target="_blank" rel="noopener">Telegram</a>
+      <a class="rd2-cbtn mini" href="https://t.me/HustlifyBot" target="_blank" rel="noopener">MiniApp</a>
+      <a class="rd2-cbtn ai" href="/ai-agent">HustlifyAI</a>
     </div>
   </div>
 </section>
 
-<section class="vision-hero" id="reviews">
-  <div class="hero__content">
-    <h2 class="hero__title">Что говорят о&nbsp;нас</h2>
-    <p class="hero__subtitle">Реальные отзывы от&nbsp;тех, кто уже доверил нам свой проект</p>
-    <a href="https://t.me/HustlifyRep" id="visionCtaLink" target="_blank" rel="noopener noreferrer" class="hero__cta">
-      <span>Все отзывы</span>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-    </a>
-  </div>
-  <div class="stage" id="stage">
-    <div class="stage__glow"></div>
-    <div class="track" id="track"></div>
-  </div>
-</section>
+</div>
 
-<section class="rd-faq" id="faq">
-  <div class="rd-faq-card"><img src="/images/design/faq-3d.png" alt=""></div>
-  <h2 class="rd2-h">Вопросы и&nbsp;ответы</h2>
-  <p class="rd2-sub">Гарантии и&nbsp;безопасность сделки</p>
-  <div class="faq-grid">
-    <div class="faq-item">
-      <div class="faq-q"><span>Как оформить заказ?</span><div class="faq-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg></div></div>
-      <div class="faq-a">Процесс покупки максимально прост и занимает всего пару минут:
+<script>
+/* Hustlify — часть 2 (Figma 424:142). Подключается ПОСЛЕ основного скрипта index.html.
+   Переопределяет отрисовку карточек/кейсов под новый макет, остальная логика (корзина, фильтры,
+   конфигуратор звёзд, модалки) остаётся прежней. */
+function __rd2init() {
+  var A = '/images/design/p2/';
+  var u = function (n) { return 'calc(' + n + '*var(--u))'; };
+  var esc = function (s) { return typeof escapeHtml === 'function' ? escapeHtml(s) : String(s == null ? '' : s); };
+  var num = function (n) { return Number(n || 0).toLocaleString('ru-RU'); };
 
-Шаг 1: Выберите понравившийся товар и нажмите кнопку «В корзину».
+  /* ---------- карточка каталога ---------- */
+  window.productCard = function (p) {
+    var pic = p.img
+      ? '<img src="' + esc(p.img) + '" alt="' + esc(p.name) + '" loading="lazy">'
+      : '<div class="rd2-pc-ph">' + getCategorySvg(p.cat) + '</div>';
+    return '<div class="product rd2-pc" data-id="' + esc(p.id) + '">' +
+      '<div class="rd2-pc-img">' + pic + '</div>' +
+      '<div class="rd2-pc-body">' +
+        '<h4 class="rd2-pc-title">' + esc(p.name) + '</h4>' +
+        '<div class="rd2-pc-desc">' + esc(p.desc || '') + '</div>' +
+        '<div class="rd2-pc-price"><span class="now">' + money(p.price) + '</span>' + (p.old ? '<span class="old">' + money(p.old) + '</span>' : '') + '</div>' +
+        '<button class="add-btn rd2-pc-btn" data-add="' + esc(p.id) + '" type="button"><span class="plus">+</span><span>В корзину</span></button>' +
+      '</div></div>';
+  };
 
-Шаг 2: Перейдите в корзину, проверьте состав заказа и итоговую сумму.
-
-Шаг 3: Укажите контакт для связи (Telegram или телефон) и при желании промокод.
-
-Шаг 4: Выберите удобный способ оплаты и завершите транзакцию.
-
-Шаг 5: После успешной оплаты менеджер свяжется с вами и передаст детали заказа.</div>
-    </div>
-    <div class="faq-item">
-      <div class="faq-q"><span>Какие способы оплаты?</span><div class="faq-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg></div></div>
-      <div class="faq-a">Оплата проходит через защищённый платёжный шлюз RollyPay. Выбрать удобный способ можно на странице оплаты:
-
-СБП: быстрый перевод по QR-коду или ссылке.
-
-Банковские карты: МИР, Visa, Mastercard.
-
-Криптовалюта: USDT. Комиссия сети при переводе оплачивается покупателем.</div>
-    </div>
-    <div class="faq-item">
-      <div class="faq-q"><span>Возможен ли возврат товара?</span><div class="faq-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg></div></div>
-      <div class="faq-a">Согласно нашей политике, возврат товара недоступен.
-
-После подтверждения и оплаты заказа все права на товар переходят к покупателю, и сделка считается окончательной.
-
-Мы настоятельно рекомендуем внимательно проверять состав корзины, размеры и характеристики товара перед оплатой.</div>
-    </div>
-    <div class="faq-item">
-      <div class="faq-q"><span>Где отслеживать статус?</span><div class="faq-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg></div></div>
-      <div class="faq-a">Для получения актуальной информации по вашему заказу обращайтесь к менеджеру службы поддержки:
-
-Telegram: напишите в личные сообщения на аккаунт @HustlifyHelp.</div>
-    </div>
-  </div>
-</section>
-
-<section class="rd-contacts" id="contacts">
-  <div class="rd-contacts-card">
-    <img class="rd-contacts-deco" src="/images/design/contacts-support.png" alt="">
-    <h2>Мы на&nbsp;связи 24/7</h2>
-    <p>Ответим за&nbsp;пару минут. Работаем без&nbsp;выходных и&nbsp;праздников.</p>
-    <a class="rd-cbtn" href="https://t.me/HustlifyHelp" target="_blank" rel="noopener">Telegram</a>
-    <a class="rd-cbtn" href="https://t.me/HustlifyBot" target="_blank" rel="noopener">MiniApp</a>
-    <a class="rd-cbtn ghost" href="/ai-agent">HustlifyAI</a>
-  </div>
-</section>
-
-<script id="rd-late">
-/* Поздний скрипт редизайна: update-redesign.js переносит его в конец <body>,
-   чтобы он выполнялся ПОСЛЕ основного скрипта страницы и переопределял renderCases(). */
-(function(){
-  function fmt(n){ return Number(n||0).toLocaleString('ru-RU'); }
-  function esc(s){
-    if(typeof escapeHtml==='function') return escapeHtml(s);
-    return String(s==null?'':s).replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];});
+  /* ---------- блок «Кейсы» ---------- */
+  function rot(img, s, r, pos, cls, fy) {
+    var st = '--s:' + s + ';--r:' + r + 'deg;' + (fy ? '--fy:' + fy + ';' : '') + ((cls || '').indexOf('crop') > -1 ? '' : '--br:' + u(200) + ';');
+    for (var k in pos) st += k + ':' + pos[k] + ';';
+    return '<span class="rd2-rot ' + (cls || '') + '" style="' + st + '"><img src="' + A + img + '" alt="" loading="lazy"></span>';
   }
-  function decoHtml(o){
-    return '<div class="rd-deco'+(o.round?' round':'')+'" style="--dl:'+o.l+';--dt:'+o.t+';--ds:'+o.s+';--dr:'+o.r+'deg">'+
-      '<img'+(o.zoom?' class="rd-zoom"':'')+' src="/images/design/'+o.src+'" alt=""></div>';
+  function side(i) {
+    var L = function (x) { return 'left:' + u(x); };
+    var T = function (y) { return 'calc(50% + ' + u(y) + ')'; };
+    if (i === 0) return rot('case-adv.png', 1318.744, 22.03, { left: u(-387.8), top: T(-466.8) });
+    if (i === 1) return rot('case-biz.png', 1536.659, -14.3, { left: u(-449.7), top: T(-701.7) });
+    return rot('case-std.png', 920.014, -173.67, { left: u(-69.4), top: T(-210.7) }) +
+           rot('case-std.png', 1272.764, 158.64, { left: u(-390.4), top: T(-536.2) });
   }
-  /* декор кейсов: координаты из Figma, считаются от угла своей карточки */
-  var MAIN_DECO = { src:'case-pens.png', l:802.92, t:576.93, s:2234.593, r:-22.28, zoom:1 };
-  var SIDE_DECO = [
-    [ { src:'case-deco-1.png', l:-387.8,  t:-81.8,   s:1318.744, r:22.03,   round:1 } ],
-    [ { src:'case-deco-2.png', l:-449.65, t:-316.65, s:1536.659, r:-14.3,   round:1 } ],
-    [ { src:'case-deco-3.png', l:-69.44,  t:174.3,   s:920.014,  r:-173.67, round:1 },
-      { src:'case-deco-3.png', l:-390.4,  t:-151.2,  s:1272.764, r:158.64,  round:1 } ]
-  ];
-  function priceHtml(p){
-    return '<span class="now">'+money(p.price)+'</span>'+(p.old?'<span class="old">'+fmt(p.old)+'</span>':'');
-  }
-  function mainCard(p){
-    return '<article class="rd-case rd-case-main" data-rdcase="'+esc(p.id)+'">'+
-      '<div class="rd-case-clip">'+decoHtml(MAIN_DECO)+'</div>'+
-      '<img class="rd-case-ico" src="/images/design/case-icon.png" alt="">'+
-      '<h3 class="rd-case-t">'+esc(p.name)+'</h3>'+
-      '<p class="rd-case-d">'+esc(p.desc||'')+'</p>'+
-      '<div class="rd-case-p">'+priceHtml(p)+'</div>'+
-      '<button type="button" class="rd-case-add" data-rdadd="'+esc(p.id)+'"><i>+</i><span>В корзину</span></button>'+
-    '</article>';
-  }
-  function sideCard(p,i){
-    return '<article class="rd-case rd-case-side" data-slot="'+i+'" data-rdcase="'+esc(p.id)+'">'+
-      SIDE_DECO[i].map(decoHtml).join('')+
-      '<div class="rd-case-txt">'+
-        '<h3 class="rd-case-t">'+esc(p.name)+'</h3>'+
-        '<p class="rd-case-d">'+esc(p.desc||'')+'</p>'+
-        '<div class="rd-case-p">'+priceHtml(p)+'</div>'+
-      '</div>'+
-      '<button type="button" class="rd-case-plus" data-rdadd="'+esc(p.id)+'" aria-label="В корзину">+</button>'+
-    '</article>';
-  }
-  window.renderCases = function(){
+
+  window.renderCases = function () {
     var grid = document.getElementById('casesGrid');
-    if(!grid) return;
-    var list = (typeof casesData!=='undefined' && casesData) ? casesData.slice() : [];
-    if(!list.length){ grid.innerHTML=''; return; }
-    var mi = -1;
-    list.forEach(function(p,i){ if(mi<0 && /премиум/i.test(p.name||'')) mi = i; });
-    if(mi<0) mi = list.length-1;
-    var main = list.splice(mi,1)[0];
-    list.sort(function(a,b){ return (b.price||0)-(a.price||0); });
-    var html = mainCard(main);
-    list.slice(0,3).forEach(function(p,i){ html += sideCard(p,i); });
-    grid.innerHTML = html;
-    grid.querySelectorAll('[data-rdcase]').forEach(function(card){
-      card.addEventListener('click', function(){ openProductModal(card.dataset.rdcase); });
+    if (!grid) return;
+    var list = (typeof casesData !== 'undefined' ? casesData : []).slice();
+    if (!list.length) { grid.innerHTML = ''; return; }
+    var big = list.filter(function (p) { return /премиум/i.test(p.name || ''); })[0] ||
+              list.slice().sort(function (a, b) { return b.price - a.price; })[0];
+    var rest = list.filter(function (p) { return p !== big; }).sort(function (a, b) { return b.price - a.price; }).slice(0, 3);
+
+    var html = '<article class="rd2-case rd2-case-big" data-case-id="' + esc(big.id) + '">' +
+      rot('case-pens.png', 2234.593, -22.28, { right: u(-537.5), bottom: u(-311.5) }, 'rd2-rot--crop') +
+      '<div class="cb-title"><img class="cb-ico" src="' + A + 'case-icon.png" alt=""><h3>' + esc(big.name) + '</h3></div>' +
+      '<p class="cb-desc">' + esc(big.desc || '') + '</p>' +
+      '<div class="cb-price"><b>' + money(big.price) + '</b>' + (big.old ? '<s>' + num(big.old) + '</s>' : '') + '</div>' +
+      '<button class="cb-btn" type="button" data-add2="' + esc(big.id) + '"><i>+</i><span>В корзину</span></button>' +
+      '</article><div class="rd2-case-side">';
+    rest.forEach(function (p, i) {
+      html += '<article class="rd2-case rd2-case-sm" data-case-id="' + esc(p.id) + '">' + side(i) +
+        '<div class="cs-body"><h3>' + esc(p.name) + '</h3><p>' + esc(p.desc || '') + '</p>' +
+        '<div class="cs-price"><b>' + money(p.price) + '</b>' + (p.old ? '<s>' + num(p.old) + '</s>' : '') + '</div></div>' +
+        '<button class="cs-plus" type="button" data-add2="' + esc(p.id) + '" aria-label="В корзину">+</button></article>';
     });
-    grid.querySelectorAll('[data-rdadd]').forEach(function(btn){
-      btn.addEventListener('click', function(e){
+    grid.innerHTML = html + '</div>';
+
+    grid.querySelectorAll('[data-case-id]').forEach(function (el) {
+      el.addEventListener('click', function (e) {
+        if (e.target.closest('[data-add2]')) return;
+        if (typeof openProductModal === 'function') openProductModal(el.dataset.caseId);
+      });
+    });
+    grid.querySelectorAll('[data-add2]').forEach(function (b) {
+      b.addEventListener('click', function (e) {
         e.stopPropagation();
-        addToCart(btn.dataset.rdadd);
-        btn.classList.add('added');
-        setTimeout(function(){ btn.classList.remove('added'); }, 1200);
+        addToCart(b.dataset.add2);
+        b.classList.add('rd2-added');
+        setTimeout(function () { b.classList.remove('rd2-added'); }, 1200);
       });
     });
   };
 
-  /* в каталоге по макету сначала 8 карточек (2 ряда по 4) */
-  try{ catalogVisibleCount = 8; }catch(e){}
-  try{ if(typeof ALL_PRODUCTS!=='undefined' && ALL_PRODUCTS.length) renderAll(); }catch(e){}
+  /* наклон карточек больше не нужен — вместо него увеличение фото (CSS) */
+  var origTilt = window.bindTilt;
+  window.bindTilt = function (sel) { if (sel === '.product') return; if (origTilt) origTilt(sel); };
 
-  /* hero: фото слева плавно ездит вверх-вниз, пока курсор на нём; при уходе курсора доезжает цикл */
-  document.querySelectorAll('.rd-globe, .rd-cube').forEach(function(el){
-    var hover = false;
-    el.addEventListener('mouseenter', function(){ hover = true; el.classList.add('rd-float'); });
-    el.addEventListener('mouseleave', function(){ hover = false; });
-    el.addEventListener('animationiteration', function(){ if(!hover) el.classList.remove('rd-float'); });
+  /* текст кнопки «Показать еще» как в макете (renderCatalog дописывает счётчик) */
+  var more = document.getElementById('catalogMoreBtn');
+  if (more) {
+    var fix = function () { if (more.textContent.trim() !== 'Показать еще') more.textContent = 'Показать еще'; };
+    new MutationObserver(fix).observe(more, { childList: true, characterData: true, subtree: true });
+    fix();
+  }
+
+  /* если данные уже загрузились до подключения скрипта — перерисуем */
+  if (typeof ALL_PRODUCTS !== 'undefined' && ALL_PRODUCTS.length && typeof renderAll === 'function') renderAll();
+
+  /* ---------- HERO: фото слева плавно «парят» вверх-вниз при наведении ---------- */
+  var floaters = [];
+  document.querySelectorAll('.rd-globe, .rd-avatars').forEach(function (el) {
+    var f = { el: el, hover: false, amp: 0, phase: 0 };
+    el.addEventListener('mouseenter', function () { f.hover = true; });
+    el.addEventListener('mouseleave', function () { f.hover = false; });
+    floaters.push(f);
   });
-})();
+  if (floaters.length && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    var last = performance.now();
+    (function loop(now) {
+      var dt = Math.min(0.05, (now - last) / 1000); last = now;
+      floaters.forEach(function (f) {
+        f.amp += ((f.hover ? 1 : 0) - f.amp) * Math.min(1, dt * 5);   // плавный вход/выход
+        if (f.amp > 0.001) {
+          f.phase += dt * 2.6;
+          var h = f.el.offsetHeight || 100;
+          f.el.style.transform = 'translateY(' + (Math.sin(f.phase) * h * 0.09 * f.amp).toFixed(2) + 'px)';
+        } else if (f.el.style.transform) { f.el.style.transform = ''; f.phase = 0; }
+      });
+      requestAnimationFrame(loop);
+    })(last);
+  }
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', __rd2init); else __rd2init();
 </script>

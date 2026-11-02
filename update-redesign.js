@@ -1,55 +1,55 @@
-/* Обновляет редизайн в public/index.html.
-   Заменяет блок от <section class="rd-hero"> до <footer> (hero → … → новости → кейсы → каталог →
-   команда → процесс → отзывы → FAQ → контакты) на актуальный sections.html. Подвал не трогается.
+/* Обновляет редизайн в public/index.html: заменяет весь блок от <section class="rd-hero">
+   до <footer> (часть 1 + часть 2: кейсы, каталог, «почему мы», процесс, отзывы, FAQ, контакты)
+   на актуальный sections.html, копирует redesign.css в public/css/ и правит ленту отзывов.
    Запуск из корня проекта:  node update-redesign.js
-   Нужны рядом: sections.html (в корне или в redesign/) и public/css/redesign.css */
+   (файлы sections.html и redesign.css лежат рядом со скриптом или в корне проекта) */
 const fs = require('fs');
 const path = require('path');
 const root = process.cwd();
 const indexPath = path.join(root, 'public', 'index.html');
-const sectionsPath = [path.join(__dirname, 'sections.html'), path.join(root, 'sections.html'), path.join(root, 'redesign', 'sections.html')].find(fs.existsSync);
+const find = (name) => [path.join(__dirname, name), path.join(root, name), path.join(root, 'redesign', name)].find(fs.existsSync);
+const sectionsPath = find('sections.html');
 if (!fs.existsSync(indexPath)) { console.error('Не найден public/index.html. Запускайте из корня проекта.'); process.exit(1); }
 if (!sectionsPath) { console.error('Не найден sections.html.'); process.exit(1); }
 
 let html = fs.readFileSync(indexPath, 'utf8');
 const start = html.indexOf('<section class="rd-hero"');
 const end = html.indexOf('<footer>');
-if (start === -1 || end === -1 || end < start) { console.error('Не нашёл блок редизайна (<section class="rd-hero"> … <footer>). Файл не изменён.'); process.exit(1); }
+if (start === -1 || end === -1 || end < start) { console.error('Не нашёл блок редизайна (rd-hero … <footer>). Файл не изменён.'); process.exit(1); }
 
-fs.writeFileSync(indexPath + '.bak3', html);
-let sections = fs.readFileSync(sectionsPath, 'utf8').replace(/^\s*<!--[\s\S]*?-->\s*/, '');
-
-// поздний скрипт (переопределяет renderCases) выносим в конец <body>, после основного скрипта страницы
-const lateRe = /<script id="rd-late">[\s\S]*?<\/script>\s*/;
-const lateMatch = sections.match(lateRe);
-const late = lateMatch ? lateMatch[0].trim() : '';
-sections = sections.replace(lateRe, '');
-
+fs.writeFileSync(indexPath + '.bak4', html);
+const sections = fs.readFileSync(sectionsPath, 'utf8').replace(/^\s*<!--[\s\S]*?-->\s*/, '');
 html = html.slice(0, start) + sections + '\n\n' + html.slice(end);
-html = html.replace(/<script id="rd-late">[\s\S]*?<\/script>\s*/g, '');   // убрать старую копию при повторном запуске
-if (late) html = html.replace(/<\/body>/, () => late + '\n</body>');
-console.log('OK  блок редизайна обновлён (копия: public/index.html.bak3)');
-console.log(late ? 'OK  поздний скрипт добавлен перед </body>' : '!!  в sections.html нет <script id="rd-late">');
+console.log('OK  разметка заменена (копия: public/index.html.bak4 — в ней старые рулетка и блок «Тимур»)');
 
-// устаревшие дубли
+// CSS: положить в public/css и подключить
+const cssSrc = find('redesign.css');
+const cssDst = path.join(root, 'public', 'css', 'redesign.css');
+if (cssSrc && path.resolve(cssSrc) !== path.resolve(cssDst)) {
+  fs.mkdirSync(path.dirname(cssDst), { recursive: true });
+  fs.copyFileSync(cssSrc, cssDst);
+  console.log('OK  redesign.css → public/css/redesign.css');
+}
 html = html.replace(/[ \t]*<link rel="stylesheet" href="\/redesign\.css">\s*\n?/g, '');
 html = html.replace(/[ \t]*<script src="\/redesign\.js"><\/script>\s*\n?/g, '');
 if (!html.includes('/css/redesign.css')) html = html.replace('</head>', '<link rel="stylesheet" href="/css/redesign.css">\n</head>');
 
+// лента отзывов: имена файлов Frame_72.png … и размеры карточек как в макете
 function patch(name, re, repl) {
   if (re.test(html)) { html = html.replace(re, repl); console.log('OK  ' + name); }
-  else console.log('--  пропущено/уже применено: ' + name);
+  else console.log('--  ' + name + ': уже применено или не найдено');
 }
-// рулетки в макете нет: убираем мёртвую ссылку в мобильном меню
-patch('ссылка «Колесо бонусов» в мобильном меню', /\s*<a href="#roulette" class="mobile-nav-link">[\s\S]*?<\/a>/, '');
-// каталог: сначала 8 карточек (2 ряда по 4), кнопка «Показать ещё (N)»
-patch('каталог: 8 карточек', /let catalogVisibleCount = \d+;/, 'let catalogVisibleCount = 8;');
-patch('каталог: 8 карточек при смене фильтра', /catalogVisibleCount = 20;/g, 'catalogVisibleCount = 8;');
-// отзывы: новые файлы Frame_72…Frame_78.png (public/images/reviews/), по центру — Verde
-patch('отзывы: имена файлов Frame_7X.png', /'Frame (7[2-8])\.png'/g, "'Frame_$1.png'");
-patch('отзывы: старт с Verde по центру', /let shift = 0;/, 'let shift = spacing * 4;');
+patch('имена файлов отзывов', /Frame (7\d)\.png/g, 'Frame_$1.png');
+patch('ширина карточки отзыва', /parseInt\(getComputedStyle\(document\.documentElement\)\.getPropertyValue\('--card-w'\)\) \|\| 240/g,
+  "(document.documentElement.clientWidth <= 900 ? 190 : Math.round(document.documentElement.clientWidth * 1380 / 6085))");
+patch('отступ между карточками', /spacing = cardW \+ 28;/g, 'spacing = cardW + 28 * cardW / 240;');
+patch('VISUAL_RANGE', /const VISUAL_RANGE = 740;/, 'let VISUAL_RANGE = 740 * cardW / 240;');
+patch('MAX_DEPTH', /const MAX_DEPTH = 150;/, 'let MAX_DEPTH = 150 * cardW / 240;');
+patch('FADE_WIDTH', /const FADE_WIDTH = 150;/, 'let FADE_WIDTH = 150 * cardW / 240;');
+patch('SPEED', /const SPEED = 42;/, 'let SPEED = 42 * cardW / 240;');
+patch('пересчёт при ресайзе', /(function updateMetrics\(\) \{\s*cardW = [^;]+;)/,
+  '$1\n    VISUAL_RANGE = 740 * cardW / 240; MAX_DEPTH = 150 * cardW / 240; FADE_WIDTH = 150 * cardW / 240; SPEED = 42 * cardW / 240;');
 
 fs.writeFileSync(indexPath, html);
 console.log(html.includes('clientWidth/6085') ? 'OK  скрипт --u на месте' : '!!  скрипт --u не найден — проверьте sections.html');
-console.log(html.includes('/css/redesign.css') ? 'OK  подключён /css/redesign.css' : '!!  нет /css/redesign.css');
-console.log('\nДальше: bash download-assets.sh  →  положить Frame_72…78.png в public/images/reviews/  →  npm start');
+console.log('\nГотово. Дальше: bash download-assets.sh и npm start');
