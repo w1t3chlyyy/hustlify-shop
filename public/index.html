@@ -3246,21 +3246,6 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
   </div>
 </footer>
 
-<!-- SOCIAL PROOF LIVE SALES TOAST -->
-<div class="social-proof-toast" id="socialProofToast">
-  <div class="sp-avatar" id="spAvatar">
-    <img id="spAvatarImg" src="/images/avatars/alexey.jpg" alt="Avatar">
-  </div>
-  <div class="sp-info">
-    <h5 id="spName">Алексей П. (Москва)</h5>
-    <p id="spAction">Купил 'AI Telegram Bot v3.4'</p>
-    <div class="sp-tag" id="spTag">Окупаемость: 12 дней</div>
-  </div>
-  <div class="sp-close" id="spClose">
-    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6L6 18M6 6l12 12"/></svg>
-  </div>
-</div>
-
 <!-- AI MATCHMAKER WIZARD MODAL -->
 <div class="ai-wizard-modal" id="aiWizardModal">
   <div class="wizard-box">
@@ -3511,19 +3496,6 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
     </a>
     <button class="btn btn-white" id="offerModalAccept" style="padding:10px 22px;font-size:13.5px;">Понятно</button>
   </div>
-</div>
-
-<!-- SURVEY PROMPT BOTTOM TOAST (FIXED POPUP) -->
-<div class="survey-prompt-toast" id="surveyPromptToast">
-  <div class="spt-icon">
-    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-  </div>
-  <div class="spt-content">
-    <div class="spt-title">Пройдите опрос и получите подарок </div>
-    <div class="spt-sub">Ответьте на 8 быстрых вопросов и получите промокод на скидку 20%</div>
-  </div>
-  <button class="spt-btn" id="sptOpenBtn">Перейти</button>
-  <button class="spt-close" id="sptCloseBtn"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
 </div>
 
 <!-- 8-QUESTION SURVEY MODAL -->
@@ -4402,8 +4374,9 @@ document.getElementById('catalogMoreBtn').addEventListener('click', ()=>{
 async function loadNews(){
   const track = document.getElementById('newsTrack');
   try{
-    const res = await fetch('/api/news');
-    const news = await res.json();
+    const res = await fetch('/api/news?t=' + Date.now(), { cache: 'no-store' });
+    if(!res.ok) throw new Error('news http ' + res.status);
+    const news = (await res.json()).slice().sort(function(a,b){ return new Date(b.created_at||b.createdAt||0) - new Date(a.created_at||a.createdAt||0); });
     if(news.length===0){ track.innerHTML = ''; return; }
     track.innerHTML = news.map(n => `
       <article class="news-card">
@@ -4651,7 +4624,7 @@ function renderProjects(list){
               </div>
               <p class="desc">${p.shortDesc || ''}</p>
               <div class="proj-actions">
-                <button class="pbtn ${btnClass}" onclick="openProjectModal('${escapeHtml(p.id)}')" style="background:var(--white);color:var(--bg);">Подробнее</button>
+                ${p.portfolioUrl ? `<a class="pbtn" href="${escapeHtml(p.portfolioUrl)}" target="_blank" rel="noopener noreferrer" title="Портфолио" data-nomodal>Портфолио</a>` : ''}
                 <a href="${escapeHtml(p.url || '#')}" target="_blank" rel="noopener noreferrer" class="tg-btn" title="${linkTitle}" data-nomodal>${linkSvg}</a>
               </div>
             </div>
@@ -4683,6 +4656,12 @@ async function loadProjectsData(){
     const res = await fetch('/api/projects');
     if (!res.ok) return;
     projectsData = (await res.json()).filter(p => !p.hidden);
+    const PROJECT_ORDER = ['flux','vieto','cursor','apex'];
+    projectsData = projectsData.map(function(p,i){ return {p:p,i:i}; }).sort(function(a,b){
+      var x = PROJECT_ORDER.indexOf(a.p.id), y = PROJECT_ORDER.indexOf(b.p.id);
+      if(x < 0) x = 99; if(y < 0) y = 99;
+      return (x - y) || (a.i - b.i);
+    }).map(function(o){ return o.p; });
     renderProjects(projectsData);
   } catch(e) {}
 }
@@ -5764,10 +5743,10 @@ document.querySelectorAll('a[href="/ai-agent"], a[href^="/ai-agent"]').forEach(l
     img.loading = 'lazy';
 
     const candidates = [
-      '/images/reviews/' + item.frame,
-      '/images/' + item.frame,
       '/images/reviews/' + encodeURIComponent(item.frame),
-      '/images/' + encodeURIComponent(item.frame)
+      '/images/projects/' + encodeURIComponent(item.frame),
+      '/images/' + encodeURIComponent(item.frame),
+      '/images/reviews/' + item.frame
     ];
     let candidateIndex = 0;
     img.src = candidates[0];
@@ -6032,6 +6011,38 @@ document.querySelectorAll('a[href="/ai-agent"], a[href^="/ai-agent"]').forEach(l
     el.addEventListener('mouseleave', function(){ hover = false; });
     el.addEventListener('animationiteration', function(){ if(!hover) el.classList.remove('rd-float'); });
   });
+})();
+</script>
+<script id="rd-fixes-js">
+(function(){
+  function drag(el){
+    if(!el) return;
+    var down=false, sx=0, sl=0, moved=false;
+    el.style.cursor="grab";
+    el.addEventListener("dragstart", function(e){ e.preventDefault(); });
+    el.addEventListener("mousedown", function(e){ down=true; moved=false; sx=e.pageX; sl=el.scrollLeft; el.style.scrollSnapType="none"; el.style.scrollBehavior="auto"; });
+    window.addEventListener("mousemove", function(e){ if(!down) return; var dx=e.pageX-sx; if(Math.abs(dx)>4) moved=true; el.scrollLeft=sl-dx; });
+    window.addEventListener("mouseup", function(){ if(!down) return; down=false; el.style.scrollSnapType=""; el.style.scrollBehavior=""; });
+    el.addEventListener("click", function(e){ if(moved){ e.preventDefault(); e.stopPropagation(); moved=false; } }, true);
+  }
+  drag(document.getElementById("newsTrack"));
+  drag(document.getElementById("projectsGrid"));
+})();
+</script>
+<script id="rd-fixes3-js">
+(function(){
+  if(matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  var el=document.querySelector(".rd-3d"); if(!el) return;
+  var hover=false, amp=0, phase=0, last=performance.now();
+  el.addEventListener("mouseenter", function(){ hover=true; });
+  el.addEventListener("mouseleave", function(){ hover=false; });
+  (function loop(now){
+    var dt=Math.min(0.05,(now-last)/1000); last=now;
+    amp += ((hover?1:0)-amp)*Math.min(1,dt*4);
+    if(amp>0.001){ phase+=dt*1.6; var h=el.offsetHeight||300; el.style.transform="translateY("+(Math.sin(phase)*h*0.035*amp).toFixed(2)+"px)"; }
+    else if(el.style.transform){ el.style.transform=""; phase=0; }
+    requestAnimationFrame(loop);
+  })(last);
 })();
 </script>
 </body>

@@ -604,3 +604,127 @@
   .rd-news .news-nav.next{ top:calc(1486 * var(--u)); left:calc(5719 * var(--u)); }
   .rd-news .news-nav.prev{ left:calc(334 * var(--u)); }
 }
+
+/* === FIXES v3 (update-fixes.js) === */
+/* Настройки, которые можно крутить:
+   --hero-top  — отступ карточки хиро сверху (в «пикселях макета», было 117; меньше = хиро выше)
+   --pi-w/--pi-r/--pi-b — размер / сдвиг вправо / сдвиг вниз 3D-иконки в карточках проектов */
+:root{ --hero-top:40; --pi-w:1200; --pi-r:-10; --pi-b:-150; }
+
+/* 1. Хиро выше, чтобы целиком влезал в экран */
+@media (min-width:861px){
+  .rd-hero{ height:calc((var(--hero-top) + 2813 + 30) * var(--u)); }
+  .rd-card{ top:calc(var(--hero-top) * var(--u)); }
+  /* 2. luminosity у фото клиентов: .rd-proof создавал свой stacking context и режим смешивания не работал */
+  .rd-card > .rd-proof{ z-index:auto; }
+}
+.rd-avatars{ mix-blend-mode:luminosity; }
+
+/* 3. Калькулятор: фон синий → белый вместо синий → чёрный */
+.rd-calc .rd-glow{ display:none !important; }
+.rd-calc{
+  background:
+    radial-gradient(ellipse 55% 34% at 22% 52%, rgba(47,107,255,.55) 0%, rgba(47,107,255,0) 70%),
+    radial-gradient(ellipse 60% 36% at 82% 60%, rgba(47,107,255,.60) 0%, rgba(47,107,255,0) 70%),
+    radial-gradient(ellipse 80% 22% at 50% 82%, rgba(47,107,255,.35) 0%, rgba(47,107,255,0) 70%),
+    #fff;
+}
+
+/* 4. Проекты: без цифр 001–004 */
+.rd-about .flip-back::before{ content:none !important; }
+
+/* 5. Проекты: 3D-иконка крупно, справа-снизу, обрезается краем карточки */
+.rd-about .flip-back .proj-icon{
+  left:auto !important; right:-2%; bottom:-8%; width:92% !important;
+  transform:none; transform-origin:70% 70%;
+}
+.rd-about .flip-back .proj-icon img{ object-fit:contain !important; }
+.rd-about .flip-card:hover .proj-icon{ transform:scale(1.06); }
+@media (min-width:861px){
+  .rd-about .flip-back .proj-icon{
+    right:calc(var(--pi-r) * var(--u));
+    bottom:calc(var(--pi-b) * var(--u));
+    width:calc(var(--pi-w) * var(--u)) !important;
+  }
+}
+
+/* 6. Иконка «портфолио» — теперь ссылка, показывается только у проектов с портфолио */
+.rd-about .flip-back a.pbtn{ display:block; }
+
+/* 7. Стрелки в проектах и новостях убраны */
+.rd-about .proj-nav, .rd-news .news-nav{ display:none !important; }
+.rd-about .projects-wrap{ padding-left:0; padding-right:0; }
+.rd-news .news-wrap{ padding-left:0; padding-right:0; }
+@media (max-width:860px){
+  .rd-news .news-track{ padding-left:16px; padding-right:16px; }
+  .rd-about .projects-track{ padding-left:16px; padding-right:16px; }
+}
+
+/* 8. Уведомления убраны (страховка, если блоки остались в разметке) */
+.social-proof-toast, .survey-prompt-toast{ display:none !important; }
+
+/* === FIXES v4 (update-fixes2.js) === */
+/* Подгонка 3D-иконки в карточках проектов (единицы = «пиксели макета», карточка 1350x1717):
+   --pi-w ширина, --pi-l сдвиг слева (отрицательный = выходит за край), --pi-t отступ сверху.
+   --pi-mask: размытие верхней кромки картинки (пока у PNG тёмный фон). Когда загрузите PNG
+   с прозрачным фоном, поставьте --pi-mask:none; */
+:root{
+  --pi-w:1700; --pi-l:-127; --pi-t:465;
+  --pi-mask:linear-gradient(to bottom, transparent 0%, #000 14%);
+}
+.rd-about .flip-back .proj-icon{
+  left:-9.4% !important; top:27%; right:auto; bottom:auto; width:126% !important;
+  transform:none;
+  -webkit-mask-image:var(--pi-mask); mask-image:var(--pi-mask);
+}
+@media (min-width:861px){
+  .rd-about .flip-back .proj-icon{
+    left:calc(var(--pi-l) * var(--u)) !important;
+    top:calc(var(--pi-t) * var(--u));
+    right:auto; bottom:auto;
+    width:calc(var(--pi-w) * var(--u)) !important;
+  }
+}
+
+/* === FIXES v5 (update-fixes3.js) === */
+/* Настройки:
+   --proof-top  — верх аватарок «500+» (пиксели макета; кнопки заканчиваются на 2211, было 2366)
+   --cube-swing — на сколько градусов качается верхнее фото
+   --r3d-fade   — ширина размытия левого края большого фото */
+:root{ --proof-top:2330; --cube-swing:90deg; --r3d-fade:32%; }
+
+@media (min-width:861px){
+  /* 1. «500+ клиентов» и аватарки выше */
+  .rd-avatars{ top:calc(var(--proof-top) * var(--u)); }
+  .rd-stat{ top:calc((var(--proof-top) + 42) * var(--u)); }
+
+  /* 4. Большое фото справа: мягкий левый/нижний край + можно навести курсор */
+  .rd-3d{
+    pointer-events:auto;
+    -webkit-mask-image:
+      linear-gradient(to right, transparent 0%, #000 var(--r3d-fade)),
+      radial-gradient(ellipse 80% 85% at 72% 38%, #000 45%, transparent 100%);
+    -webkit-mask-composite:source-in;
+    mask-image:
+      linear-gradient(to right, transparent 0%, #000 var(--r3d-fade)),
+      radial-gradient(ellipse 80% 85% at 72% 38%, #000 45%, transparent 100%);
+    mask-composite:intersect;
+  }
+  /* текст не должен перекрывать область наведения на фото */
+  .rd-title, .rd-sub{ pointer-events:none; }
+}
+
+/* 2. Фото рядом с заголовком */
+@keyframes rdSpin{ to{ transform:rotate(360deg); } }
+@keyframes rdSwing{
+  0%{ transform:rotate(0deg); }
+  25%{ transform:rotate(var(--cube-swing)); }
+  50%{ transform:rotate(0deg); }
+  75%{ transform:rotate(calc(-1 * var(--cube-swing))); }
+  100%{ transform:rotate(0deg); }
+}
+.rd-globe img{ transform-origin:50% 50%; animation:rdSpin 14s linear infinite; }
+.rd-cube{ animation:rdSwing 8s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce){
+  .rd-globe img, .rd-cube{ animation:none; }
+}
