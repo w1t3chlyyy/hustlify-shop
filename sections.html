@@ -1,5 +1,5 @@
-<!-- Замените в public/index.html блок от <section class="rd-hero"> до <footer> на этот.
-     (проще: положите файл рядом с update-redesign.js и выполните  node update-redesign.js) -->
+<!-- Блок от <section class="rd-hero"> до <footer> для public/index.html.
+     Макет: Figma 1:5 (герой → новости). Положите файл рядом с update-redesign.js и выполните  node update-redesign.js -->
 
 <section class="rd-hero" id="hero">
   <div class="rd-card">
@@ -7,7 +7,7 @@
     <img class="rd-3d" src="/images/design/hero-3d.png" alt="">
 
     <div class="rd-nav-row">
-      <a href="/" class="rd-logo" aria-label="Hustlify"><img src="/images/design/logo.svg" alt="Hustlify"></a>
+      <a href="/" class="rd-logo" aria-label="Hustlify"><img src="/images/design/logo.svg?v=3" alt="Hustlify"></a>
       <nav class="rd-nav-links">
         <a href="#calculator">Калькулятор</a>
         <a href="#catalog">Каталог</a>
@@ -41,9 +41,11 @@
 </section>
 
 <section class="rd-calc" id="calculator">
-  <div class="rd-glow g1"><img src="/images/design/calc-glow-1.svg" alt=""></div>
-  <div class="rd-glow g2"><img src="/images/design/calc-glow-2.svg" alt=""></div>
-  <div class="rd-glow g3"><img src="/images/design/calc-glow-3.png" alt=""></div>
+  <div class="rd-glows" aria-hidden="true">
+    <div class="rd-glow g1"><img src="/images/design/calc-glow-1.svg?v=3" alt=""></div>
+    <div class="rd-glow g2"><img src="/images/design/calc-glow-2.svg?v=3" alt=""></div>
+    <div class="rd-glow g3"><img src="/images/design/calc-glow-3.png?v=3" alt=""></div>
+  </div>
 
   <h2 class="rd-h2">Калькулятор окупаемости готового бизнеса</h2>
 
@@ -80,9 +82,9 @@
 <section class="rd-about" id="about">
   <h2 class="rd-h2">Наш сервис объединяет в себе<br>множество проектов</h2>
   <div class="projects-wrap">
-    <button class="proj-nav prev" id="projPrev" aria-label="Предыдущий проект"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <button class="proj-nav prev" id="projPrev" aria-label="Предыдущий проект" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg></button>
     <div class="projects-track" id="projectsGrid"></div>
-    <button class="proj-nav next" id="projNext" aria-label="Следующий проект"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 6l6 6-6 6"/></svg></button>
+    <button class="proj-nav next" id="projNext" aria-label="Следующий проект" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 6l6 6-6 6"/></svg></button>
   </div>
 </section>
 
@@ -94,8 +96,8 @@
   <h2 class="rd-h2">Будьте в курсе всех обновлений и событий</h2>
   <div class="news-wrap">
     <div class="news-track" id="newsTrack"></div>
-    <button class="news-nav prev" id="newsPrev" aria-label="Назад"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 6l6 6-6 6"/></svg></button>
-    <button class="news-nav next" id="newsNext" aria-label="Вперёд"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 6l6 6-6 6"/></svg></button>
+    <button class="news-nav prev" id="newsPrev" aria-label="Назад" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 6l6 6-6 6"/></svg></button>
+    <button class="news-nav next" id="newsNext" aria-label="Вперёд" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 6l6 6-6 6"/></svg></button>
   </div>
 </section>
 
@@ -112,7 +114,7 @@
 })();
 </script>
 
-<!-- ===== ЧАСТЬ 2 (Figma 424:142) ===== -->
+<!-- ===== ЧАСТЬ 2 (Figma 424:142) — без изменений ===== -->
 <div class="rd2" id="rd2">
 
 <section class="rd2-sec" id="cases">
@@ -214,11 +216,13 @@
 </div>
 
 <script>
-/* Hustlify — часть 2 (Figma 424:142). Подключается ПОСЛЕ основного скрипта index.html.
-   Переопределяет отрисовку карточек/кейсов под новый макет, остальная логика (корзина, фильтры,
-   конфигуратор звёзд, модалки) остаётся прежней. */
+/* Hustlify — часть 2 (Figma 424:142) + проекты/новости по Figma 1:5.
+   Подключается ПОСЛЕ основного скрипта index.html (выполняется на DOMContentLoaded).
+   Переопределяет отрисовку кейсов/каталога/проектов под макет, остальная логика (корзина, фильтры,
+   конфигуратор звёзд, модалки, loadNews) остаётся прежней. */
 function __rd2init() {
   var A = '/images/design/p2/';
+  var D = '/images/design/';
   var u = function (n) { return 'calc(' + n + '*var(--u))'; };
   var esc = function (s) { return typeof escapeHtml === 'function' ? escapeHtml(s) : String(s == null ? '' : s); };
   var num = function (n) { return Number(n || 0).toLocaleString('ru-RU'); };
@@ -245,7 +249,6 @@ function __rd2init() {
     return '<span class="rd2-rot ' + (cls || '') + '" style="' + st + '"><img src="' + A + img + '" alt="" loading="lazy"></span>';
   }
   function side(i) {
-    var L = function (x) { return 'left:' + u(x); };
     var T = function (y) { return 'calc(50% + ' + u(y) + ')'; };
     if (i === 0) return rot('case-adv.png', 1318.744, 22.03, { left: u(-387.8), top: T(-466.8) });
     if (i === 1) return rot('case-biz.png', 1536.659, -14.3, { left: u(-449.7), top: T(-701.7) });
@@ -307,6 +310,95 @@ function __rd2init() {
 
   /* если данные уже загрузились до подключения скрипта — перерисуем */
   if (typeof ALL_PRODUCTS !== 'undefined' && ALL_PRODUCTS.length && typeof renderAll === 'function') renderAll();
+
+  /* ================= ПРОЕКТЫ (Figma 1:5): 4 цветные карточки 001–004 ================= */
+  var PROJ_ORDER = ['flux', 'vieto', 'cursor', 'apex'];                       /* порядок как в макете */
+  var PROJ_ART = { flux: 'proj-flux.png', vieto: 'proj-vieto.png', cursor: 'proj-cursor.png', apex: 'proj-apex.png' };
+  var PROJ_IC = { tg: 'proj-ic-tg.svg', pf: 'proj-ic-portfolio.svg', site: 'proj-ic-site.svg' };
+  var PROJ_IC_LABEL = { tg: 'Telegram', pf: 'Портфолио', site: 'Сайт' };
+
+  function projBtn(href, kind, round) {
+    return '<a class="rd-pbtn ' + kind + (round ? ' round' : '') + '" href="' + esc(href || '#') + '" target="_blank" rel="noopener noreferrer" data-nomodal aria-label="' + PROJ_IC_LABEL[kind] + '">' +
+      '<img src="' + D + PROJ_IC[kind] + '" alt=""></a>';
+  }
+
+  window.renderProjects = function (list) {
+    var grid = document.getElementById('projectsGrid');
+    if (!grid) return;
+    list = (list || []).slice().sort(function (a, b) {
+      var ia = PROJ_ORDER.indexOf(a.id), ib = PROJ_ORDER.indexOf(b.id);
+      return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+    });
+    if (!list.length) { grid.innerHTML = ''; syncProjNav(); return; }
+    grid.innerHTML = list.map(function (p, i) {
+      var art = '', flat = false;
+      if (PROJ_ART[p.id]) art = D + PROJ_ART[p.id];
+      else if (p.image) { art = p.image.charAt(0) === '/' ? p.image : '/' + p.image; flat = true; }
+      var n = String(i + 1); n = '000'.slice(0, Math.max(0, 3 - n.length)) + n;
+      var btns = p.portfolioUrl
+        ? projBtn(p.portfolioUrl, 'pf') + projBtn(p.url, 'tg', true)
+        : projBtn(p.url, p.type === 'site' ? 'site' : 'tg');
+      return '<article class="rd-proj" data-project="' + esc(p.id) + '">' +
+        (art ? '<img class="rd-proj-art' + (flat ? ' flat' : '') + '" src="' + esc(art) + '" alt="">' : '') +
+        '<span class="rd-proj-n">' + n + '</span>' +
+        '<h3>' + esc(p.title) + '</h3>' +
+        '<p>' + (p.shortDesc || '') + '</p>' +
+        '<i class="rd-proj-shade"></i>' +
+        '<div class="rd-proj-btns">' + btns + '</div>' +
+      '</article>';
+    }).join('');
+
+    grid.querySelectorAll('.rd-proj').forEach(function (card) {
+      card.addEventListener('click', function (e) {
+        if (e.target.closest('[data-nomodal]')) return;
+        if (typeof openProjectModal === 'function') openProjectModal(card.dataset.project);
+      });
+    });
+    if (typeof observeReveal === 'function') observeReveal('.rd-proj', 'reveal-3d');
+    syncProjNav();
+  };
+
+  /* стрелки проектов: показываем только если карточки не помещаются */
+  var projTrack = document.getElementById('projectsGrid');
+  ['projPrev', 'projNext'].forEach(function (id) {          /* снять старые обработчики основного скрипта */
+    var b = document.getElementById(id);
+    if (b) b.parentNode.replaceChild(b.cloneNode(true), b);
+  });
+  var projPrev = document.getElementById('projPrev'), projNext = document.getElementById('projNext');
+  function projStep() { var c = projTrack && projTrack.querySelector('.rd-proj'); return c ? c.offsetWidth * 1.05 : 320; }
+  function syncProjNav() {
+    if (!projTrack || !projPrev || !projNext) return;
+    var max = projTrack.scrollWidth - projTrack.clientWidth, over = max > 4;
+    projPrev.style.display = projNext.style.display = over ? '' : 'none';
+    if (over) {
+      projPrev.style.opacity = projTrack.scrollLeft <= 10 ? '.25' : '1';
+      projNext.style.opacity = projTrack.scrollLeft >= max - 10 ? '.25' : '1';
+    }
+  }
+  if (projTrack && projPrev && projNext) {
+    projPrev.addEventListener('click', function (e) { e.preventDefault(); projTrack.scrollBy({ left: -projStep(), behavior: 'smooth' }); });
+    projNext.addEventListener('click', function (e) { e.preventDefault(); projTrack.scrollBy({ left: projStep(), behavior: 'smooth' }); });
+    projTrack.addEventListener('scroll', syncProjNav, { passive: true });
+    addEventListener('resize', syncProjNav);
+    addEventListener('load', syncProjNav);
+  }
+  /* проекты уже могли загрузиться до этого скрипта — перерисуем */
+  if (typeof projectsData !== 'undefined' && projectsData.length) window.renderProjects(projectsData);
+
+  /* ================= НОВОСТИ: стрелки только при переполнении ================= */
+  var newsTrackEl = document.getElementById('newsTrack');
+  var newsBtns = document.querySelectorAll('#newsPrev, #newsNext');
+  function syncNewsNav() {
+    if (!newsTrackEl) return;
+    var over = newsTrackEl.scrollWidth > newsTrackEl.clientWidth + 4;
+    newsBtns.forEach(function (b) { b.style.display = over ? '' : 'none'; });
+  }
+  if (newsTrackEl) {
+    new MutationObserver(syncNewsNav).observe(newsTrackEl, { childList: true });
+    addEventListener('resize', syncNewsNav);
+    addEventListener('load', syncNewsNav);
+    syncNewsNav();
+  }
 
   /* ---------- HERO: фото слева плавно «парят» вверх-вниз при наведении ---------- */
   var floaters = [];

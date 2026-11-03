@@ -2884,7 +2884,7 @@ body.page-leaving {
     <img class="rd-3d" src="/images/design/hero-3d.png" alt="">
 
     <div class="rd-nav-row">
-      <a href="/" class="rd-logo" aria-label="Hustlify"><img src="/images/design/logo.svg" alt="Hustlify"></a>
+      <a href="/" class="rd-logo" aria-label="Hustlify"><img src="/images/design/logo.svg?v=3" alt="Hustlify"></a>
       <nav class="rd-nav-links">
         <a href="#calculator">Калькулятор</a>
         <a href="#catalog">Каталог</a>
@@ -2918,9 +2918,11 @@ body.page-leaving {
 </section>
 
 <section class="rd-calc" id="calculator">
-  <div class="rd-glow g1"><img src="/images/design/calc-glow-1.svg" alt=""></div>
-  <div class="rd-glow g2"><img src="/images/design/calc-glow-2.svg" alt=""></div>
-  <div class="rd-glow g3"><img src="/images/design/calc-glow-3.png" alt=""></div>
+  <div class="rd-glows" aria-hidden="true">
+    <div class="rd-glow g1"><img src="/images/design/calc-glow-1.svg?v=3" alt=""></div>
+    <div class="rd-glow g2"><img src="/images/design/calc-glow-2.svg?v=3" alt=""></div>
+    <div class="rd-glow g3"><img src="/images/design/calc-glow-3.png?v=3" alt=""></div>
+  </div>
 
   <h2 class="rd-h2">Калькулятор окупаемости готового бизнеса</h2>
 
@@ -2957,9 +2959,9 @@ body.page-leaving {
 <section class="rd-about" id="about">
   <h2 class="rd-h2">Наш сервис объединяет в себе<br>множество проектов</h2>
   <div class="projects-wrap">
-    <button class="proj-nav prev" id="projPrev" aria-label="Предыдущий проект"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <button class="proj-nav prev" id="projPrev" aria-label="Предыдущий проект" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg></button>
     <div class="projects-track" id="projectsGrid"></div>
-    <button class="proj-nav next" id="projNext" aria-label="Следующий проект"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 6l6 6-6 6"/></svg></button>
+    <button class="proj-nav next" id="projNext" aria-label="Следующий проект" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 6l6 6-6 6"/></svg></button>
   </div>
 </section>
 
@@ -2971,8 +2973,8 @@ body.page-leaving {
   <h2 class="rd-h2">Будьте в курсе всех обновлений и событий</h2>
   <div class="news-wrap">
     <div class="news-track" id="newsTrack"></div>
-    <button class="news-nav prev" id="newsPrev" aria-label="Назад"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 6l6 6-6 6"/></svg></button>
-    <button class="news-nav next" id="newsNext" aria-label="Вперёд"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 6l6 6-6 6"/></svg></button>
+    <button class="news-nav prev" id="newsPrev" aria-label="Назад" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 6l6 6-6 6"/></svg></button>
+    <button class="news-nav next" id="newsNext" aria-label="Вперёд" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 6l6 6-6 6"/></svg></button>
   </div>
 </section>
 
@@ -2989,7 +2991,7 @@ body.page-leaving {
 })();
 </script>
 
-<!-- ===== ЧАСТЬ 2 (Figma 424:142) ===== -->
+<!-- ===== ЧАСТЬ 2 (Figma 424:142) — без изменений ===== -->
 <div class="rd2" id="rd2">
 
 <section class="rd2-sec" id="cases">
@@ -3091,11 +3093,13 @@ body.page-leaving {
 </div>
 
 <script>
-/* Hustlify — часть 2 (Figma 424:142). Подключается ПОСЛЕ основного скрипта index.html.
-   Переопределяет отрисовку карточек/кейсов под новый макет, остальная логика (корзина, фильтры,
-   конфигуратор звёзд, модалки) остаётся прежней. */
+/* Hustlify — часть 2 (Figma 424:142) + проекты/новости по Figma 1:5.
+   Подключается ПОСЛЕ основного скрипта index.html (выполняется на DOMContentLoaded).
+   Переопределяет отрисовку кейсов/каталога/проектов под макет, остальная логика (корзина, фильтры,
+   конфигуратор звёзд, модалки, loadNews) остаётся прежней. */
 function __rd2init() {
   var A = '/images/design/p2/';
+  var D = '/images/design/';
   var u = function (n) { return 'calc(' + n + '*var(--u))'; };
   var esc = function (s) { return typeof escapeHtml === 'function' ? escapeHtml(s) : String(s == null ? '' : s); };
   var num = function (n) { return Number(n || 0).toLocaleString('ru-RU'); };
@@ -3122,7 +3126,6 @@ function __rd2init() {
     return '<span class="rd2-rot ' + (cls || '') + '" style="' + st + '"><img src="' + A + img + '" alt="" loading="lazy"></span>';
   }
   function side(i) {
-    var L = function (x) { return 'left:' + u(x); };
     var T = function (y) { return 'calc(50% + ' + u(y) + ')'; };
     if (i === 0) return rot('case-adv.png', 1318.744, 22.03, { left: u(-387.8), top: T(-466.8) });
     if (i === 1) return rot('case-biz.png', 1536.659, -14.3, { left: u(-449.7), top: T(-701.7) });
@@ -3184,6 +3187,95 @@ function __rd2init() {
 
   /* если данные уже загрузились до подключения скрипта — перерисуем */
   if (typeof ALL_PRODUCTS !== 'undefined' && ALL_PRODUCTS.length && typeof renderAll === 'function') renderAll();
+
+  /* ================= ПРОЕКТЫ (Figma 1:5): 4 цветные карточки 001–004 ================= */
+  var PROJ_ORDER = ['flux', 'vieto', 'cursor', 'apex'];                       /* порядок как в макете */
+  var PROJ_ART = { flux: 'proj-flux.png', vieto: 'proj-vieto.png', cursor: 'proj-cursor.png', apex: 'proj-apex.png' };
+  var PROJ_IC = { tg: 'proj-ic-tg.svg', pf: 'proj-ic-portfolio.svg', site: 'proj-ic-site.svg' };
+  var PROJ_IC_LABEL = { tg: 'Telegram', pf: 'Портфолио', site: 'Сайт' };
+
+  function projBtn(href, kind, round) {
+    return '<a class="rd-pbtn ' + kind + (round ? ' round' : '') + '" href="' + esc(href || '#') + '" target="_blank" rel="noopener noreferrer" data-nomodal aria-label="' + PROJ_IC_LABEL[kind] + '">' +
+      '<img src="' + D + PROJ_IC[kind] + '" alt=""></a>';
+  }
+
+  window.renderProjects = function (list) {
+    var grid = document.getElementById('projectsGrid');
+    if (!grid) return;
+    list = (list || []).slice().sort(function (a, b) {
+      var ia = PROJ_ORDER.indexOf(a.id), ib = PROJ_ORDER.indexOf(b.id);
+      return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+    });
+    if (!list.length) { grid.innerHTML = ''; syncProjNav(); return; }
+    grid.innerHTML = list.map(function (p, i) {
+      var art = '', flat = false;
+      if (PROJ_ART[p.id]) art = D + PROJ_ART[p.id];
+      else if (p.image) { art = p.image.charAt(0) === '/' ? p.image : '/' + p.image; flat = true; }
+      var n = String(i + 1); n = '000'.slice(0, Math.max(0, 3 - n.length)) + n;
+      var btns = p.portfolioUrl
+        ? projBtn(p.portfolioUrl, 'pf') + projBtn(p.url, 'tg', true)
+        : projBtn(p.url, p.type === 'site' ? 'site' : 'tg');
+      return '<article class="rd-proj" data-project="' + esc(p.id) + '">' +
+        (art ? '<img class="rd-proj-art' + (flat ? ' flat' : '') + '" src="' + esc(art) + '" alt="">' : '') +
+        '<span class="rd-proj-n">' + n + '</span>' +
+        '<h3>' + esc(p.title) + '</h3>' +
+        '<p>' + (p.shortDesc || '') + '</p>' +
+        '<i class="rd-proj-shade"></i>' +
+        '<div class="rd-proj-btns">' + btns + '</div>' +
+      '</article>';
+    }).join('');
+
+    grid.querySelectorAll('.rd-proj').forEach(function (card) {
+      card.addEventListener('click', function (e) {
+        if (e.target.closest('[data-nomodal]')) return;
+        if (typeof openProjectModal === 'function') openProjectModal(card.dataset.project);
+      });
+    });
+    if (typeof observeReveal === 'function') observeReveal('.rd-proj', 'reveal-3d');
+    syncProjNav();
+  };
+
+  /* стрелки проектов: показываем только если карточки не помещаются */
+  var projTrack = document.getElementById('projectsGrid');
+  ['projPrev', 'projNext'].forEach(function (id) {          /* снять старые обработчики основного скрипта */
+    var b = document.getElementById(id);
+    if (b) b.parentNode.replaceChild(b.cloneNode(true), b);
+  });
+  var projPrev = document.getElementById('projPrev'), projNext = document.getElementById('projNext');
+  function projStep() { var c = projTrack && projTrack.querySelector('.rd-proj'); return c ? c.offsetWidth * 1.05 : 320; }
+  function syncProjNav() {
+    if (!projTrack || !projPrev || !projNext) return;
+    var max = projTrack.scrollWidth - projTrack.clientWidth, over = max > 4;
+    projPrev.style.display = projNext.style.display = over ? '' : 'none';
+    if (over) {
+      projPrev.style.opacity = projTrack.scrollLeft <= 10 ? '.25' : '1';
+      projNext.style.opacity = projTrack.scrollLeft >= max - 10 ? '.25' : '1';
+    }
+  }
+  if (projTrack && projPrev && projNext) {
+    projPrev.addEventListener('click', function (e) { e.preventDefault(); projTrack.scrollBy({ left: -projStep(), behavior: 'smooth' }); });
+    projNext.addEventListener('click', function (e) { e.preventDefault(); projTrack.scrollBy({ left: projStep(), behavior: 'smooth' }); });
+    projTrack.addEventListener('scroll', syncProjNav, { passive: true });
+    addEventListener('resize', syncProjNav);
+    addEventListener('load', syncProjNav);
+  }
+  /* проекты уже могли загрузиться до этого скрипта — перерисуем */
+  if (typeof projectsData !== 'undefined' && projectsData.length) window.renderProjects(projectsData);
+
+  /* ================= НОВОСТИ: стрелки только при переполнении ================= */
+  var newsTrackEl = document.getElementById('newsTrack');
+  var newsBtns = document.querySelectorAll('#newsPrev, #newsNext');
+  function syncNewsNav() {
+    if (!newsTrackEl) return;
+    var over = newsTrackEl.scrollWidth > newsTrackEl.clientWidth + 4;
+    newsBtns.forEach(function (b) { b.style.display = over ? '' : 'none'; });
+  }
+  if (newsTrackEl) {
+    new MutationObserver(syncNewsNav).observe(newsTrackEl, { childList: true });
+    addEventListener('resize', syncNewsNav);
+    addEventListener('load', syncNewsNav);
+    syncNewsNav();
+  }
 
   /* ---------- HERO: фото слева плавно «парят» вверх-вниз при наведении ---------- */
   var floaters = [];
@@ -3941,7 +4033,7 @@ function renderCatalog(){
         moreBtn.style.display = 'none';
       } else {
         moreBtn.style.display = 'inline-flex';
-        moreBtn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" style="display:inline-block;vertical-align:-2px;margin-right:8px;"><path d="M12 5v14M5 12h14"/></svg> Показать ещё (' + (items.length - catalogVisibleCount) + ')';
+        moreBtn.textContent = 'Показать еще';
       }
     }
     return;
@@ -3960,7 +4052,7 @@ function renderCatalog(){
       moreBtn.style.display = 'none';
     } else {
       moreBtn.style.display = 'inline-flex';
-      moreBtn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" style="display:inline-block;vertical-align:-2px;margin-right:8px;"><path d="M12 5v14M5 12h14"/></svg> Показать ещё (' + (items.length - catalogVisibleCount) + ')';
+      moreBtn.textContent = 'Показать еще';
     }
   }
 }
@@ -4651,7 +4743,7 @@ function renderProjects(list){
               </div>
               <p class="desc">${p.shortDesc || ''}</p>
               <div class="proj-actions">
-                <button class="pbtn ${btnClass}" onclick="openProjectModal('${escapeHtml(p.id)}')" style="background:var(--white);color:var(--bg);">Подробнее</button>
+                ${p.portfolioUrl ? `<a class="pbtn ${btnClass}" href="${escapeHtml(p.portfolioUrl)}" target="_blank" rel="noopener noreferrer" title="Портфолио" data-nomodal></a>` : ''}
                 <a href="${escapeHtml(p.url || '#')}" target="_blank" rel="noopener noreferrer" class="tg-btn" title="${linkTitle}" data-nomodal>${linkSvg}</a>
               </div>
             </div>
@@ -4669,7 +4761,6 @@ function renderProjects(list){
   document.querySelectorAll('.tilt-card[data-project]').forEach(card=>{
     card.addEventListener('click', (e)=>{
       if(e.target.closest('[data-nomodal]')) return;
-      if(!card.classList.contains('flipped')) return;
       openProjectModal(card.dataset.project);
     });
   });
@@ -5256,8 +5347,7 @@ document.querySelectorAll('[data-tg]').forEach(el=>{
     index++;
   }
 
-  setTimeout(showNext, 4000);
-  setInterval(showNext, 16000);
+  /* уведомления о продажах отключены */
 
   if(closeBtn){
     closeBtn.addEventListener('click', () => toast.classList.remove('show'));
@@ -5786,6 +5876,8 @@ document.querySelectorAll('a[href="/ai-agent"], a[href^="/ai-agent"]').forEach(l
   function updateMetrics() {
     cardW = (document.documentElement.clientWidth <= 900 ? 190 : Math.round(document.documentElement.clientWidth * 1380 / 6085));
     VISUAL_RANGE = 740 * cardW / 240; MAX_DEPTH = 150 * cardW / 240; FADE_WIDTH = 150 * cardW / 240; SPEED = 42 * cardW / 240;
+    VISUAL_RANGE = 740 * cardW / 240; MAX_DEPTH = 150 * cardW / 240; FADE_WIDTH = 150 * cardW / 240; SPEED = 42 * cardW / 240;
+    VISUAL_RANGE = 740 * cardW / 240; MAX_DEPTH = 150 * cardW / 240; FADE_WIDTH = 150 * cardW / 240; SPEED = 42 * cardW / 240;
     spacing = cardW + 28 * cardW / 240;
     totalWidth = spacing * count;
     cards.forEach((c, i) => {
@@ -5952,13 +6044,16 @@ document.querySelectorAll('a[href="/ai-agent"], a[href^="/ai-agent"]').forEach(l
 </script>
 <script id="rd-late">
 /* Поздний скрипт редизайна: update-redesign.js переносит его в конец <body>,
-   чтобы он выполнялся ПОСЛЕ основного скрипта страницы и переопределял renderCases(). */
+   чтобы он выполнялся ПОСЛЕ основного скрипта страницы и переопределял его функции. */
 (function(){
   function fmt(n){ return Number(n||0).toLocaleString('ru-RU'); }
   function esc(s){
     if(typeof escapeHtml==='function') return escapeHtml(s);
     return String(s==null?'':s).replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];});
   }
+  function strip(s){ return String(s==null?'':s).replace(/<[^>]+>/g,''); }
+
+  /* ---------- КЕЙСЫ ---------- */
   function decoHtml(o){
     return '<div class="rd-deco'+(o.round?' round':'')+'" style="--dl:'+o.l+';--dt:'+o.t+';--ds:'+o.s+';--dr:'+o.r+'deg">'+
       '<img'+(o.zoom?' class="rd-zoom"':'')+' src="/images/design/'+o.src+'" alt=""></div>';
@@ -6020,6 +6115,82 @@ document.querySelectorAll('a[href="/ai-agent"], a[href^="/ai-agent"]').forEach(l
       });
     });
   };
+
+  /* ---------- ПРОЕКТЫ (4 карточки по макету) ---------- */
+  var PJ_ORDER  = ['flux','vieto','cursor','apex'];
+  var PJ_COLORS = ['#00ad7c','#018ebc','#4d27cc','#00b5c4'];
+  var PJ_NL     = [105,42,33,28];       /* отступ слева большой цифры 001/002/… из макета */
+  var PJ_IMG    = { flux:1, vieto:2, cursor:3, apex:4 };
+  window.renderProjects = function(list){
+    var host = document.getElementById('rdProjects');
+    if(!host) return;
+    list = (list||[]).slice().sort(function(a,b){
+      var ia = PJ_ORDER.indexOf(a.id), ib = PJ_ORDER.indexOf(b.id);
+      return (ia<0?99:ia) - (ib<0?99:ib);
+    });
+    host.innerHTML = list.map(function(p,i){
+      var n = PJ_IMG[p.id] || ((i%4)+1);
+      var site = p.type==='site';
+      var main = '<a class="rd-pj-chip'+(p.portfolioUrl?' circle':'')+'" href="'+esc(p.url||'#')+'" target="_blank" rel="noopener noreferrer" title="'+esc(p.title)+'">'+
+        '<img class="'+(site?'i-ln':'i-tg')+'" src="/images/design/'+(site?'chip-link.svg':'chip-tg.svg')+'" alt=""></a>';
+      var pf = p.portfolioUrl ? '<a class="rd-pj-chip" href="'+esc(p.portfolioUrl)+'" target="_blank" rel="noopener noreferrer" title="Портфолио"><img class="i-pf" src="/images/design/chip-pf.svg" alt=""></a>' : '';
+      return '<article class="rd-pj" data-project="'+esc(p.id)+'" style="--pj:'+PJ_COLORS[i%4]+';--nl:calc('+PJ_NL[i%4]+' * var(--u))">'+
+        '<div class="rd-pj-deco"><img src="/images/design/proj-'+n+'.png" alt=""></div>'+
+        '<span class="rd-pj-n">'+String(i+1).padStart(3,'0')+'</span>'+
+        '<h3 class="rd-pj-t">'+esc(p.title)+'</h3>'+
+        '<p class="rd-pj-d">'+esc(strip(p.shortDesc))+'</p>'+
+        '<div class="rd-pj-chips">'+pf+main+'</div>'+
+      '</article>';
+    }).join('');
+    host.querySelectorAll('.rd-pj').forEach(function(card){
+      card.addEventListener('click', function(e){
+        if(e.target.closest('a')) return;
+        openProjectModal(card.dataset.project);
+      });
+    });
+  };
+  try{ if(typeof projectsData!=='undefined' && projectsData.length) window.renderProjects(projectsData); }catch(e){}
+
+  /* ---------- НОВОСТИ ---------- */
+  var NEWS_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>';
+  function newsDate(n){
+    var d = n.createdAt || n.created_at;
+    if(d){ var t = new Date(d); if(!isNaN(t.getTime())) return t.toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'}); }
+    return n.stamp || '';
+  }
+  function newsTs(n){ var t = new Date(n.createdAt || n.created_at || 0).getTime(); return isNaN(t) ? 0 : t; }
+  (function loadRdNews(){
+    var host = document.getElementById('rdNews');
+    if(!host) return;
+    fetch('/api/news').then(function(r){ return r.json(); }).then(function(list){
+      if(!Array.isArray(list) || !list.length){ host.innerHTML=''; return; }
+      list = list.slice().sort(function(a,b){ return newsTs(b)-newsTs(a); });
+      host.innerHTML = list.map(function(n,i){
+        return '<article class="rd-ncard c'+(i%3)+'">'+
+          '<div class="rd-ntag"><span>'+esc(n.tag||'#HustlifyNews')+'</span><i>'+NEWS_ICON+'</i></div>'+
+          '<h3>'+esc(n.title)+'</h3>'+
+          '<div class="rd-nd">'+esc(newsDate(n))+'</div>'+
+          '<div class="rd-nh">'+esc(n.headline||'')+'</div>'+
+          '<p class="rd-nb">'+esc(n.body||'')+'</p>'+
+        '</article>';
+      }).join('');
+    }).catch(function(){});
+  })();
+
+  /* ---------- ЛЕНТА ОТЗЫВОВ: размер карточек как в макете (1250×1562 ед.) ---------- */
+  function rdCardVars(){
+    var r = document.documentElement;
+    if(window.innerWidth >= 861){
+      var u = r.clientWidth/6085;
+      r.style.setProperty('--card-w', Math.round(1250*u)+'px');
+      r.style.setProperty('--card-h', Math.round(1562*u)+'px');
+    } else {
+      r.style.removeProperty('--card-w'); r.style.removeProperty('--card-h');
+    }
+  }
+  window.addEventListener('resize', rdCardVars, true);   /* capture: раньше, чем пересчитает лента */
+  rdCardVars();
+  window.dispatchEvent(new Event('resize'));
 
   /* в каталоге по макету сначала 8 карточек (2 ряда по 4) */
   try{ catalogVisibleCount = 8; }catch(e){}
