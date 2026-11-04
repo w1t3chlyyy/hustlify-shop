@@ -178,62 +178,11 @@ html body .rd2-case-big > *:not(.rd2-rot){ position:relative !important; left:au
 
 /* ---------- КОНТАКТЫ / ПОДВАЛ ---------- */
 .rd2-contacts{ margin-top:56px !important; }
-.rd2-contact{
-  display:grid !important;
-  grid-template-columns:repeat(3,minmax(0,1fr));
-  grid-template-rows:auto 1fr 42px;
-  min-height:220px;
-  height:auto !important;
-  padding:18px 12px 14px !important;
-  border-radius:30px !important;
-  gap:8px 6px !important;
-}
-.rd2-contact h2{
-  position:relative !important;
-  grid-column:1 / -1;
-  max-width:72%;
-  font-size:19px !important;
-  letter-spacing:-.045em !important;
-  line-height:1.05 !important;
-  white-space:nowrap !important;
-}
-.rd2-contact p{
-  position:relative !important;
-  grid-column:1 / -1;
-  width:58% !important;
-  max-width:58% !important;
-  font-size:12px !important;
-  letter-spacing:-.01em !important;
-  line-height:1.3 !important;
-}
-.rd2-cbtn, .rd2-cbtn.tg, .rd2-cbtn.mini, .rd2-cbtn.ai{
-  position:relative !important;
-  top:auto !important;
-  left:auto !important;
-  width:auto !important;
-  height:42px !important;
-  align-self:end;
-  padding:0 3px;
-  font-size:10px !important;
-  letter-spacing:0 !important;
-}
+.rd2-contact{ padding:30px 20px 24px !important; border-radius:30px !important; gap:12px !important; }
+.rd2-contact h2{ font-size:28px !important; letter-spacing:-.045em !important; line-height:1.05 !important; }
+.rd2-contact p{ font-size:15px !important; letter-spacing:-.01em !important; max-width:100% !important; line-height:1.35 !important; }
+.rd2-cbtn, .rd2-cbtn.tg, .rd2-cbtn.mini, .rd2-cbtn.ai{ height:56px !important; font-size:15px !important; letter-spacing:-.02em !important; }
 .rd2-contact .rd2-rot{ opacity:1; }
-.rd2-contact .rd2-rot{
-  top:52px !important;
-  right:-12px !important;
-  bottom:auto !important;
-  left:auto !important;
-  width:165px !important;
-  height:165px !important;
-  z-index:1;
-}
-@media (max-width:360px){
-  .rd2-contact{ min-height:210px; }
-  .rd2-contact h2{ font-size:17px !important; }
-  .rd2-contact p{ width:55% !important; max-width:55% !important; font-size:11px !important; }
-  .rd2-cbtn, .rd2-cbtn.tg, .rd2-cbtn.mini, .rd2-cbtn.ai{ font-size:9px !important; }
-  .rd2-contact .rd2-rot{ top:58px !important; right:-18px !important; width:145px !important; height:145px !important; }
-}
 footer{ padding:32px 0 24px; }
 
 /* ================= НИЖНЯЯ ПАНЕЛЬ, МЕНЮ, ПОПАПЫ ================= */
