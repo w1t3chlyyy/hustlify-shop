@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hustlify — Сервис По Созданию Бизнеса с 0 Под Ключ</title>
-<meta name="description" content="Платформа и маркетплейс готовых IT-бизнесов и стартапов с витриной товаров, корзиной, калькулятором окупаемости и готовыми решениями под ключ">
-<meta property="og:title" content="Hustlify — Сервис По Созданию Бизнеса с 0 Под Ключ">
-<meta property="og:description" content="Платформа и маркетплейс готовых IT-бизнесов и стартапов с витриной товаров, корзиной, калькулятором окупаемости и готовыми решениями под ключ">
+<title>Hustlify — дизайн, сайты и Telegram-боты под ключ</title>
+<meta name="description" content="Студия дизайна и разработки: логотипы и баннеры, сайты, Telegram-боты, AI-агенты и готовые пакеты услуг под ключ">
+<meta property="og:title" content="Hustlify — дизайн, сайты и Telegram-боты под ключ">
+<meta property="og:description" content="Студия дизайна и разработки: логотипы и баннеры, сайты, Telegram-боты, AI-агенты и готовые пакеты услуг под ключ">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Unbounded:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -2878,6 +2878,66 @@ body.page-leaving {
   </button>
 </nav>
 
+<!-- rd-pill-nav -->
+<nav class="rd-pill-nav" id="rdPillNav" aria-label="Основная навигация">
+  <a href="/" class="pn-logo" aria-label="Hustlify"><img src="/images/design/logo.svg" alt="Hustlify"></a>
+  <div class="pn-links">
+    <a href="#calculator">Калькулятор</a>
+    <a href="#catalog">Каталог</a>
+    <a href="#about">О нас</a>
+    <a href="#faq">FAQ</a>
+    <a href="https://t.me/HustlifyHelp" target="_blank" rel="noopener">Поддержка</a>
+  </div>
+  <div class="pn-tools">
+    <button type="button" class="pn-ico" data-proxy="searchBtn" aria-label="Поиск"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></button>
+    <button type="button" class="pn-ico" data-proxy="cartBtn" aria-label="Корзина"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1.5"/><circle cx="19" cy="21" r="1.5"/><path d="M2.5 3h2l2.4 12.4a2 2 0 0 0 2 1.6h8.6a2 2 0 0 0 2-1.6L21 7.5H6"/></svg><span class="pn-badge" id="pillCartCount" hidden>0</span></button>
+  </div>
+  <a href="#contacts" class="pn-cta">Контакты</a>
+</nav>
+<script>
+(function(){
+  var nav = document.getElementById('rdPillNav');
+  if (!nav) return;
+  var ticking = false;
+  function update(){ nav.classList.toggle('show', (window.pageYOffset || document.documentElement.scrollTop) > 160); ticking = false; }
+  addEventListener('scroll', function(){ if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+  addEventListener('resize', update);
+  update();
+
+  /* кнопки поиска и корзины запускают те же обработчики, что и в шапке */
+  nav.querySelectorAll('[data-proxy]').forEach(function(b){
+    b.addEventListener('click', function(){ var t = document.getElementById(b.getAttribute('data-proxy')); if (t) t.click(); });
+  });
+
+  /* счётчик корзины */
+  function syncBadge(){
+    var src = document.getElementById('cartCount'), dst = document.getElementById('pillCartCount');
+    if (!dst) return;
+    var n = src ? src.textContent.trim() : '0';
+    dst.textContent = n; dst.hidden = (!n || n === '0');
+  }
+  function bindBadge(){
+    var src = document.getElementById('cartCount');
+    if (src) new MutationObserver(syncBadge).observe(src, { childList: true, characterData: true, subtree: true });
+    syncBadge();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindBadge); else bindBadge();
+
+  /* подсветка текущего раздела */
+  if ('IntersectionObserver' in window) {
+    var links = {};
+    nav.querySelectorAll('.pn-links a[href^="#"]').forEach(function(a){ links[a.getAttribute('href').slice(1)] = a; });
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if (!en.isIntersecting) return;
+        Object.keys(links).forEach(function(k){ links[k].classList.toggle('active', k === en.target.id); });
+      });
+    }, { rootMargin: '-40% 0px -55% 0px' });
+    Object.keys(links).forEach(function(id){ var s = document.getElementById(id); if (s) io.observe(s); });
+  }
+})();
+</script>
+
 <section class="rd-hero" id="hero">
   <div class="rd-card">
     <picture><source media="(max-width:860px)" srcset="/images/design/hero-bg-m.svg"><img class="rd-card-bg" src="/images/design/hero-bg.svg" alt=""></picture>
@@ -2904,8 +2964,8 @@ body.page-leaving {
     <div class="rd-cube"><picture><source media="(max-width:860px)" srcset="/images/design/hero-cube-m.png"><img src="/images/design/hero-cube.png" alt=""></picture></div>
     <div class="rd-globe"><img src="/images/design/hero-globe.png" alt=""></div>
 
-    <h1 class="rd-title"><span>От голой идеи</span><span>до монетизации</span><span class="l3"><u>за 2 недели</u></span></h1>
-    <p class="rd-sub">Не трать время на поиски подрядчиков.<br class="rd-br"> Мы берём на себя всё: от идеи до первых денег.</p>
+    <h1 class="rd-title"><span>От голой идеи</span><span>до монетизации</span><span class="l3"><u>под ключ</u></span></h1>
+    <p class="rd-sub">Не трать время на поиски подрядчиков.<br class="rd-br"> Берём на себя дизайн, разработку и запуск.</p>
     <div class="rd-cta">
       <a href="#cases" class="rd-btn blue">Кейсы</a>
       <a href="#catalog" class="rd-btn ghost">Каталог</a>
@@ -3069,7 +3129,7 @@ body.page-leaving {
 Шаг 2: откройте корзину, проверьте состав и сумму.
 Шаг 3: укажите контакт для связи и промокод (если есть).
 Шаг 4: оплатите заказ удобным способом.
-Шаг 5: после оплаты менеджер свяжется с вами и передаст результат.</div></div><div class="faq-item"><div class="faq-q"><span>Какие способы оплаты?</span><div class="faq-icon"></div></div><div class="faq-a">Оплата проходит через защищённый шлюз RollyPay: СБП, банковские карты МИР / Visa / MasterCard и криптовалюта (USDT). Способ выбирается на странице оплаты.</div></div><div class="faq-item"><div class="faq-q"><span>Возможен ли возврат товара?</span><div class="faq-icon"></div></div><div class="faq-a">Согласно нашей политике, возврат товара недоступен. После подтверждения и оплаты заказа все права на товар переходят к покупателю, и сделка считается окончательной. Внимательно проверяйте состав корзины перед оплатой.</div></div><div class="faq-item"><div class="faq-q"><span>Где отслеживать статус?</span><div class="faq-icon"></div></div><div class="faq-a">Для получения актуальной информации по заказу пишите менеджеру поддержки в Telegram: @HustlifyHelp.</div></div></div>
+Шаг 5: после оплаты менеджер свяжется с вами и передаст результат.</div></div><div class="faq-item"><div class="faq-q"><span>Какие способы оплаты?</span><div class="faq-icon"></div></div><div class="faq-a">Оплата проходит через защищённый шлюз RollyPay: СБП, банковские карты МИР / Visa / MasterCard и криптовалюта (USDT). Способ выбирается на странице оплаты.</div></div><div class="faq-item"><div class="faq-q"><span>Возможен ли возврат товара?</span><div class="faq-icon"></div></div><div class="faq-a">Возврат регулируется законодательством РФ и Публичной офертой. Если услуга не оказана или оказана ненадлежащего качества, напишите в поддержку @HustlifyHelp с номером заказа — мы рассмотрим обращение и вернём оплату за неоказанную часть.</div></div><div class="faq-item"><div class="faq-q"><span>Где отслеживать статус?</span><div class="faq-icon"></div></div><div class="faq-a">Для получения актуальной информации по заказу пишите менеджеру поддержки в Telegram: @HustlifyHelp.</div></div></div>
       </div>
     </div>
   </div>
@@ -5212,8 +5272,7 @@ document.querySelectorAll('[data-tg]').forEach(el=>{
     index++;
   }
 
-  setTimeout(showNext, 4000);
-  setInterval(showNext, 16000);
+  /* уведомления о «покупках» отключены */
 
   if(closeBtn){
     closeBtn.addEventListener('click', () => toast.classList.remove('show'));
@@ -5303,7 +5362,7 @@ document.querySelectorAll('[data-tg]').forEach(el=>{
       <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.2);padding:16px;border-radius:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
         <div>
           <div style="font-weight:700;color:#fff;font-size:15px;">${p.name || p.title}</div>
-          <div style="font-size:12px;color:var(--gray);margin-top:2px;">Окупаемость: 10-14 дней | Прибыль: от 90k ₽</div>
+          <div style="font-size:12px;color:var(--gray);margin-top:2px;">Подробности — у менеджера</div>
           <div style="font-size:14px;font-weight:800;color:#ffffff;margin-top:6px;">${(p.price || 18900).toLocaleString('ru-RU')} ₽</div>
         </div>
         <button class="btn btn-white" onclick="addToCart('${p.id}'); document.getElementById('aiWizardModal').classList.remove('show');" style="padding:10px 18px;font-size:12px;">Заказать</button>
