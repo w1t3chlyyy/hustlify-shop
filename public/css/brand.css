@@ -86,3 +86,15 @@ html{ scroll-padding-top:110px; }
 @media (min-width:861px){
   .rd-disc{ position:absolute; left:calc(3392 * var(--u)); top:calc(2400 * var(--u)); width:calc(2574 * var(--u)); margin:0; font-size:calc(44 * var(--u)); }
 }
+
+
+/* --- шапка: логотип меньше, пункты меню по центру --- */
+.rdh-logo img{ height:34px; }              /* было 48px */
+
+.rd-header-in{ align-items:center; }
+.rdh-links{ align-self:stretch; align-items:center; }
+.rdh-links a{
+  display:flex; align-items:center;
+  height:100%; line-height:1;
+}
+.rdh-tools{ align-items:center; }
