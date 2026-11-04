@@ -1,0 +1,1457 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Админка — Hustlify</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#08090a;--card:#141517;--card-hi:#1b1d20;--line:rgba(255,255,255,.08);
+  --white:#f5f5f4;--gray:#8b8d92;--gray-dim:#5c5e63;--green:#22c58b;--red:#ff4d6a;--blue:#3d8bff;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--white);font-family:'Inter',sans-serif;min-height:100vh;}
+h1,h2,.display{font-family:'Unbounded',sans-serif;}
+button,input,select,textarea{font-family:inherit;}
+a{color:inherit;}
+
+/* ---- login ---- */
+#loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+.login-card{width:100%;max-width:380px;background:var(--card);border:1px solid var(--line);border-radius:24px;padding:40px 34px;}
+.login-card .mark{width:48px;height:48px;border:1.5px solid rgba(255,255,255,.5);border-radius:13px;display:flex;align-items:center;justify-content:center;gap:4px;margin:0 auto 22px;}
+.login-card .mark span{width:3.5px;height:18px;background:#fff;border-radius:2px;}
+.login-card h1{font-size:20px;text-align:center;margin-bottom:6px;}
+.login-card p{color:var(--gray);font-size:13.5px;text-align:center;margin-bottom:28px;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:12.5px;color:var(--gray);margin-bottom:7px;}
+.field input{width:100%;padding:13px 16px;border-radius:12px;background:var(--bg);border:1px solid var(--line);color:var(--white);font-size:14.5px;outline:none;transition:border-color .2s;}
+.field input:focus{border-color:rgba(255,255,255,.35);}
+.login-btn{width:100%;padding:14px;border-radius:100px;background:var(--white);color:var(--bg);font-weight:600;font-size:14.5px;border:none;cursor:pointer;margin-top:8px;transition:transform .2s;}
+.login-btn:hover{transform:translateY(-2px);}
+.login-err{color:var(--red);font-size:13px;text-align:center;margin-top:14px;min-height:18px;}
+
+/* ---- dashboard ---- */
+#dash{display:none;}
+header{position:sticky;top:0;z-index:10;background:rgba(8,9,10,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding:18px 0;}
+.wrap{max-width:1140px;margin:0 auto;padding:0 28px;}
+header .wrap{display:flex;align-items:center;justify-content:space-between;}
+.brand{display:flex;align-items:center;gap:12px;font-family:'Unbounded';font-weight:700;font-size:15px;}
+.brand .mark{width:32px;height:32px;border:1.5px solid rgba(255,255,255,.5);border-radius:9px;display:flex;align-items:center;justify-content:center;gap:3px;}
+.brand .mark span{width:3px;height:13px;background:#fff;border-radius:2px;}
+.logout-btn{border:1px solid var(--line);padding:10px 20px;border-radius:100px;font-size:13px;background:none;color:var(--white);cursor:pointer;transition:all .2s;}
+.logout-btn:hover{background:rgba(255,255,255,.06);}
+
+.tabs{display:flex;gap:8px;margin:28px 0;flex-wrap:wrap;}
+.tab{padding:11px 20px;border-radius:100px;font-size:13.5px;font-weight:500;color:var(--gray);border:1px solid var(--line);cursor:pointer;background:none;transition:all .2s;}
+.tab.active{background:var(--white);color:var(--bg);border-color:transparent;}
+
+.panel{display:none;padding-bottom:60px;}
+.panel.active{display:block;}
+
+.toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:12px;flex-wrap:wrap;}
+.add-btn{background:var(--white);color:var(--bg);padding:12px 22px;border-radius:100px;font-size:13.5px;font-weight:600;border:none;cursor:pointer;transition:transform .2s;}
+.add-btn:hover{transform:translateY(-2px);}
+
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;}
+th,td{text-align:left;padding:14px 16px;font-size:13.5px;border-bottom:1px solid var(--line);}
+th{color:var(--gray);font-weight:500;font-size:12px;text-transform:uppercase;letter-spacing:.5px;}
+tr:last-child td{border-bottom:none;}
+td.num{font-family:'Unbounded';font-weight:600;}
+.thumb{width:36px;height:36px;border-radius:8px;background:var(--card-hi);display:flex;align-items:center;justify-content:center;font-size:16px;overflow:hidden;}
+.thumb img{width:100%;height:100%;object-fit:contain;}
+.row-actions{display:flex;gap:8px;}
+.icon-btn-sm{width:32px;height:32px;border-radius:8px;background:var(--card-hi);border:none;color:var(--white);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s;}
+.icon-btn-sm:hover{background:rgba(255,255,255,.14);}
+.icon-btn-sm.danger:hover{background:rgba(255,77,106,.2);color:var(--red);}
+.pill{padding:4px 10px;border-radius:100px;font-size:11.5px;font-weight:600;}
+.pill.pending{background:rgba(255,255,255,.08);color:var(--gray);}
+.pill.moderation{background:rgba(61,139,255,.15);color:var(--blue);}
+.pill.paid{background:rgba(34,197,139,.15);color:var(--green);}
+.pill.canceled{background:rgba(255,77,106,.15);color:var(--red);}
+.empty{padding:60px 20px;text-align:center;color:var(--gray-dim);font-size:14px;}
+
+/* modal for add/edit product */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:90;opacity:0;pointer-events:none;transition:opacity .3s;}
+.overlay.open{opacity:1;pointer-events:auto;}
+.modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-46%);width:520px;max-width:92vw;background:var(--card);border:1px solid var(--line);border-radius:22px;z-index:100;opacity:0;pointer-events:none;transition:all .3s;max-height:88vh;overflow-y:auto;}
+.modal.open{opacity:1;pointer-events:auto;transform:translate(-50%,-50%);}
+.modal-head{display:flex;justify-content:space-between;align-items:center;padding:22px 26px;border-bottom:1px solid var(--line);}
+.modal-head h3{font-size:17px;}
+.modal-body{padding:22px 26px;}
+.modal-foot{padding:20px 26px;border-top:1px solid var(--line);display:flex;gap:10px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.save-btn{flex:1;padding:13px;border-radius:100px;background:var(--white);color:var(--bg);font-weight:600;font-size:14px;border:none;cursor:pointer;}
+.cancel-btn{flex:1;padding:13px;border-radius:100px;background:none;border:1px solid var(--line);color:var(--white);font-size:14px;cursor:pointer;}
+.hint{font-size:12px;color:var(--gray-dim);margin-top:16px;line-height:1.6;padding:14px;background:var(--card-hi);border-radius:12px;}
+
+/* rates editor */
+.rates-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px;}
+@media(max-width:860px){.rates-grid{grid-template-columns:1fr;}}
+.rate-card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:24px;}
+.rate-card-head{display:flex;align-items:center;gap:12px;margin-bottom:20px;}
+.rate-icon{width:42px;height:42px;border-radius:12px;background:var(--card-hi);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--white);flex-shrink:0;}
+.rate-card-title{font-family:'Unbounded',sans-serif;font-size:15px;font-weight:700;}
+.rate-card-sub{font-size:12px;color:var(--gray);margin-top:3px;line-height:1.4;}
+.rate-calc-preview{background:var(--card-hi);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-top:16px;font-size:12.5px;color:var(--gray);}
+.rate-calc-preview b{color:var(--white);font-weight:600;}
+.rate-calc-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.05);}
+.rate-calc-row:last-child{border-bottom:none;}
+.rate-box{background:var(--card-hi);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px;}
+.rate-box-title{font-size:12.5px;font-weight:600;color:var(--white);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;}
+.rate-badge-sm{font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(34,197,139,.15);color:var(--green);font-weight:600;}
+
+/* --- скрыть / удалить Stars & Premium --- */
+.rate-actions{display:flex;gap:8px;margin-left:auto;align-items:center;}
+.rate-box-title{gap:8px;}
+.status-tag{font-size:11px;font-weight:600;padding:3px 9px;border-radius:100px;display:none;}
+.status-tag.hidden-tag{display:inline-block;background:rgba(255,255,255,.08);color:var(--gray);}
+.status-tag.deleted-tag{display:inline-block;background:rgba(255,77,106,.15);color:var(--red);}
+.is-hidden > *:not(.rate-card-head):not(.rate-box-title){opacity:.5;}
+.is-deleted > *:not(.rate-card-head):not(.rate-box-title){opacity:.25;pointer-events:none;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="mark"><span></span><span></span><span></span></div>
+    <h1>Админ-панель Hustlify</h1>
+    <p>Доступ только для владельца магазина</p>
+    <div class="field"><label>Логин</label><input type="text" id="loginUser" autocomplete="username"></div>
+    <div class="field"><label>Пароль</label><input type="password" id="loginPass" autocomplete="current-password"></div>
+    <button class="login-btn" id="loginSubmit">Войти</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dash">
+  <header>
+    <div class="wrap">
+      <div class="brand"><div class="mark"><span></span><span></span><span></span></div>Hustlify Admin</div>
+      <button class="logout-btn" id="logoutBtn">Выйти</button>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="tabs" id="mainTabs">
+      <button class="tab active" data-tab="products">Товары и кейсы</button>
+      <button class="tab" data-tab="stars-premium">Курсы Звёзд и Премиум</button>
+      <button class="tab" data-tab="projects">Проекты Hustlify</button>
+      <button class="tab" data-tab="partners">Партнёры</button>
+      <button class="tab" data-tab="news">Новости</button>
+      <button class="tab" data-tab="orders">Заказы</button>
+      <button class="tab" data-tab="promocodes">Промокоды</button>
+      <button class="tab" data-tab="requisites">Реквизиты</button>
+      <button class="tab" data-tab="settings">Настройки</button>
+    </div>
+
+    <div class="panel active" id="panel-products">
+      <div class="toolbar">
+        <div style="color:var(--gray);font-size:13.5px;" id="productCount"></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <div class="tabs" style="margin:0;" id="sectionFilter">
+            <button class="tab active" data-sf="all">Все</button>
+            <button class="tab" data-sf="catalog">Каталог</button>
+            <button class="tab" data-sf="case">Кейсы</button>
+          </div>
+          <button class="add-btn" id="addProductBtn">+ Добавить товар</button>
+        </div>
+      </div>
+      <table>
+        <thead><tr><th></th><th>Название</th><th>Раздел</th><th>Категория</th><th>Цена</th><th>Статус</th><th></th></tr></thead>
+        <tbody id="productsTbody"></tbody>
+      </table>
+    </div>
+
+    <div class="panel" id="panel-stars-premium">
+      <div class="toolbar">
+        <div>
+          <h2 style="font-size:18px;margin-bottom:4px;">Курсы Telegram Звёзд и Premium</h2>
+          <div style="color:var(--gray);font-size:13px;">Управляйте курсом звёзд и тарифами подписок. Изменения моментально отобразятся на витрине и в калькуляторе корзины</div>
+        </div>
+        <button class="add-btn" id="saveRatesBtn">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" style="display:inline-block;vertical-align:-2px;margin-right:6px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Сохранить курсы
+        </button>
+      </div>
+
+      <div class="rates-grid">
+        <!-- Telegram Stars Card -->
+        <div class="rate-card">
+          <div class="rate-card-head">
+            <div class="rate-icon">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            <div>
+              <div class="rate-card-title">Telegram Звёзды (Stars)</div>
+              <div class="rate-card-sub">Курс за 1 звезду при расчёте любого объёма от 25 до 10 000 шт.</div>
+            </div>
+          </div>
+
+          <div class="grid2">
+            <div class="field">
+              <label>Текущая цена за 1 шт. (₽)</label>
+              <input type="number" id="rate_stars_price" step="0.1" min="0.1" placeholder="2">
+            </div>
+            <div class="field">
+              <label>Старая цена за 1 шт. (₽)</label>
+              <input type="number" id="rate_stars_old" step="0.1" min="0" placeholder="3">
+            </div>
+          </div>
+
+          <div class="rate-calc-preview">
+            <div style="font-weight:600;color:var(--white);margin-bottom:8px;">Превью цен для покупателей:</div>
+            <div class="rate-calc-row"><span>25 звёзд:</span> <b id="prev_stars_25">50 ₽</b></div>
+            <div class="rate-calc-row"><span>100 звёзд:</span> <b id="prev_stars_100">200 ₽</b></div>
+            <div class="rate-calc-row"><span>250 звёзд (по умолч.):</span> <b id="prev_stars_250">500 ₽</b></div>
+            <div class="rate-calc-row"><span>1 000 звёзд:</span> <b id="prev_stars_1000">2 000 ₽</b></div>
+            <div class="rate-calc-row"><span>5 000 звёзд:</span> <b id="prev_stars_5000">10 000 ₽</b></div>
+            <div class="rate-calc-row"><span>10 000 звёзд:</span> <b id="prev_stars_10000">20 000 ₽</b></div>
+          </div>
+        </div>
+
+        <!-- Telegram Premium Card -->
+        <div class="rate-card">
+          <div class="rate-card-head">
+            <div class="rate-icon">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="12 6 14 10 18 10 15 13 16 17 12 14 8 17 9 13 6 10 10 10"/></svg>
+            </div>
+            <div>
+              <div class="rate-card-title">Telegram Premium (Тарифы)</div>
+              <div class="rate-card-sub">Стоимость подарочных подписок на 3, 6, 9 и 12 месяцев</div>
+            </div>
+          </div>
+
+          <div class="rate-box">
+            <div class="rate-box-title">
+              <span>3 месяца</span>
+              <span class="rate-badge-sm">Старт</span>
+            </div>
+            <div class="grid2">
+              <div class="field" style="margin-bottom:0;"><label>Цена, ₽</label><input type="number" id="rate_prem3_price" placeholder="990"></div>
+              <div class="field" style="margin-bottom:0;"><label>Старая цена, ₽</label><input type="number" id="rate_prem3_old" placeholder="1290"></div>
+            </div>
+          </div>
+
+          <div class="rate-box">
+            <div class="rate-box-title">
+              <span>6 месяцев</span>
+              <span class="rate-badge-sm">Хит продаж</span>
+            </div>
+            <div class="grid2">
+              <div class="field" style="margin-bottom:0;"><label>Цена, ₽</label><input type="number" id="rate_prem6_price" placeholder="1790"></div>
+              <div class="field" style="margin-bottom:0;"><label>Старая цена, ₽</label><input type="number" id="rate_prem6_old" placeholder="2290"></div>
+            </div>
+          </div>
+
+          <div class="rate-box">
+            <div class="rate-box-title">
+              <span>9 месяцев</span>
+              <span class="rate-badge-sm">Популярно</span>
+            </div>
+            <div class="grid2">
+              <div class="field" style="margin-bottom:0;"><label>Цена, ₽</label><input type="number" id="rate_prem9_price" placeholder="2490"></div>
+              <div class="field" style="margin-bottom:0;"><label>Старая цена, ₽</label><input type="number" id="rate_prem9_old" placeholder="3190"></div>
+            </div>
+          </div>
+
+          <div class="rate-box">
+            <div class="rate-box-title">
+              <span>12 месяцев</span>
+              <span class="rate-badge-sm">Выгодно -25%</span>
+            </div>
+            <div class="grid2">
+              <div class="field" style="margin-bottom:0;"><label>Цена, ₽</label><input type="number" id="rate_prem12_price" placeholder="2990"></div>
+              <div class="field" style="margin-bottom:0;"><label>Старая цена, ₽</label><input type="number" id="rate_prem12_old" placeholder="3990"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="ratesStatusMsg" style="min-height:22px;margin-bottom:12px;font-size:13.5px;font-weight:500;"></div>
+    </div>
+
+    <div class="panel" id="panel-projects">
+      <div class="toolbar">
+        <div style="color:var(--gray);font-size:13.5px;" id="projectsCount"></div>
+        <button class="add-btn" id="addProjectBtn">+ Добавить проект</button>
+      </div>
+      <table>
+        <thead><tr><th>Проект</th><th>Тип</th><th>Ссылка</th><th>Статус</th><th></th></tr></thead>
+        <tbody id="projectsTbody"></tbody>
+      </table>
+    </div>
+
+    <div class="panel" id="panel-partners">
+      <div class="toolbar">
+        <div style="color:var(--gray);font-size:13.5px;" id="partnersCount"></div>
+        <button class="add-btn" id="addPartnerBtn">+ Добавить партнёра</button>
+      </div>
+      <table>
+        <thead><tr><th>Партнёр</th><th>Ссылка</th><th></th></tr></thead>
+        <tbody id="partnersTbody"></tbody>
+      </table>
+    </div>
+
+    <div class="panel" id="panel-news">
+      <div class="toolbar">
+        <div style="color:var(--gray);font-size:13.5px;" id="newsCount"></div>
+        <button class="add-btn" id="addNewsBtn">+ Добавить новость</button>
+      </div>
+      <table>
+        <thead><tr><th>Заголовок</th><th>Подзаголовок</th><th>Дата</th><th></th></tr></thead>
+        <tbody id="newsTbody"></tbody>
+      </table>
+    </div>
+
+    <div class="panel" id="panel-orders">
+      <div class="toolbar">
+        <div style="color:var(--gray);font-size:13.5px;" id="orderCount"></div>
+        <button class="add-btn" id="refreshOrdersBtn" style="background:none;border:1px solid var(--line);color:var(--white);">Обновить</button>
+      </div>
+      <table>
+        <thead><tr><th>ID заказа</th><th>Товары</th><th>Контакт</th><th>Сумма</th><th>Промокод</th><th>Оплата</th><th>Чек</th><th>Статус</th><th>Дата</th><th></th></tr></thead>
+        <tbody id="ordersTbody"></tbody>
+      </table>
+    </div>
+
+    <div class="panel" id="panel-promocodes">
+      <div class="toolbar">
+        <div style="color:var(--gray);font-size:13.5px;" id="promoCount"></div>
+        <button class="add-btn" id="addPromoBtn">+ Создать промокод</button>
+      </div>
+      <table>
+        <thead><tr><th>Код</th><th>Скидка</th><th>Тип</th><th>Использований</th><th>Действует до</th><th>Статус</th><th></th></tr></thead>
+        <tbody id="promoTbody"></tbody>
+      </table>
+    </div>
+
+    <div class="panel" id="panel-requisites">
+      <div style="max-width:520px;">
+        <h4 style="font-size:15px;font-weight:700;margin-bottom:14px;color:var(--white);">Реквизиты для оплаты</h4>
+        <div class="field"><label>Номер карты</label><input id="rq_card" placeholder="0000 0000 0000 0000"></div>
+        <div class="field"><label>Банк</label><input id="rq_bank" placeholder="Т-Банк, Сбербанк..."></div>
+        <div class="field"><label>Получатель перевода (ФИО)</label><input id="rq_name" placeholder="Тимур Б."></div>
+        <div class="field">
+          <label>Комментарий / инструкция для клиента</label>
+          <textarea id="rq_comment" rows="3" style="width:100%;padding:13px 16px;border-radius:12px;background:var(--bg);border:1px solid var(--line);color:var(--white);font-size:14px;outline:none;resize:vertical;font-family:inherit;" placeholder="Например: в комментарии к переводу укажите номер заказа"></textarea>
+        </div>
+
+        <h4 style="font-size:15px;font-weight:700;margin:22px 0 14px;color:var(--white);border-top:1px solid var(--line);padding-top:18px;">Данные самозанятого (Оферта и подвал)</h4>
+        <div class="field">
+          <label>ФИО самозанятого (для публичной оферты и чекаута)</label>
+          <input id="rq_self_employed_name" placeholder="Бенаи Тимур Рустамович">
+        </div>
+        <div class="field">
+          <label>ИНН самозанятого</label>
+          <input id="rq_self_employed_inn" placeholder="920159216794">
+        </div>
+        <div style="font-size:12px;color:var(--gray);margin-bottom:14px;">
+          Эти данные отображаются в подвале сайта, в форме оформления заказа и в тексте официальной <a href="/oferta" target="_blank" style="text-decoration:underline;color:var(--white);">Публичной оферты</a>.
+        </div>
+        <div id="rqSaved" style="color:var(--green);font-size:13px;min-height:18px;margin-bottom:10px;"></div>
+        <button class="add-btn" id="saveRequisites">Сохранить реквизиты</button>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-settings">
+      <div style="max-width:520px;">
+        <h4 style="font-size:15px;font-weight:700;margin-bottom:14px;color:var(--white);">Отображение блоков на сайте</h4>
+        <div class="rate-card" style="padding:20px;">
+          <label style="display:flex;align-items:center;justify-content:space-between;gap:16px;cursor:pointer;">
+            <span>
+              <span style="display:block;font-weight:600;font-size:14px;">Скрыть рулетку скидок</span>
+              <span style="display:block;color:var(--gray);font-size:12.5px;margin-top:4px;line-height:1.5;">
+                Убирает секцию рулетки, пункт «Колесо бонусов» в мобильном меню и вопрос про рулетку в FAQ. Выдача промокодов рулеткой тоже отключается.
+              </span>
+            </span>
+            <input type="checkbox" id="st_roulette_hidden" style="width:20px;height:20px;flex-shrink:0;cursor:pointer;">
+          </label>
+        </div>
+        <div id="settingsMsg" style="min-height:20px;margin:12px 0;font-size:13px;"></div>
+        <button class="add-btn" id="saveSettings">Сохранить настройки</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRODUCT MODAL -->
+<div class="overlay" id="overlay"></div>
+<div class="modal" id="productModal">
+  <div class="modal-head"><h3 id="modalTitle">Новый товар</h3></div>
+  <div class="modal-body">
+    <div class="grid2">
+      <div class="field"><label>Название</label><input id="f_name"></div>
+      <div class="field"><label>Раздел</label>
+        <select id="f_section" style="width:100%;padding:13px 16px;border-radius:12px;background:var(--bg);border:1px solid var(--line);color:var(--white);">
+          <option value="catalog">Каталог</option>
+          <option value="case">Кейс</option>
+        </select>
+      </div>
+      <div class="field"><label>Категория</label><input id="f_cat" placeholder="Дизайн, Верификации..."></div>
+      <div class="field"><label>Иконка</label><input id="f_icon" placeholder="Категория или SVG"></div>
+      <div class="field"><label>Цена, ₽</label><input id="f_price" type="number"></div>
+      <div class="field"><label>Старая цена, ₽</label><input id="f_old" type="number"></div>
+    </div>
+    <div class="field"><label>Ссылка на фото (необязательно)</label><input id="f_img" placeholder="/images/product.png или https://..."></div>
+    <div class="field"><label>Описание</label><input id="f_desc"></div>
+    <div class="field" style="display:flex;align-items:center;gap:10px;margin-top:12px;">
+      <input type="checkbox" id="f_hidden" style="width:18px;height:18px;cursor:pointer;">
+      <label for="f_hidden" style="margin:0;cursor:pointer;font-size:13.5px;">Скрыть товар с сайта (не удаляя)</label>
+    </div>
+    <div id="productErr" style="color:var(--red);font-size:13px;min-height:18px;"></div>
+    <div class="hint">Фото можно положить в папку <b>public/images/</b> проекта и указать путь вида <code>/images/имя-файла.png</code>.</div>
+  </div>
+  <div class="modal-foot">
+    <button class="cancel-btn" id="cancelModal">Отмена</button>
+    <button class="save-btn" id="saveProduct">Сохранить</button>
+  </div>
+</div>
+
+<!-- NEWS MODAL -->
+<div class="modal" id="newsModal">
+  <div class="modal-head"><h3 id="newsModalTitle">Новая новость</h3></div>
+  <div class="modal-body">
+    <div class="grid2">
+      <div class="field"><label>Метка (тег)</label><input id="nf_tag" placeholder="#HustlifyNews"></div>
+      <div class="field"><label>Подпись под заголовком</label><input id="nf_stamp" placeholder="Новая коллаборация"></div>
+    </div>
+    <div class="field"><label>Заголовок (крупный, capslock-стиль)</label><input id="nf_title" placeholder="ЗОЛОТАЯ РАЗДАЧА"></div>
+    <div class="field"><label>Подзаголовок в теле карточки</label><input id="nf_headline" placeholder="Золотая раздача"></div>
+    <div class="field"><label>Текст новости</label><textarea id="nf_body" rows="4" style="width:100%;padding:13px 16px;border-radius:12px;background:var(--bg);border:1px solid var(--line);color:var(--white);font-size:14px;outline:none;resize:vertical;font-family:inherit;"></textarea></div>
+    <div id="newsErr" style="color:var(--red);font-size:13px;min-height:18px;"></div>
+  </div>
+  <div class="modal-foot">
+    <button class="cancel-btn" id="cancelNewsModal">Отмена</button>
+    <button class="save-btn" id="saveNews">Сохранить</button>
+  </div>
+</div>
+
+<!-- PROJECT MODAL -->
+<div class="modal" id="projectModalAdmin">
+  <div class="modal-head"><h3 id="projectModalTitle">Новый проект</h3></div>
+  <div class="modal-body">
+    <div class="grid2">
+      <div class="field"><label>Название проекта</label><input id="pf_title" placeholder="Apex Core"></div>
+      <div class="field"><label>Тип</label>
+        <select id="pf_type" style="width:100%;padding:13px 16px;border-radius:12px;background:var(--bg);border:1px solid var(--line);color:var(--white);">
+          <option value="telegram">Telegram</option>
+          <option value="site">Сайт</option>
+        </select>
+      </div>
+    </div>
+    <div class="field"><label>Ссылка (URL сайта или Telegram)</label><input id="pf_url" placeholder="https://... или https://t.me/..."></div>
+    <div class="grid2">
+      <div class="field"><label>Текст кнопки</label><input id="pf_btn" placeholder="Перейти на сайт / Подробнее в Telegram"></div>
+      <div class="field"><label>Ссылка на портфолио (необязательно)</label><input id="pf_portfolio" placeholder="https://t.me/..."></div>
+    </div>
+    <div class="field"><label>Изображение/логотип проекта</label><input id="pf_image" placeholder="/images/projects/apex.png"></div>
+    <div class="field" style="display:flex;align-items:center;gap:10px;">
+      <input type="checkbox" id="pf_hidden" style="width:16px;height:16px;">
+      <label for="pf_hidden" style="margin:0;">Скрыть проект с сайта (не удаляя)</label>
+    </div>
+    <div class="field"><label>Краткое описание (на обороте карточки на сайте)</label>
+      <textarea id="pf_shortdesc" rows="2" style="width:100%;padding:13px 16px;border-radius:12px;background:var(--bg);border:1px solid var(--line);color:var(--white);font-size:14px;outline:none;resize:vertical;font-family:inherit;" placeholder="Можно выделить фразу жирным через <b>...</b>"></textarea>
+    </div>
+    <div class="field"><label>Полное описание (во всплывающем окне «Подробнее»)</label>
+      <textarea id="pf_fulldesc" rows="4" style="width:100%;padding:13px 16px;border-radius:12px;background:var(--bg);border:1px solid var(--line);color:var(--white);font-size:14px;outline:none;resize:vertical;font-family:inherit;"></textarea>
+    </div>
+    <div id="projectErr" style="color:var(--red);font-size:13px;min-height:18px;"></div>
+    <div class="hint">Фото можно положить в папку <b>public/images/projects/</b> и указать путь вида <code>/images/projects/имя-файла.png</code>.</div>
+  </div>
+  <div class="modal-foot">
+    <button class="cancel-btn" id="cancelProjectModal">Отмена</button>
+    <button class="save-btn" id="saveProject">Сохранить</button>
+  </div>
+</div>
+
+<!-- PARTNER MODAL -->
+<div class="modal" id="partnerModal">
+  <div class="modal-head"><h3 id="partnerModalTitle">Новый партнёр</h3></div>
+  <div class="modal-body">
+    <div class="field"><label>Название партнёра</label><input id="ptf_name" placeholder="Партнер1"></div>
+    <div class="field"><label>Ссылка при нажатии</label><input id="ptf_url" placeholder="https://..."></div>
+    <div class="field"><label>Логотип (необязательно)</label><input id="ptf_logo" placeholder="/images/partners/logo.png"></div>
+    <div id="partnerErr" style="color:var(--red);font-size:13px;min-height:18px;"></div>
+    <div class="hint">Если логотип не указан — на сайте отображается кружок с надписью «ЛОГО», как на макете.</div>
+  </div>
+  <div class="modal-foot">
+    <button class="cancel-btn" id="cancelPartnerModal">Отмена</button>
+    <button class="save-btn" id="savePartner">Сохранить</button>
+  </div>
+</div>
+
+<div class="modal" id="promoModal">
+  <div class="modal-head"><h3>Новый промокод</h3></div>
+  <div class="modal-body">
+    <div class="grid2">
+      <div class="field"><label>Код (пусто — сгенерировать)</label><input id="pr_code" placeholder="SUMMER25" style="text-transform:uppercase;"></div>
+      <div class="field"><label>Скидка, %</label><input id="pr_discount" type="number" min="1" max="100" placeholder="15"></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Тип</label>
+        <select id="pr_type" style="width:100%;padding:13px 16px;border-radius:12px;background:var(--bg);border:1px solid var(--line);color:var(--white);">
+          <option value="single">Одноразовый</option>
+          <option value="multi">Многоразовый</option>
+        </select>
+      </div>
+      <div class="field" id="pr_maxWrap" style="display:none;"><label>Лимит использований (пусто — без лимита)</label><input id="pr_max" type="number" min="1" placeholder="100"></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Срок действия</label>
+        <select id="pr_expmode" style="width:100%;padding:13px 16px;border-radius:12px;background:var(--bg);border:1px solid var(--line);color:var(--white);">
+          <option value="none">Бессрочный</option>
+          <option value="days">Через N дней</option>
+          <option value="date">До даты и времени</option>
+        </select>
+      </div>
+      <div class="field" id="pr_daysWrap" style="display:none;"><label>Количество дней</label><input id="pr_days" type="number" min="1" placeholder="7"></div>
+      <div class="field" id="pr_dateWrap" style="display:none;"><label>Действует до</label><input id="pr_date" type="datetime-local"></div>
+    </div>
+    <div class="field"><label>Заметка (для себя)</label><input id="pr_note" placeholder="Например: блогер Иван"></div>
+    <div id="promoErr" style="color:var(--red);font-size:13px;min-height:18px;"></div>
+  </div>
+  <div class="modal-foot">
+    <button class="cancel-btn" id="cancelPromoModal">Отмена</button>
+    <button class="save-btn" id="savePromo">Создать</button>
+  </div>
+</div>
+
+<script>
+let editingId = null;
+let products = [];
+
+/* ---------------- HELPERS (определены раньше, чтобы были доступны всем разделам) ---------------- */
+function escapeHtmlAdmin(str){
+  return String(str == null ? '' : str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+var FLAG_EYE = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+var FLAG_EYE_OFF = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a21.86 21.86 0 0 1 5.06-6.06M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a21.86 21.86 0 0 1-2.16 3.19M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg>';
+var FLAG_X = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>';
+var FLAG_RESTORE = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>';
+
+/* ---------------- AUTH ---------------- */
+async function checkAuth(){
+  const res = await fetch('/api/admin/me');
+  if(res.ok){ showDash(); } else { showLogin(); }
+}
+function showLogin(){ document.getElementById('loginScreen').style.display='flex'; document.getElementById('dash').style.display='none'; }
+function showDash(){
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('dash').style.display='block';
+  loadProducts(); loadRates(); loadProjects(); loadPartners(); loadNews();
+  loadOrders(); loadPromos(); loadRequisites(); loadSettings();
+}
+
+document.getElementById('loginSubmit').onclick = async ()=>{
+  const login = document.getElementById('loginUser').value;
+  const password = document.getElementById('loginPass').value;
+  const err = document.getElementById('loginErr');
+  err.textContent = '';
+  try{
+    const res = await fetch('/api/admin/login', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({login, password})
+    });
+    const data = await res.json();
+    if(!res.ok){ err.textContent = data.error || 'Ошибка входа'; return; }
+    showDash();
+  }catch(e){ err.textContent = 'Сервер недоступен'; }
+};
+document.getElementById('logoutBtn').onclick = async ()=>{
+  await fetch('/api/admin/logout', {method:'POST'});
+  showLogin();
+};
+
+/* ---------------- TABS ---------------- */
+document.querySelectorAll('#mainTabs .tab').forEach(t=>{
+  t.onclick = ()=>{
+    document.querySelectorAll('#mainTabs .tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    const panelId = 'panel-'+t.dataset.tab;
+    const targetPanel = document.getElementById(panelId);
+    if(targetPanel) targetPanel.classList.add('active');
+    if(t.dataset.tab === 'stars-premium') loadRates();
+    if(t.dataset.tab === 'projects') loadProjects();
+    if(t.dataset.tab === 'partners') loadPartners();
+    if(t.dataset.tab === 'promocodes') loadPromos();
+    if(t.dataset.tab === 'settings') loadSettings();
+  };
+});
+
+/* ---------------- PRODUCTS SECTION FILTER (Каталог / Кейсы) ---------------- */
+let sectionFilterValue = 'all';
+document.querySelectorAll('#sectionFilter .tab').forEach(t=>{
+  t.onclick = ()=>{
+    document.querySelectorAll('#sectionFilter .tab').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    sectionFilterValue = t.dataset.sf;
+    renderProductsTable();
+  };
+});
+
+/* ---------------- API HELPER ---------------- */
+async function adminFetch(url, opts){
+  const res = await fetch(url, opts);
+  if(res.status === 401){ showLogin(); throw new Error('unauthorized'); }
+  return res;
+}
+
+/* ---------------- PRODUCTS ---------------- */
+function money(n){ return Number(n).toLocaleString('ru-RU') + ' ₽'; }
+
+async function loadProducts(){
+  try{
+    const res = await adminFetch('/api/admin/products');
+    products = await res.json();
+    if(!res.ok){ console.error('Ошибка загрузки товаров:', products.error); products = []; }
+  }catch(e){ return; }
+  renderProductsTable();
+}
+
+function renderProductsTable(){
+  const filtered = sectionFilterValue==='all' ? products : products.filter(p=>p.section===sectionFilterValue);
+  const hiddenCount = products.filter(p=>p.hidden).length;
+  document.getElementById('productCount').textContent = filtered.length + ' из ' + products.length + ' товаров' + (hiddenCount ? ` (${hiddenCount} скрыто)` : '');
+  const tbody = document.getElementById('productsTbody');
+  if(filtered.length===0){ tbody.innerHTML = '<tr><td colspan="7"><div class="empty">Ничего нет в этом разделе</div></td></tr>'; return; }
+  tbody.innerHTML = filtered.map(p=>`
+    <tr style="${p.hidden ? 'opacity:.6;' : ''}">
+      <td><div class="thumb">${p.img?`<img src="${p.img}">`:`<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>`}</div></td>
+      <td>${escapeHtmlAdmin(p.name)}</td>
+      <td>${p.section==='case'?'Кейс':'Каталог'}</td>
+      <td>${escapeHtmlAdmin(p.cat||'—')}</td>
+      <td class="num">${money(p.price)}</td>
+      <td>${p.hidden ? '<span class="status-tag hidden-tag" style="display:inline-block;">Скрыт</span>' : '<span style="color:var(--green);font-size:12.5px;font-weight:600;">Виден</span>'}</td>
+      <td>
+        <div class="row-actions">
+          <button class="icon-btn-sm" data-toggle="${p.id}" title="${p.hidden ? 'Показать на сайте' : 'Скрыть с сайта'}">${p.hidden ? FLAG_EYE_OFF : FLAG_EYE}</button>
+          <button class="icon-btn-sm" data-edit="${p.id}" title="Изменить"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
+          <button class="icon-btn-sm danger" data-del="${p.id}" title="Удалить"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+        </div>
+      </td>
+    </tr>`).join('');
+  tbody.querySelectorAll('[data-toggle]').forEach(b=> b.onclick = ()=> toggleProductHidden(b.dataset.toggle));
+  tbody.querySelectorAll('[data-edit]').forEach(b=> b.onclick = ()=> openModal(b.dataset.edit));
+  tbody.querySelectorAll('[data-del]').forEach(b=> b.onclick = ()=> deleteProduct(b.dataset.del));
+}
+
+async function toggleProductHidden(id){
+  const p = products.find(x=>x.id===id);
+  if(!p) return;
+  try{
+    const res = await adminFetch(`/api/admin/products/${id}`, {
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ hidden: !p.hidden })
+    });
+    if(!res.ok){ const d = await res.json().catch(()=>({})); alert(d.error || 'Не удалось изменить видимость товара'); return; }
+    loadProducts();
+  }catch(e){}
+}
+
+const overlay = document.getElementById('overlay');
+const productModal = document.getElementById('productModal');
+function openModal(id){
+  editingId = id || null;
+  const p = id ? products.find(x=>x.id===id) : null;
+  document.getElementById('modalTitle').textContent = id ? 'Редактировать товар' : 'Новый товар';
+  document.getElementById('productErr').textContent = '';
+  document.getElementById('f_name').value = p?.name || '';
+  document.getElementById('f_section').value = p?.section || 'catalog';
+  document.getElementById('f_cat').value = p?.cat || '';
+  document.getElementById('f_icon').value = p?.icon || '';
+  document.getElementById('f_price').value = p?.price || '';
+  document.getElementById('f_old').value = p?.old || '';
+  document.getElementById('f_img').value = p?.img || '';
+  document.getElementById('f_desc').value = p?.desc || '';
+  document.getElementById('f_hidden').checked = !!p?.hidden;
+  overlay.classList.add('open'); productModal.classList.add('open');
+}
+function closeModal(){ overlay.classList.remove('open'); productModal.classList.remove('open'); }
+document.getElementById('addProductBtn').onclick = ()=> openModal(null);
+document.getElementById('cancelModal').onclick = closeModal;
+overlay.onclick = closeModal;
+
+document.getElementById('saveProduct').onclick = async ()=>{
+  const errEl = document.getElementById('productErr');
+  errEl.textContent = '';
+  const body = {
+    name: document.getElementById('f_name').value.trim(),
+    section: document.getElementById('f_section').value,
+    cat: document.getElementById('f_cat').value.trim(),
+    icon: document.getElementById('f_icon').value.trim(),
+    price: Number(document.getElementById('f_price').value) || 0,
+    old: Number(document.getElementById('f_old').value) || 0,
+    img: document.getElementById('f_img').value.trim(),
+    desc: document.getElementById('f_desc').value.trim(),
+    hidden: document.getElementById('f_hidden').checked,
+    hit: false
+  };
+  if(!body.name || !body.price){ errEl.textContent = 'Укажите название и цену'; return; }
+
+  const btn = document.getElementById('saveProduct');
+  btn.disabled = true;
+  const url = editingId ? `/api/admin/products/${editingId}` : '/api/admin/products';
+  const method = editingId ? 'PUT' : 'POST';
+  try{
+    const res = await adminFetch(url, { method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    let data = {};
+    try{ data = await res.json(); }catch(e){}
+    if(!res.ok){
+      errEl.textContent = data.error || `Не удалось сохранить товар (код ${res.status})`;
+      btn.disabled = false;
+      return;
+    }
+    closeModal();
+    loadProducts();
+  }catch(e){
+    if(e.message !== 'unauthorized') errEl.textContent = 'Сервер недоступен. Проверьте соединение и попробуйте снова';
+  }
+  btn.disabled = false;
+};
+
+async function deleteProduct(id){
+  if(!confirm('Удалить этот товар?')) return;
+  try{
+    const res = await adminFetch(`/api/admin/products/${id}`, { method:'DELETE' });
+    if(!res.ok){ const d = await res.json().catch(()=>({})); alert(d.error || 'Не удалось удалить товар'); return; }
+    loadProducts();
+  }catch(e){}
+}
+
+/* ---------------- NEWS ---------------- */
+let newsItems = [];
+let editingNewsId = null;
+const newsModal = document.getElementById('newsModal');
+
+async function loadNews(){
+  try{
+    const res = await adminFetch('/api/admin/news');
+    newsItems = await res.json();
+    if(!res.ok){ console.error('Ошибка загрузки новостей:', newsItems.error); newsItems = []; }
+  }catch(e){ return; }
+  document.getElementById('newsCount').textContent = newsItems.length + ' новостей';
+  const tbody = document.getElementById('newsTbody');
+  if(newsItems.length===0){ tbody.innerHTML = '<tr><td colspan="4"><div class="empty">Новостей пока нет</div></td></tr>'; return; }
+  tbody.innerHTML = newsItems.map(n=>`
+    <tr>
+      <td>${n.title}</td>
+      <td style="color:var(--gray);">${n.stamp||'—'}</td>
+      <td style="color:var(--gray);font-size:12.5px;">${n.created_at ? new Date(n.created_at).toLocaleDateString('ru-RU') : '—'}</td>
+      <td>
+        <div class="row-actions">
+          <button class="icon-btn-sm" data-nedit="${n.id}" title="Изменить"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
+          <button class="icon-btn-sm danger" data-ndel="${n.id}" title="Удалить"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+        </div>
+      </td>
+    </tr>`).join('');
+  tbody.querySelectorAll('[data-nedit]').forEach(b=> b.onclick = ()=> openNewsModal(b.dataset.nedit));
+  tbody.querySelectorAll('[data-ndel]').forEach(b=> b.onclick = ()=> deleteNews(b.dataset.ndel));
+}
+
+function openNewsModal(id){
+  editingNewsId = id || null;
+  const n = id ? newsItems.find(x=>x.id===id) : null;
+  document.getElementById('newsModalTitle').textContent = id ? 'Редактировать новость' : 'Новая новость';
+  document.getElementById('newsErr').textContent = '';
+  document.getElementById('nf_tag').value = n?.tag || '#HustlifyNews';
+  document.getElementById('nf_stamp').value = n?.stamp || '';
+  document.getElementById('nf_title').value = n?.title || '';
+  document.getElementById('nf_headline').value = n?.headline || '';
+  document.getElementById('nf_body').value = n?.body || '';
+  overlay.classList.add('open'); newsModal.classList.add('open');
+}
+function closeNewsModal(){ overlay.classList.remove('open'); newsModal.classList.remove('open'); }
+document.getElementById('addNewsBtn').onclick = ()=> openNewsModal(null);
+document.getElementById('cancelNewsModal').onclick = closeNewsModal;
+overlay.onclick = ()=>{ closeModal(); closeNewsModal(); };
+
+document.getElementById('saveNews').onclick = async ()=>{
+  const errEl = document.getElementById('newsErr');
+  errEl.textContent = '';
+  const body = {
+    tag: document.getElementById('nf_tag').value.trim() || '#HustlifyNews',
+    stamp: document.getElementById('nf_stamp').value.trim(),
+    title: document.getElementById('nf_title').value.trim(),
+    headline: document.getElementById('nf_headline').value.trim(),
+    body: document.getElementById('nf_body').value.trim()
+  };
+  if(!body.title){ errEl.textContent = 'Укажите заголовок новости'; return; }
+  const btn = document.getElementById('saveNews');
+  btn.disabled = true;
+  const url = editingNewsId ? `/api/admin/news/${editingNewsId}` : '/api/admin/news';
+  const method = editingNewsId ? 'PUT' : 'POST';
+  try{
+    const res = await adminFetch(url, { method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    let data = {};
+    try{ data = await res.json(); }catch(e){}
+    if(!res.ok){
+      errEl.textContent = data.error || `Не удалось сохранить новость (код ${res.status})`;
+      btn.disabled = false;
+      return;
+    }
+    closeNewsModal();
+    loadNews();
+  }catch(e){
+    if(e.message !== 'unauthorized') errEl.textContent = 'Сервер недоступен. Проверьте соединение и попробуйте снова';
+  }
+  btn.disabled = false;
+};
+
+async function deleteNews(id){
+  if(!confirm('Удалить эту новость?')) return;
+  try{
+    const res = await adminFetch(`/api/admin/news/${id}`, { method:'DELETE' });
+    if(!res.ok){ const d = await res.json().catch(()=>({})); alert(d.error || 'Не удалось удалить новость'); return; }
+    loadNews();
+  }catch(e){}
+}
+
+/* ---------------- ORDERS ---------------- */
+const STATUS_LABEL = { paid:'Оплачен', canceled:'Отменён', moderation:'На модерации', pending:'Ожидает' };
+
+async function loadOrders(){
+  try{
+    const res = await adminFetch('/api/admin/orders');
+    var orders = await res.json();
+    if(!res.ok){ console.error('Ошибка загрузки заказов:', orders.error); orders = []; }
+  }catch(e){ return; }
+  document.getElementById('orderCount').textContent = orders.length + ' заказов';
+  const tbody = document.getElementById('ordersTbody');
+  if(orders.length===0){ tbody.innerHTML = '<tr><td colspan="10"><div class="empty">Заказов пока нет</div></td></tr>'; return; }
+  tbody.innerHTML = orders.map(o=>`
+    <tr>
+      <td style="font-family:monospace;font-size:12px;">${o.id}</td>
+<td>${o.items.map(i=> escapeHtmlAdmin(i.name != null ? i.name : i.id) + (i.target ? ' <span style="color:var(--blue);font-weight:600;">[' + escapeHtmlAdmin(i.target) + ']</span>' : '') + (i.qty>1 && !i.stars ? ' ×'+i.qty : '')).join('<br>')}</td>
+<td style="font-size:12.5px;">${o.contact ? escapeHtmlAdmin(o.contact) : '<span style="color:var(--gray-dim);">не указан</span>'}</td>
+      <td class="num">${money(o.total)}</td>
+      <td style="font-size:12px;">${o.promo_code ? `${o.promo_code} (-${o.discount_percent}%)` : '—'}</td>
+      <td>${o.payment?.provider || '—'}</td>
+      <td>${o.payment?.receiptUrl ? `<a href="${o.payment.receiptUrl}" target="_blank" style="color:var(--blue);">Открыть</a>` : '—'}</td>
+      <td><span class="pill ${o.status}">${STATUS_LABEL[o.status] || o.status}</span></td>
+      <td style="color:var(--gray);font-size:12.5px;">${new Date(o.created_at).toLocaleString('ru-RU')}</td>
+      <td>
+        <div class="row-actions">
+          ${o.status!=='paid' ? `<button class="icon-btn-sm" data-mark="${o.id}" title="Подтвердить оплату"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></button>` : ''}
+          ${o.status!=='canceled' ? `<button class="icon-btn-sm danger" data-cancel="${o.id}" title="Отклонить"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>` : ''}
+        </div>
+      </td>
+    </tr>`).join('');
+  tbody.querySelectorAll('[data-mark]').forEach(b=>{
+    b.onclick = async ()=>{
+      try{
+        const res = await adminFetch(`/api/admin/orders/${b.dataset.mark}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({status:'paid'}) });
+        if(!res.ok){ const d = await res.json().catch(()=>({})); alert(d.error || 'Не удалось обновить заказ'); return; }
+        loadOrders();
+      }catch(e){}
+    };
+  });
+  tbody.querySelectorAll('[data-cancel]').forEach(b=>{
+    b.onclick = async ()=>{
+      if(!confirm('Отклонить этот заказ?')) return;
+      try{
+        const res = await adminFetch(`/api/admin/orders/${b.dataset.cancel}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({status:'canceled'}) });
+        if(!res.ok){ const d = await res.json().catch(()=>({})); alert(d.error || 'Не удалось обновить заказ'); return; }
+        loadOrders();
+      }catch(e){}
+    };
+  });
+}
+document.getElementById('refreshOrdersBtn').onclick = loadOrders;
+
+/* ---------------- REQUISITES ---------------- */
+async function loadRequisites(){
+  try{
+    const res = await fetch('/api/requisites');
+    const r = await res.json();
+    document.getElementById('rq_card').value = r?.card_number || '';
+    document.getElementById('rq_bank').value = r?.bank_name || '';
+    document.getElementById('rq_name').value = r?.recipient_name || '';
+    document.getElementById('rq_comment').value = r?.comment || '';
+    document.getElementById('rq_self_employed_name').value = r?.self_employed_name || 'Бенаи Тимур Рустамович';
+    document.getElementById('rq_self_employed_inn').value = r?.self_employed_inn || '920159216794';
+  }catch(e){}
+}
+document.getElementById('saveRequisites').onclick = async ()=>{
+  const saved = document.getElementById('rqSaved');
+  saved.textContent = '';
+  const body = {
+    card_number: document.getElementById('rq_card').value.trim(),
+    bank_name: document.getElementById('rq_bank').value.trim(),
+    recipient_name: document.getElementById('rq_name').value.trim(),
+    comment: document.getElementById('rq_comment').value.trim(),
+    self_employed_name: document.getElementById('rq_self_employed_name').value.trim(),
+    self_employed_inn: document.getElementById('rq_self_employed_inn').value.trim()
+  };
+  try{
+    const res = await adminFetch('/api/admin/requisites', { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    if(!res.ok){ const d = await res.json().catch(()=>({})); saved.style.color='var(--red)'; saved.textContent = d.error || 'Не удалось сохранить'; }
+    else { saved.style.color='var(--green)'; saved.textContent = 'Сохранено'; }
+  }catch(e){
+    saved.style.color='var(--red)'; saved.textContent = 'Сервер недоступен';
+  }
+  setTimeout(()=> saved.textContent='', 2500);
+};
+
+/* ---------------- RATES (STARS & PREMIUM) ---------------- */
+function updateStarsPreview(rate){
+  const r = Math.max(0, parseFloat(rate) || 0);
+  const p25 = document.getElementById('prev_stars_25');
+  const p100 = document.getElementById('prev_stars_100');
+  const p250 = document.getElementById('prev_stars_250');
+  const p1000 = document.getElementById('prev_stars_1000');
+  const p5000 = document.getElementById('prev_stars_5000');
+  const p10000 = document.getElementById('prev_stars_10000');
+  if(p25) p25.textContent = Math.round(25 * r).toLocaleString('ru-RU') + ' ₽';
+  if(p100) p100.textContent = Math.round(100 * r).toLocaleString('ru-RU') + ' ₽';
+  if(p250) p250.textContent = Math.round(250 * r).toLocaleString('ru-RU') + ' ₽';
+  if(p1000) p1000.textContent = Math.round(1000 * r).toLocaleString('ru-RU') + ' ₽';
+  if(p5000) p5000.textContent = Math.round(5000 * r).toLocaleString('ru-RU') + ' ₽';
+  if(p10000) p10000.textContent = Math.round(10000 * r).toLocaleString('ru-RU') + ' ₽';
+}
+
+const rateStarsInput = document.getElementById('rate_stars_price');
+if(rateStarsInput){
+  rateStarsInput.addEventListener('input', (e)=> updateStarsPreview(e.target.value));
+}
+
+async function loadRates(){
+  try{
+    const res = await adminFetch('/api/admin/rates');
+    const data = await res.json();
+    if(!res.ok) return;
+
+    ratesFlags.stars.hidden  = !!(data.stars && data.stars.hidden);
+    ratesFlags.stars.deleted = !!(data.stars && data.stars.deleted);
+    [3,6,9,12].forEach(function(m){
+      var pm = data.premium && data.premium[m];
+      ratesFlags[m].hidden  = !!(pm && pm.hidden);
+      ratesFlags[m].deleted = !!(pm && pm.deleted);
+    });
+    applyFlagsUI();
+
+    if(data.stars){
+      const starsPrice = data.stars.price ?? 2;
+      const starsOld = data.stars.old ?? 3;
+      if(document.getElementById('rate_stars_price')) document.getElementById('rate_stars_price').value = starsPrice;
+      if(document.getElementById('rate_stars_old')) document.getElementById('rate_stars_old').value = starsOld;
+      updateStarsPreview(starsPrice);
+    }
+    if(data.premium){
+      if(data.premium[3]){
+        if(document.getElementById('rate_prem3_price')) document.getElementById('rate_prem3_price').value = data.premium[3].price ?? 990;
+        if(document.getElementById('rate_prem3_old')) document.getElementById('rate_prem3_old').value = data.premium[3].old ?? 1290;
+      }
+      if(data.premium[6]){
+        if(document.getElementById('rate_prem6_price')) document.getElementById('rate_prem6_price').value = data.premium[6].price ?? 1790;
+        if(document.getElementById('rate_prem6_old')) document.getElementById('rate_prem6_old').value = data.premium[6].old ?? 2290;
+      }
+      if(data.premium[9]){
+        if(document.getElementById('rate_prem9_price')) document.getElementById('rate_prem9_price').value = data.premium[9].price ?? 2490;
+        if(document.getElementById('rate_prem9_old')) document.getElementById('rate_prem9_old').value = data.premium[9].old ?? 3190;
+      }
+      if(data.premium[12]){
+        if(document.getElementById('rate_prem12_price')) document.getElementById('rate_prem12_price').value = data.premium[12].price ?? 2990;
+        if(document.getElementById('rate_prem12_old')) document.getElementById('rate_prem12_old').value = data.premium[12].old ?? 3990;
+      }
+    }
+  }catch(e){}
+}
+
+const saveRatesBtn = document.getElementById('saveRatesBtn');
+if(saveRatesBtn){
+  saveRatesBtn.onclick = async ()=>{
+    const statusEl = document.getElementById('ratesStatusMsg');
+    statusEl.textContent = '';
+    statusEl.style.color = 'var(--white)';
+    saveRatesBtn.disabled = true;
+
+    const payload = {
+      stars: {
+        price: parseFloat(document.getElementById('rate_stars_price').value) || 2,
+        old: parseFloat(document.getElementById('rate_stars_old').value) || 0,
+        hidden: ratesFlags.stars.hidden, deleted: ratesFlags.stars.deleted
+      },
+      premium: {
+        3: {
+          price: parseInt(document.getElementById('rate_prem3_price').value) || 990,
+          old: parseInt(document.getElementById('rate_prem3_old').value) || 0,
+          hidden: ratesFlags[3].hidden, deleted: ratesFlags[3].deleted
+        },
+        6: {
+          price: parseInt(document.getElementById('rate_prem6_price').value) || 1790,
+          old: parseInt(document.getElementById('rate_prem6_old').value) || 0,
+          hidden: ratesFlags[6].hidden, deleted: ratesFlags[6].deleted
+        },
+        9: {
+          price: parseInt(document.getElementById('rate_prem9_price').value) || 2490,
+          old: parseInt(document.getElementById('rate_prem9_old').value) || 0,
+          hidden: ratesFlags[9].hidden, deleted: ratesFlags[9].deleted
+        },
+        12: {
+          price: parseInt(document.getElementById('rate_prem12_price').value) || 2990,
+          old: parseInt(document.getElementById('rate_prem12_old').value) || 0,
+          hidden: ratesFlags[12].hidden, deleted: ratesFlags[12].deleted
+        }
+      }
+    };
+
+    try{
+      const res = await adminFetch('/api/admin/rates', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json().catch(()=>({}));
+      if(!res.ok){
+        statusEl.style.color = 'var(--red)';
+        statusEl.textContent = data.error || 'Не удалось сохранить курсы';
+        saveRatesBtn.disabled = false;
+        return;
+      }
+      statusEl.style.color = 'var(--green)';
+      statusEl.textContent = 'Курсы успешно сохранены и применены в магазине!';
+      await loadRates();
+      loadProducts();
+      setTimeout(()=>{ statusEl.textContent = ''; }, 3500);
+    }catch(e){
+      if(e.message !== 'unauthorized'){
+        statusEl.style.color = 'var(--red)';
+        statusEl.textContent = 'Сервер недоступен. Проверьте соединение';
+      }
+    }
+    saveRatesBtn.disabled = false;
+  };
+}
+
+/* ---- Скрыть / удалить / восстановить Stars и Premium ---- */
+var ratesFlags = {
+  stars: { hidden:false, deleted:false },
+  3: { hidden:false, deleted:false }, 6: { hidden:false, deleted:false },
+  9: { hidden:false, deleted:false }, 12: { hidden:false, deleted:false }
+};
+var FLAG_LABEL = { stars:'Telegram Звёзды', 3:'Premium 3 мес.', 6:'Premium 6 мес.', 9:'Premium 9 мес.', 12:'Premium 12 мес.' };
+
+function flagBox(key){
+  if(key === 'stars') return document.querySelector('#panel-stars-premium .rates-grid .rate-card');
+  var idx = { 3:0, 6:1, 9:2, 12:3 }[key];
+  return document.querySelectorAll('#panel-stars-premium .rate-box')[idx] || null;
+}
+
+function initFlagControls(){
+  Object.keys(ratesFlags).forEach(function(key){
+    var box = flagBox(key);
+    if(!box || box.querySelector('.rate-actions')) return;
+    var head = key === 'stars' ? box.querySelector('.rate-card-head') : box.querySelector('.rate-box-title');
+    if(!head) return;
+    var wrap = document.createElement('div');
+    wrap.className = 'rate-actions';
+    wrap.innerHTML = '<span class="status-tag"></span>' +
+      '<button type="button" class="icon-btn-sm" data-role="hide"></button>' +
+      '<button type="button" class="icon-btn-sm" data-role="del"></button>';
+    head.appendChild(wrap);
+    wrap.querySelector('[data-role="hide"]').onclick = function(){ onFlagHide(key); };
+    wrap.querySelector('[data-role="del"]').onclick = function(){ onFlagDelete(key); };
+  });
+  applyFlagsUI();
+}
+
+function applyFlagsUI(){
+  Object.keys(ratesFlags).forEach(function(key){
+    var f = ratesFlags[key];
+    var box = flagBox(key);
+    if(!box) return;
+    box.classList.toggle('is-hidden', f.hidden && !f.deleted);
+    box.classList.toggle('is-deleted', f.deleted);
+    var tag = box.querySelector('.status-tag');
+    var hideBtn = box.querySelector('[data-role="hide"]');
+    var delBtn = box.querySelector('[data-role="del"]');
+    if(!tag || !hideBtn || !delBtn) return;
+    tag.className = 'status-tag' + (f.deleted ? ' deleted-tag' : (f.hidden ? ' hidden-tag' : ''));
+    tag.textContent = f.deleted ? 'Удалён' : (f.hidden ? 'Скрыт' : '');
+    hideBtn.style.display = f.deleted ? 'none' : '';
+    hideBtn.title = f.hidden ? 'Показать на сайте' : 'Скрыть с сайта';
+    hideBtn.innerHTML = f.hidden ? FLAG_EYE_OFF : FLAG_EYE;
+    delBtn.title = f.deleted ? 'Восстановить' : 'Удалить';
+    delBtn.classList.toggle('danger', !f.deleted);
+    delBtn.innerHTML = f.deleted ? FLAG_RESTORE : FLAG_X;
+    delBtn.style.pointerEvents = 'auto';
+  });
+}
+
+function saveFlagsNow(){
+  applyFlagsUI();
+  var b = document.getElementById('saveRatesBtn');
+  if(b) b.click();
+}
+function onFlagHide(key){
+  ratesFlags[key].hidden = !ratesFlags[key].hidden;
+  saveFlagsNow();
+}
+function onFlagDelete(key){
+  var f = ratesFlags[key];
+  if(f.deleted){ f.deleted = false; f.hidden = false; saveFlagsNow(); return; }
+  if(!confirm('Удалить «' + FLAG_LABEL[key] + '»? Позиция пропадёт с сайта. Её можно восстановить кнопкой на этой же карточке.')) return;
+  f.deleted = true;
+  saveFlagsNow();
+}
+initFlagControls();
+
+/* ---------------- PROJECTS MANAGEMENT (Проекты Hustlify) ---------------- */
+let projectsItems = [];
+let editingProjectId = null;
+const projectModalAdmin = document.getElementById('projectModalAdmin');
+const TYPE_LABEL = { site: 'Сайт', telegram: 'Telegram' };
+
+async function loadProjects(){
+  try{
+    const res = await adminFetch('/api/admin/projects');
+    projectsItems = await res.json();
+    if(!res.ok){ console.error('Ошибка загрузки проектов:', projectsItems.error); projectsItems = []; }
+  }catch(e){ return; }
+  document.getElementById('projectsCount').textContent = projectsItems.length + ' проектов';
+  const tbody = document.getElementById('projectsTbody');
+  if(projectsItems.length===0){ tbody.innerHTML = '<tr><td colspan="5"><div class="empty">Проектов пока нет</div></td></tr>'; return; }
+  tbody.innerHTML = projectsItems.map(p=>`
+    <tr style="${p.hidden ? 'opacity:.55;' : ''}">
+      <td>${escapeHtmlAdmin(p.title)}</td>
+      <td style="color:var(--gray);">${TYPE_LABEL[p.type] || p.type}</td>
+      <td style="color:var(--gray);font-size:12.5px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtmlAdmin(p.url || '—')}</td>
+      <td>${p.hidden
+          ? '<span style="color:var(--gray);font-size:12.5px;">Скрыт</span>'
+          : '<span style="color:var(--green);font-size:12.5px;">Виден</span>'}</td>
+      <td>
+        <div class="row-actions">
+          <button class="icon-btn-sm" data-ptoggle="${p.id}" title="${p.hidden ? 'Показать на сайте' : 'Скрыть с сайта'}">${p.hidden
+              ? '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a21.86 21.86 0 0 1 5.06-6.06M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a21.86 21.86 0 0 1-2.16 3.19M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg>'
+              : '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'}</button>
+          <button class="icon-btn-sm" data-pedit="${p.id}" title="Изменить"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
+          <button class="icon-btn-sm danger" data-pdel="${p.id}" title="Удалить"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+        </div>
+      </td>
+    </tr>`).join('');
+  tbody.querySelectorAll('[data-pedit]').forEach(b=> b.onclick = ()=> openProjectModalAdmin(b.dataset.pedit));
+  tbody.querySelectorAll('[data-pdel]').forEach(b=> b.onclick = ()=> deleteProject(b.dataset.pdel));
+  tbody.querySelectorAll('[data-ptoggle]').forEach(b=> b.onclick = ()=> toggleProjectHidden(b.dataset.ptoggle));
+}
+
+async function toggleProjectHidden(id){
+  const p = projectsItems.find(x=>x.id===id);
+  if(!p) return;
+  try{
+    const res = await adminFetch(`/api/admin/projects/${id}`, {
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ hidden: !p.hidden })
+    });
+    if(!res.ok){ const d = await res.json().catch(()=>({})); alert(d.error || 'Не удалось изменить видимость проекта'); return; }
+    loadProjects();
+  }catch(e){}
+}
+
+function openProjectModalAdmin(id){
+  editingProjectId = id || null;
+  const p = id ? projectsItems.find(x=>x.id===id) : null;
+  document.getElementById('projectModalTitle').textContent = id ? 'Редактировать проект' : 'Новый проект';
+  document.getElementById('projectErr').textContent = '';
+  document.getElementById('pf_title').value = p?.title || '';
+  document.getElementById('pf_type').value = p?.type || 'telegram';
+  document.getElementById('pf_url').value = p?.url || '';
+  document.getElementById('pf_btn').value = p?.buttonText || '';
+  document.getElementById('pf_portfolio').value = p?.portfolioUrl || '';
+  document.getElementById('pf_image').value = p?.image || '';
+  document.getElementById('pf_shortdesc').value = p?.shortDesc || '';
+  document.getElementById('pf_fulldesc').value = p?.fullDesc || '';
+  document.getElementById('pf_hidden').checked = !!p?.hidden;
+  overlay.classList.add('open'); projectModalAdmin.classList.add('open');
+}
+function closeProjectModalAdmin(){ overlay.classList.remove('open'); projectModalAdmin.classList.remove('open'); }
+document.getElementById('addProjectBtn').onclick = ()=> openProjectModalAdmin(null);
+document.getElementById('cancelProjectModal').onclick = closeProjectModalAdmin;
+
+document.getElementById('saveProject').onclick = async ()=>{
+  const errEl = document.getElementById('projectErr');
+  errEl.textContent = '';
+  const body = {
+    title: document.getElementById('pf_title').value.trim(),
+    type: document.getElementById('pf_type').value,
+    url: document.getElementById('pf_url').value.trim(),
+    buttonText: document.getElementById('pf_btn').value.trim(),
+    portfolioUrl: document.getElementById('pf_portfolio').value.trim(),
+    image: document.getElementById('pf_image').value.trim(),
+    shortDesc: document.getElementById('pf_shortdesc').value.trim(),
+    fullDesc: document.getElementById('pf_fulldesc').value.trim(),
+    hidden: document.getElementById('pf_hidden').checked
+  };
+  if(!body.title){ errEl.textContent = 'Укажите название проекта'; return; }
+  const btn = document.getElementById('saveProject');
+  btn.disabled = true;
+  const url = editingProjectId ? `/api/admin/projects/${editingProjectId}` : '/api/admin/projects';
+  const method = editingProjectId ? 'PUT' : 'POST';
+  try{
+    const res = await adminFetch(url, { method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    let data = {};
+    try{ data = await res.json(); }catch(e){}
+    if(!res.ok){
+      errEl.textContent = data.error || `Не удалось сохранить проект (код ${res.status})`;
+      btn.disabled = false;
+      return;
+    }
+    closeProjectModalAdmin();
+    loadProjects();
+  }catch(e){
+    if(e.message !== 'unauthorized') errEl.textContent = 'Сервер недоступен. Проверьте соединение и попробуйте снова';
+  }
+  btn.disabled = false;
+};
+
+async function deleteProject(id){
+  if(!confirm('Удалить этот проект насовсем? Он пропадёт с сайта без возможности восстановления. Если нужно временно убрать проект с сайта — используйте кнопку "глаз" вместо удаления.')) return;
+  try{
+    const res = await adminFetch(`/api/admin/projects/${id}`, { method:'DELETE' });
+    if(!res.ok){ const d = await res.json().catch(()=>({})); alert(d.error || 'Не удалось удалить проект'); return; }
+    loadProjects();
+  }catch(e){}
+}
+
+/* ---------------- PARTNERS MANAGEMENT (Партнёры) ---------------- */
+let partnersItems = [];
+let editingPartnerId = null;
+const partnerModal = document.getElementById('partnerModal');
+
+async function loadPartners(){
+  try{
+    const res = await adminFetch('/api/admin/partners');
+    partnersItems = await res.json();
+    if(!res.ok){ console.error('Ошибка загрузки партнёров:', partnersItems.error); partnersItems = []; }
+  }catch(e){ return; }
+  document.getElementById('partnersCount').textContent = partnersItems.length + ' партнёров';
+  const tbody = document.getElementById('partnersTbody');
+  if(partnersItems.length===0){ tbody.innerHTML = '<tr><td colspan="3"><div class="empty">Партнёров пока нет</div></td></tr>'; return; }
+  tbody.innerHTML = partnersItems.map(p=>`
+    <tr>
+      <td>${escapeHtmlAdmin(p.name)}</td>
+      <td style="color:var(--gray);font-size:12.5px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtmlAdmin(p.url || '—')}</td>
+      <td>
+        <div class="row-actions">
+          <button class="icon-btn-sm" data-ptedit="${p.id}" title="Изменить"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
+          <button class="icon-btn-sm danger" data-ptdel="${p.id}" title="Удалить"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+        </div>
+      </td>
+    </tr>`).join('');
+  tbody.querySelectorAll('[data-ptedit]').forEach(b=> b.onclick = ()=> openPartnerModal(b.dataset.ptedit));
+  tbody.querySelectorAll('[data-ptdel]').forEach(b=> b.onclick = ()=> deletePartner(b.dataset.ptdel));
+}
+
+function openPartnerModal(id){
+  editingPartnerId = id || null;
+  const p = id ? partnersItems.find(x=>x.id===id) : null;
+  document.getElementById('partnerModalTitle').textContent = id ? 'Редактировать партнёра' : 'Новый партнёр';
+  document.getElementById('partnerErr').textContent = '';
+  document.getElementById('ptf_name').value = p?.name || '';
+  document.getElementById('ptf_url').value = p?.url || '';
+  document.getElementById('ptf_logo').value = p?.logo || '';
+  overlay.classList.add('open'); partnerModal.classList.add('open');
+}
+function closePartnerModal(){ overlay.classList.remove('open'); partnerModal.classList.remove('open'); }
+document.getElementById('addPartnerBtn').onclick = ()=> openPartnerModal(null);
+document.getElementById('cancelPartnerModal').onclick = closePartnerModal;
+
+document.getElementById('savePartner').onclick = async ()=>{
+  const errEl = document.getElementById('partnerErr');
+  errEl.textContent = '';
+  const body = {
+    name: document.getElementById('ptf_name').value.trim(),
+    url: document.getElementById('ptf_url').value.trim(),
+    logo: document.getElementById('ptf_logo').value.trim()
+  };
+  if(!body.name){ errEl.textContent = 'Укажите название партнёра'; return; }
+  const btn = document.getElementById('savePartner');
+  btn.disabled = true;
+  const url = editingPartnerId ? `/api/admin/partners/${editingPartnerId}` : '/api/admin/partners';
+  const method = editingPartnerId ? 'PUT' : 'POST';
+  try{
+    const res = await adminFetch(url, { method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    let data = {};
+    try{ data = await res.json(); }catch(e){}
+    if(!res.ok){
+      errEl.textContent = data.error || `Не удалось сохранить партнёра (код ${res.status})`;
+      btn.disabled = false;
+      return;
+    }
+    closePartnerModal();
+    loadPartners();
+  }catch(e){
+    if(e.message !== 'unauthorized') errEl.textContent = 'Сервер недоступен. Проверьте соединение и попробуйте снова';
+  }
+  btn.disabled = false;
+};
+
+async function deletePartner(id){
+  if(!confirm('Удалить этого партнёра? Он пропадёт с сайта.')) return;
+  try{
+    const res = await adminFetch(`/api/admin/partners/${id}`, { method:'DELETE' });
+    if(!res.ok){ const d = await res.json().catch(()=>({})); alert(d.error || 'Не удалось удалить партнёра'); return; }
+    loadPartners();
+  }catch(e){}
+}
+
+// клик по фону закрывает любые открытые модальные окна
+overlay.addEventListener('click', ()=>{ closeProjectModalAdmin(); closePartnerModal(); });
+
+/* ---------------- PROMOCODES ---------------- */
+let promoItems = [];
+const promoModal = document.getElementById('promoModal');
+
+function promoStatus(p){
+  const exp = p.expires_at || p.expiresAt;
+  const type = p.type || 'single';
+  const used = Number(p.used_count || 0);
+  if(p.active === false) return {t:'Отключён', c:'var(--gray)'};
+  if(exp && new Date(exp) <= new Date()) return {t:'Истёк', c:'var(--red)'};
+  if(type==='single' && (p.used || used>=1)) return {t:'Использован', c:'var(--gray)'};
+  if(type==='multi' && p.max_uses && used >= p.max_uses) return {t:'Лимит исчерпан', c:'var(--red)'};
+  return {t:'Активен', c:'var(--green)'};
+}
+
+async function loadPromos(){
+  try{
+    const res = await adminFetch('/api/admin/promocodes');
+    promoItems = await res.json();
+    if(!res.ok){ promoItems = []; }
+  }catch(e){ return; }
+  document.getElementById('promoCount').textContent = promoItems.length + ' промокодов';
+  const tbody = document.getElementById('promoTbody');
+  if(!promoItems.length){ tbody.innerHTML = '<tr><td colspan="7"><div class="empty">Промокодов пока нет</div></td></tr>'; return; }
+  tbody.innerHTML = promoItems.map(p=>{
+    const st = promoStatus(p);
+    const type = p.type || 'single';
+    const exp = p.expires_at || p.expiresAt;
+    const used = Number(p.used_count || (p.used ? 1 : 0));
+    const usage = type==='multi' ? (used + ' / ' + (p.max_uses || '∞')) : (used ? '1 / 1' : '0 / 1');
+    const isOff = p.active === false;
+    return `<tr>
+      <td style="font-family:monospace;font-size:13px;">${escapeHtmlAdmin(p.code)}${p.note ? `<div style="color:var(--gray-dim);font-size:11.5px;font-family:Inter;">${escapeHtmlAdmin(p.note)}</div>` : ''}</td>
+      <td class="num">-${p.discount}%</td>
+      <td>${type==='multi' ? 'Многоразовый' : 'Одноразовый'}</td>
+      <td>${usage}</td>
+      <td style="color:var(--gray);font-size:12.5px;">${exp ? new Date(exp).toLocaleString('ru-RU') : 'Бессрочно'}</td>
+      <td><span style="color:${st.c};font-size:12.5px;font-weight:600;">${st.t}</span></td>
+      <td><div class="row-actions">
+        <button class="icon-btn-sm" data-pcopy="${escapeHtmlAdmin(p.code)}" title="Скопировать код"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
+        <button class="icon-btn-sm" data-ptog="${escapeHtmlAdmin(p.code)}" data-off="${isOff?1:0}" title="${isOff?'Включить':'Отключить'}">${isOff?FLAG_EYE_OFF:FLAG_EYE}</button>
+        <button class="icon-btn-sm danger" data-pdelp="${escapeHtmlAdmin(p.code)}" title="Удалить">${FLAG_X}</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+
+  tbody.querySelectorAll('[data-pcopy]').forEach(b=> b.onclick = ()=> navigator.clipboard.writeText(b.dataset.pcopy).catch(()=>{}));
+  tbody.querySelectorAll('[data-ptog]').forEach(b=> b.onclick = async ()=>{
+    try{
+      await adminFetch('/api/admin/promocodes/' + encodeURIComponent(b.dataset.ptog), {
+        method:'PUT', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ active: b.dataset.off === '1' })
+      });
+      loadPromos();
+    }catch(e){}
+  });
+  tbody.querySelectorAll('[data-pdelp]').forEach(b=> b.onclick = async ()=>{
+    if(!confirm('Удалить промокод ' + b.dataset.pdelp + '?')) return;
+    try{
+      await adminFetch('/api/admin/promocodes/' + encodeURIComponent(b.dataset.pdelp), { method:'DELETE' });
+      loadPromos();
+    }catch(e){}
+  });
+}
+
+function syncPromoForm(){
+  document.getElementById('pr_maxWrap').style.display = document.getElementById('pr_type').value==='multi' ? '' : 'none';
+  const m = document.getElementById('pr_expmode').value;
+  document.getElementById('pr_daysWrap').style.display = m==='days' ? '' : 'none';
+  document.getElementById('pr_dateWrap').style.display = m==='date' ? '' : 'none';
+}
+document.getElementById('pr_type').onchange = syncPromoForm;
+document.getElementById('pr_expmode').onchange = syncPromoForm;
+
+function openPromoModal(){
+  ['pr_code','pr_discount','pr_max','pr_days','pr_date','pr_note'].forEach(id=> document.getElementById(id).value = '');
+  document.getElementById('pr_type').value = 'single';
+  document.getElementById('pr_expmode').value = 'none';
+  document.getElementById('promoErr').textContent = '';
+  syncPromoForm();
+  overlay.classList.add('open'); promoModal.classList.add('open');
+}
+function closePromoModal(){ overlay.classList.remove('open'); promoModal.classList.remove('open'); }
+document.getElementById('addPromoBtn').onclick = openPromoModal;
+document.getElementById('cancelPromoModal').onclick = closePromoModal;
+overlay.addEventListener('click', closePromoModal);
+
+document.getElementById('savePromo').onclick = async ()=>{
+  const errEl = document.getElementById('promoErr');
+  errEl.textContent = '';
+  const mode = document.getElementById('pr_expmode').value;
+  const body = {
+    code: document.getElementById('pr_code').value.trim(),
+    discount: Number(document.getElementById('pr_discount').value),
+    type: document.getElementById('pr_type').value,
+    max_uses: document.getElementById('pr_max').value || null,
+    note: document.getElementById('pr_note').value.trim()
+  };
+  if(mode === 'days') body.days = document.getElementById('pr_days').value;
+  if(mode === 'date'){
+    const v = document.getElementById('pr_date').value;
+    if(!v){ errEl.textContent = 'Укажите дату окончания'; return; }
+    body.expires_at = new Date(v).toISOString();
+  }
+  if(!body.discount){ errEl.textContent = 'Укажите скидку'; return; }
+  if(mode === 'days' && !body.days){ errEl.textContent = 'Укажите количество дней'; return; }
+
+  const btn = document.getElementById('savePromo');
+  btn.disabled = true;
+  try{
+    const res = await adminFetch('/api/admin/promocodes', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)
+    });
+    const data = await res.json().catch(()=>({}));
+    if(!res.ok){ errEl.textContent = data.error || 'Не удалось создать промокод'; btn.disabled = false; return; }
+    closePromoModal();
+    loadPromos();
+  }catch(e){
+    if(e.message !== 'unauthorized') errEl.textContent = 'Сервер недоступен';
+  }
+  btn.disabled = false;
+};
+
+/* ---------------- SETTINGS ---------------- */
+async function loadSettings(){
+  try{
+    const res = await adminFetch('/api/admin/settings');
+    const s = await res.json();
+    document.getElementById('st_roulette_hidden').checked = !!s.roulette_hidden;
+  }catch(e){}
+}
+document.getElementById('saveSettings').onclick = async ()=>{
+  const msg = document.getElementById('settingsMsg');
+  msg.textContent = '';
+  try{
+    const res = await adminFetch('/api/admin/settings', {
+      method:'PUT', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ roulette_hidden: document.getElementById('st_roulette_hidden').checked })
+    });
+    if(!res.ok){ const d = await res.json().catch(()=>({})); msg.style.color='var(--red)'; msg.textContent = d.error || 'Не удалось сохранить'; return; }
+    msg.style.color='var(--green)'; msg.textContent = 'Сохранено. Изменения уже применены на сайте.';
+  }catch(e){
+    if(e.message !== 'unauthorized'){ msg.style.color='var(--red)'; msg.textContent = 'Сервер недоступен'; }
+  }
+  setTimeout(()=> msg.textContent='', 3000);
+};
+
+checkAuth();
+</script>
+</body>
+</html>

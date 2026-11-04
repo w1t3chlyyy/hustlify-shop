@@ -1,0 +1,42 @@
+/* Hustlify pages-mobile.css — ai-agent, offer, payment-success/fail, upload */
+@media (max-width:860px){
+  html, body{ overflow-x:hidden; }
+  header{ padding:10px 0 !important; }
+  header .wrap, .header-wrap{ padding:0 16px; gap:10px; }
+  .logo-title, .brand-name, .logo-text{ font-size:14px; }
+  .back-btn, .head-back-btn, .btn-back-home, .btn-tg{ padding:8px 13px; font-size:12px; gap:6px; white-space:nowrap; }
+
+  /* payment-success / payment-fail */
+  main{ padding:22px 14px 40px; }
+  .card{ padding:28px 18px; border-radius:24px !important; }
+  .actions-group .btn-primary, .actions-group .btn-support{ padding:13px 16px; font-size:14px; }
+
+  /* offer */
+  .wrap{ padding:0 14px; }
+  .doc-card{ padding:22px 16px; margin-top:20px; border-radius:24px !important; }
+  .doc-section h2{ font-size:16px; }
+  .doc-section p, .doc-section li{ font-size:14px; text-align:left; }
+  .requisites-badge{ border-radius:18px; padding:10px 14px; gap:6px 12px; }
+  .req-box{ padding:14px 16px; }
+  .req-item{ flex-direction:column; gap:2px; }
+  .req-value{ text-align:left; word-break:break-word; }
+
+  /* ai-agent */
+  .nav-left{ gap:14px; }
+  .nav-left a{ font-size:13.5px; }
+  .ai-app-container{ height:calc(100dvh - 58px); min-height:0; }
+  .chat-topbar{ padding:12px 14px; }
+  .bot-avatar{ width:40px; height:40px; }
+  .bot-meta h2{ font-size:14.5px; flex-wrap:wrap; }
+  .msg-row{ max-width:96%; gap:8px; }
+  .msg-avatar{ width:30px; height:30px; }
+  .msg-bubble{ padding:11px 14px; font-size:14px; }
+  .chat-input-bar{ padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px)); }
+  .chat-textarea{ font-size:16px; }
+  .input-caption{ display:none; }
+  .rec-card{ flex-direction:column; align-items:stretch; }
+  .rec-card-foot{ flex-direction:row; align-items:center; justify-content:space-between; }
+
+  /* upload */
+  .card .drop-zone{ padding:32px 14px; }
+}
