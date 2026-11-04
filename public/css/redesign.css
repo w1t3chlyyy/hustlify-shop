@@ -125,8 +125,8 @@
 
   /* иконки: рамка = векторы Figma (inset 2.49% / 74.12% и 77.49%), картинка вынесена на ±8.4% из-за штриха */
   .rd-ico{ top:calc(183.7 * var(--u)); width:calc(88.8 * var(--u)); height:calc(85.7 * var(--u)); }
-  #searchBtn{ left:calc(4391 * var(--u)); }
-  #cartBtn{ left:calc(4596 * var(--u)); }
+  .rd-card #searchBtn{ left:calc(4391 * var(--u)); }
+  .rd-card #cartBtn{ left:calc(4596 * var(--u)); }
   .rd-ico .badge{ width:calc(60 * var(--u)); height:calc(60 * var(--u)); font-size:calc(34 * var(--u)); top:calc(-30 * var(--u)); right:calc(-44 * var(--u)); }
   #wishBtn, #mobileMenuBtn{ display:none; }
 
