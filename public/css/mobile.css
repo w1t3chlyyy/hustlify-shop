@@ -5,6 +5,30 @@ html, body{ overflow-x:clip; }
 body{ padding-bottom:100px !important; }
 body.no-scroll{ overflow:hidden; }
 /* ===== v2: по макету ===== */
+.rd-hero .rd-card{
+  border-radius:calc(200 * var(--m)) !important;
+  overflow:hidden !important;
+  clip-path:inset(0 round calc(200 * var(--m)));
+}
+.rd-hero .rd-card-bg{ border-radius:inherit; }
+.rd-hero .rd-card::after{
+  content:"";
+  position:absolute;
+  z-index:1;
+  left:calc(260 * var(--m));
+  top:calc(4300 * var(--m));
+  width:calc(2600 * var(--m));
+  height:calc(1500 * var(--m));
+  background:#102e78;
+  filter:blur(calc(220 * var(--m)));
+  opacity:.75;
+  pointer-events:none;
+}
+.rd-hero .rd-card .rd-3d{
+  z-index:2;
+  border-radius:0 0 calc(200 * var(--m)) calc(200 * var(--m));
+}
+
 /* калькулятор */
 .rd-calc{ background:radial-gradient(ellipse 80% 40% at 80% 60%, rgba(47,107,255,.3), transparent 70%), #fff !important; }
 .rd-calc .rd-h2{ font-size:28px; line-height:1.02; }
@@ -18,7 +42,7 @@ body.no-scroll{ overflow:hidden; }
 /* кейсы (вёрстка rd-case из позднего скрипта index.html) */
 .rd-case{ position:relative; overflow:hidden; color:#fff; border-radius:28px; cursor:pointer; isolation:isolate; --k:.1317px; }
 .rd-case-main{ height:360px; padding:26px 22px 22px; border-radius:32px; display:flex; flex-direction:column; background:linear-gradient(-47deg,#fff 0%,#2f6bff 45%); }
-.rd-case-main .rd-case-clip{ display:none; }
+.rd-case-main .rd-case-clip{ display:none !important; }
 .rd-case-side{ margin-top:14px; padding:22px 84px 22px 22px; background:#000; border:1px solid #fff; min-height:150px; }
 .rd-case-clip{ position:absolute; inset:0; overflow:hidden; z-index:0; border-radius:inherit; }
 .rd-deco{ position:absolute; left:calc(var(--dl) * var(--k)); top:calc(var(--dt) * var(--k)); width:calc(var(--ds) * var(--k)); height:calc(var(--ds) * var(--k)); transform:rotate(var(--dr)); overflow:hidden; pointer-events:none; z-index:0; opacity:.55; }
@@ -93,7 +117,7 @@ body.no-scroll{ overflow:hidden; }
 .rd2-cases{ row-gap:14px; }
 .rd2-case-big{ height:auto !important; min-height:0; padding:26px 22px 22px; display:flex; flex-direction:column; border-radius:32px !important; }
 html body .rd2-case-big > *:not(.rd2-rot){ position:relative !important; left:auto !important; top:auto !important; bottom:auto !important; }
-.rd2-case-big .rd2-rot{ opacity:.5; }
+.rd2-case-big .rd2-rot{ display:none !important; }
 .cb-title{ gap:10px !important; }
 .cb-ico{ width:44px !important; height:44px !important; }
 .cb-title h3{ font-size:26px !important; letter-spacing:-.04em !important; }
