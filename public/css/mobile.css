@@ -13,8 +13,12 @@ body.no-scroll{ overflow:hidden; }
 .rd-hero .rd-card-bg{ border-radius:inherit; }
 .rd-hero .rd-card .rd-3d{
   border-radius:0 0 calc(200 * var(--m)) calc(200 * var(--m));
-  -webkit-mask-image:radial-gradient(ellipse 90% 92% at 70% 50%, #000 38%, transparent 100%);
-  mask-image:radial-gradient(ellipse 90% 92% at 70% 50%, #000 38%, transparent 100%);
+  -webkit-mask-image:url('/images/design/hero-3d.png');
+  -webkit-mask-source-type:luminance;
+  mask-image:url('/images/design/hero-3d.png');
+  mask-mode:luminance;
+  mask-repeat:no-repeat;
+  mask-size:100% 100%;
 }
 
 /* калькулятор */
