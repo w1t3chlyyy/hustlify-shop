@@ -4157,7 +4157,13 @@ if(mbBarCart){
 document.querySelectorAll('.mobile-nav-link').forEach(link => {
   link.addEventListener('click', () => { closeAll(); });
 });
-
+document.querySelectorAll('[data-mn-proxy]').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    closeAll();
+    const target = document.getElementById(b.dataset.mnProxy);
+    if(target) target.click();
+  });
+});
 overlay.onclick = closeAll;
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeAll(); });
 
