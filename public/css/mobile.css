@@ -13,12 +13,6 @@ body.no-scroll{ overflow:hidden; }
 .rd-hero .rd-card-bg{ border-radius:inherit; }
 .rd-hero .rd-card .rd-3d{
   border-radius:0 0 calc(200 * var(--m)) calc(200 * var(--m));
-  -webkit-mask-image:url('/images/design/hero-3d.png');
-  -webkit-mask-source-type:luminance;
-  mask-image:url('/images/design/hero-3d.png');
-  mask-mode:luminance;
-  mask-repeat:no-repeat;
-  mask-size:100% 100%;
 }
 
 /* калькулятор */
@@ -182,7 +176,7 @@ html body .rd2-case-big > *:not(.rd2-rot){ position:relative !important; left:au
 .rd2-contact h2{ font-size:28px !important; letter-spacing:-.045em !important; line-height:1.05 !important; }
 .rd2-contact p{ font-size:15px !important; letter-spacing:-.01em !important; max-width:100% !important; line-height:1.35 !important; }
 .rd2-cbtn, .rd2-cbtn.tg, .rd2-cbtn.mini, .rd2-cbtn.ai{ height:56px !important; font-size:15px !important; letter-spacing:-.02em !important; }
-.rd2-contact .rd2-rot{ opacity:.55; }
+.rd2-contact .rd2-rot{ opacity:.3; }
 footer{ padding:32px 0 24px; }
 
 /* ================= НИЖНЯЯ ПАНЕЛЬ, МЕНЮ, ПОПАПЫ ================= */
