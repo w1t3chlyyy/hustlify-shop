@@ -233,3 +233,15 @@ footer{ padding:32px 0 24px; }
   html body .rd-hero .rd-card .rd-btn{ font-size:13px !important; }
   .rd2 .pgrid{ gap:8px !important; }
 }
+
+.mobile-nav-tools{ display:flex; gap:10px; padding:14px 16px 0; }
+.mn-tool{
+  flex:1; display:flex; align-items:center; justify-content:center; gap:10px;
+  height:48px; border-radius:14px; color:#fff; font:600 14px 'Montserrat',sans-serif;
+  background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.14);
+  transition:background .2s;
+}
+.mn-tool:active{ background:rgba(255,255,255,.14); }
+.mn-tool svg{ width:20px; height:20px; flex-shrink:0; }
+.mn-ico{ position:relative; display:inline-flex; }
+.mn-ico .badge{ top:-6px; right:-8px; background:#2f6bff; color:#fff; }
