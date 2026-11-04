@@ -108,23 +108,25 @@ async function sendTelegramDocument(documentUrl, caption) {
   }
 }
 
+const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
 function formatOrderMessage(order, prefix, title) {
   const itemsList = order.items
     .map(i => {
-      let line = `• ${i.name}${i.qty > 1 && !i.stars ? ' × ' + i.qty : ''} — ${i.price * (i.stars ? 1 : i.qty)} ₽`;
+      let line = `• ${esc(i.name)}${i.qty > 1 && !i.stars ? ' × ' + i.qty : ''} — ${i.price * (i.stars ? 1 : i.qty)} ₽`;
       if (i.target) {
-        line += `\n  ├ Получатель: <code>${i.target}</code>`;
+        line += `\n  ├ Получатель: <code>${esc(i.target)}</code>`;
       } else if (i.details && i.details !== i.name) {
-        line += `\n  ├ Детали: ${i.details}`;
+        line += `\n  ├ Детали: ${esc(i.details)}`;
       }
       return line;
     })
     .join('\n');
   const promoLine = order.promo_code
-    ? `\nПромокод: <b>${order.promo_code}</b> (-${order.discount_percent}%)`
+    ? `\nПромокод: <b>${esc(order.promo_code)}</b> (-${order.discount_percent}%)`
     : '';
   const contactLine = order.contact
-    ? `\nКонтакт: <b>${order.contact}</b>`
+    ? `\nКонтакт: <b>${esc(order.contact)}</b>`
     : '\nКонтакт: не указан';
 
   return (
@@ -151,7 +153,7 @@ function notifyReceiptUploaded(order) {
 }
 
 function notifySurveyCompleted(answers, promoCode) {
-  const answersText = answers.map((a, i) => `${i + 1}. ${a}`).join('\n');
+  const answersText = answers.map((a, i) => `${i + 1}. ${esc(a)}`).join('\n');
   const text =
     `<b>[SURVEY] Новый пройденный опрос</b>\n\n` +
     `Промокод: <code>${promoCode}</code> (-20%)\n\n` +

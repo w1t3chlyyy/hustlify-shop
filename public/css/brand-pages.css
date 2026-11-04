@@ -1,0 +1,13 @@
+/* Hustlify brand-pages.css — единый стиль внутренних страниц: белая страница, чёрные карточки, синие кнопки */
+html, body{ background:#fff !important; }
+.ambient{ background:#fff !important; } .noise{ display:none !important; }
+header{ background:#0a0a0c !important; -webkit-backdrop-filter:none !important; backdrop-filter:none !important; border-bottom:0 !important; }
+.btn-primary, .btn-tg, .send-btn, .calc-action-btn, .rec-card-btn{ background:#2f6bff !important; color:#fff !important; border-color:#2f6bff !important; }
+.btn-primary:hover, .btn-tg:hover{ background:#2358d6 !important; }
+.btn-support{ background:transparent; }
+.card, .chat-main, .sidebar-card, .doc-card{ border-radius:40px !important; }
+.doc-card{ background:#0b0c0e !important; }
+.msg-row.user .msg-bubble, .msg-row.user .msg-avatar{ background:#2f6bff !important; color:#fff !important; }
+.cfg-chip.active{ background:#2f6bff; border-color:#2f6bff; color:#fff; }
+footer, footer a{ color:#4d5366 !important; }
+h1, h2, h3, .brand-name{ letter-spacing:-.03em; }

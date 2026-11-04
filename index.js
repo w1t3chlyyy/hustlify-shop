@@ -19,7 +19,13 @@ app.use(express.json({
 }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.set('trust proxy', true); // корректный req.ip за Render/NGINX/Vercel
+app.set('trust proxy', true);
+app.use((req, res, next) => {
+  res.set('X-Content-Type-Options', 'nosniff');
+  res.set('X-Frame-Options', 'SAMEORIGIN');
+  res.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+}); // корректный req.ip за Render/NGINX/Vercel
 
 const uploadReceipt = multer({
   storage: multer.memoryStorage(),
@@ -117,6 +123,7 @@ app.get('/oferta', (req, res) => res.sendFile(path.join(__dirname, 'public', 'of
 
 /* ================= АДМИН-АВТОРИЗАЦИЯ ================= */
 const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(32).toString('hex');
+if (!process.env.JWT_SECRET && process.env.NODE_ENV === 'production') console.warn('ВНИМАНИЕ: JWT_SECRET не задан — вход в админку будет сбрасываться на serverless');
 
 function adminToken(res, login) {
   const token = jwt.sign({ admin: login }, JWT_SECRET, { expiresIn: '12h' });
@@ -164,7 +171,7 @@ app.post('/api/admin/login', (req, res) => {
   const { login, password } = req.body || {};
   const envLogin = process.env.ADMIN_LOGIN || 'admin';
   const defaultHash = '$2a$10$7H7mQwdjKfV3RkMmH1m8W.ZAjHiAo2ub4HlT33D9yzGGfi5BXUpF2';
-  const envHash = process.env.ADMIN_PASSWORD_HASH || defaultHash;
+  const envHash = process.env.ADMIN_PASSWORD_HASH || (process.env.NODE_ENV === 'production' ? '' : defaultHash);
   let ok = false;
   try { ok = login === envLogin && bcrypt.compareSync(String(password || ''), envHash); }
   catch (e) { ok = false; }
@@ -711,7 +718,7 @@ app.post('/api/orders', async (req, res) => {
       lines.push({
         id: p.id, name, price: unit, qty,
         stars, months: it.months || null,
-        target: it.target || null, details: it.details || null
+        target: it.target ? String(it.target).slice(0, 200) : null, details: it.details ? String(it.details).slice(0, 300) : null
       });
     }
 
@@ -730,7 +737,7 @@ app.post('/api/orders', async (req, res) => {
     const order = {
       id: 'hustlify_' + Date.now().toString(36) + crypto.randomBytes(3).toString('hex'),
       items: lines,
-      contact: String(contact || '').trim(),
+      contact: String(contact || '').trim().slice(0, 200),
       items_total: itemsTotal,
       discount_percent: discountPercent,
       promo_code: appliedCode,
@@ -1569,7 +1576,7 @@ app.post('/api/ai/chat', async (req, res) => {
     const ai = getGenAI();
     if (ai) {
       try {
-        const modelName = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
+        const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
         const contents = [
           ...history.map(h => ({
             role: h.role === 'assistant' ? 'model' : 'user',

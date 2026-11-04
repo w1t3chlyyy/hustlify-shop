@@ -1,9 +1,0 @@
-{
-  "version": 2,
-  "routes": [
-    {
-      "src": "/cases/:path*",
-      "dest": "https://hustlify-cases1.vercel.app/:path*"
-    }
-  ]
-}

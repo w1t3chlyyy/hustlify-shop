@@ -1,39 +1,40 @@
-/* =====================================================================
- * Vercel Serverless entrypoint (hustlify.site)
- * ---------------------------------------------------------------------
- * Домен hustlify.site обслуживается Vercel (в public/ лежит vercel.json).
- * Если в проекте нет обработчика для /api/* и при этом настроена
- * Edge-функция/роутинг, которая падает, Vercel отдаёт
- * 500 FUNCTION_INVOCATION_FAILED на ВСЕХ страницах сайта.
- *
- * Этот файл перехватывает весь трафик и пробрасывает его в то же самое
- * Express-приложение, что запускается локально через `npm start`
- * (static + API + промокоды + админка работают как раньше).
- * ===================================================================== */
+/* Vercel serverless entrypoint: пробрасывает запросы в Express-приложение.
+   JSON-тело читаем сами, чтобы сохранить ТОЧНЫЕ байты для проверки подписи вебхука RollyPay. */
 const { app } = require('../index.js');
 
+function readRaw(req) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    req.on('data', c => chunks.push(c));
+    req.on('end', () => resolve(Buffer.concat(chunks)));
+    req.on('error', reject);
+  });
+}
+function setBody(req, value) {
+  Object.defineProperty(req, 'body', { value, writable: true, configurable: true, enumerable: true });
+  req._body = true; // body-parser внутри Express пропустит повторное чтение потока
+}
+
 module.exports = async (req, res) => {
-  // На serverless raw-body может прийти base64/строкой — парсим сами,
-  // чтобы express.json() внутри приложения не зависел от stream-состояния.
-  if (req.method !== 'GET' && req.method !== 'HEAD') {
+  const ct = String(req.headers['content-type'] || '').toLowerCase();
+  if (req.method !== 'GET' && req.method !== 'HEAD' && ct.includes('application/json')) {
     try {
-      let raw = req.body || '';
-      if (req.isBase64) raw = Buffer.from(raw, 'base64').toString('utf8');
-      if (typeof raw === 'string' && raw.length) {
-        if (!req.rawBody) req.rawBody = Buffer.from(raw, 'utf8');
-        const ct = (req.headers['content-type'] || '').toLowerCase();
-        if (ct.includes('application/json')) {
-          try { req.body = JSON.parse(raw); } catch (e) { /* пусть сам разберёт */ }
-        }
-      } else if (raw && typeof raw === 'object') {
-        req.body = raw;
-        if (!req.rawBody) req.rawBody = Buffer.from(JSON.stringify(raw));
+      let raw;
+      if (req.readableEnded || req.destroyed) {
+        const b = req.body;
+        raw = Buffer.from(typeof b === 'string' ? b : JSON.stringify(b || {}), 'utf8');
+      } else {
+        raw = await readRaw(req);
       }
+      req.rawBody = raw;
+      let parsed = {};
+      if (raw.length) parsed = JSON.parse(raw.toString('utf8'));
+      setBody(req, parsed);
     } catch (e) {
-      console.error('serverless body parse error:', e && e.message);
+      res.statusCode = 400;
+      res.setHeader('Content-Type', 'application/json');
+      return res.end(JSON.stringify({ error: 'Некорректный JSON' }));
     }
   }
   return app(req, res);
 };
-
-module.exports.config = { api: { bodyParser: false } };

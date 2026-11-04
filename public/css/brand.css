@@ -1,0 +1,88 @@
+/* Hustlify brand.css — единый стиль: шапка-капсула, корзина, попапы */
+html{ scroll-padding-top:110px; }
+
+/* ---------- ШАПКА: элементы не двигаются, при скролле за ними появляется капсула ---------- */
+.rd-header{ position:fixed; top:0; left:0; right:0; z-index:300; padding-top:14px; pointer-events:none; }
+.rd-header-in{
+  pointer-events:auto; position:relative; isolation:isolate;
+  width:min(1560px, calc(100% - 32px)); height:80px; margin:0 auto; padding:0 44px;
+  display:flex; align-items:center; justify-content:space-between; gap:28px; color:#fff;
+}
+.rd-header-in::before{
+  content:''; position:absolute; inset:0; z-index:-1; border-radius:9999px;
+  background:rgba(10,10,12,.84); border:1px solid rgba(255,255,255,.16);
+  -webkit-backdrop-filter:blur(18px) saturate(150%); backdrop-filter:blur(18px) saturate(150%);
+  box-shadow:0 16px 48px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.08);
+  opacity:0; transform:scale(.985); transition:opacity .35s ease, transform .45s cubic-bezier(.16,1,.3,1);
+}
+.rd-header.scrolled .rd-header-in::before{ opacity:1; transform:none; }
+.rdh-logo{ display:flex; align-items:center; flex:none; }
+.rdh-logo img{ height:48px; width:auto; display:block; max-width:none; }
+.rdh-links{ display:flex; align-items:center; gap:clamp(22px,2.6vw,44px); }
+.rdh-links a{ font:600 17px/1 'Montserrat',sans-serif; letter-spacing:-.02em; white-space:nowrap; color:rgba(255,255,255,.78); text-decoration:none; transition:color .2s; }
+.rdh-links a:hover, .rdh-links a.active{ color:#fff; }
+.rdh-tools{ display:flex; align-items:center; gap:10px; flex:none; }
+.rdh-ico{ position:relative; width:46px; height:46px; border-radius:50%; border:0; background:transparent; color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:background .2s; }
+.rdh-ico:hover{ background:rgba(255,255,255,.14); }
+.rdh-ico svg{ width:24px; height:24px; }
+.rdh-ico .badge{ top:2px; right:0; background:#2f6bff; color:#fff; }
+#mobileMenuBtn{ display:none; }
+.rdh-cta{ display:flex; align-items:center; justify-content:center; height:54px; padding:0 34px; margin-left:8px; border-radius:9999px; border:2px solid #fff; background:rgba(217,217,217,.2); color:#fff; text-decoration:none; white-space:nowrap; font:500 16px/1 'Unbounded',sans-serif; transition:background .2s, transform .2s; }
+.rdh-cta:hover{ background:rgba(255,255,255,.3); transform:translateY(-2px); }
+@media (max-width:1100px){ .rdh-links{ display:none; } }
+/* временная мобильная шапка (полная переработка — на втором этапе) */
+@media (max-width:860px){
+  .rd-header{ padding-top:8px; }
+  .rd-header-in{ width:calc(100% - 16px); height:60px; padding:0 14px; }
+  .rdh-logo img{ height:36px; } .rdh-cta{ display:none; }
+  .rdh-ico{ width:40px; height:40px; } .rdh-ico svg{ width:21px; height:21px; }
+  #mobileMenuBtn{ display:flex; }
+}
+
+/* ---------- ПОПАПЫ И КОРЗИНА: светлая карточка, синие кнопки ---------- */
+.drawer, .search-modal{
+  --bg:#ffffff; --bg-soft:#f1f4fc; --card:#ffffff; --card-hi:#f6f8fe;
+  --white:#0a0a0c; --gray:#4d5366; --gray-dim:#80869a; --line:rgba(10,10,12,.12);
+  background:#fff; color:#0a0a0c; font-family:'Montserrat',sans-serif;
+  border:1px solid rgba(10,10,12,.08); box-shadow:0 40px 90px rgba(0,0,0,.35);
+}
+.search-modal{ border-radius:36px; }
+.drawer{ border-radius:36px 0 0 36px; border-right:0; }
+@media (max-width:860px){ .drawer{ border-radius:0; } }
+.drawer h3, .search-modal h3, .drawer h5{ color:#0a0a0c; }
+.drawer .close-x, .search-modal .close-x{ background:rgba(10,10,12,.07); color:#0a0a0c; }
+.drawer .close-x:hover, .search-modal .close-x:hover{ background:rgba(10,10,12,.14); }
+.search-modal .btn-white, .search-modal .btn-white:hover,
+.drawer .checkout-btn, .drawer .btn-white{
+  background:#2f6bff !important; color:#fff !important; border:0 !important; border-radius:200px;
+  font-family:'Unbounded',sans-serif; font-weight:600; box-shadow:none;
+}
+.search-modal .btn-white:hover, .drawer .checkout-btn:hover{ filter:brightness(1.1); transform:translateY(-2px); }
+.search-modal .btn-outline{ border:1.5px solid rgba(10,10,12,.25); color:#0a0a0c; border-radius:200px; }
+.search-modal .btn-outline:hover{ background:rgba(10,10,12,.05); }
+.search-modal input[type=checkbox]{ accent-color:#2f6bff; }
+.search-modal input[type=text], .search-modal input[type=file]{ border-radius:16px !important; border:1.5px solid rgba(10,10,12,.14) !important; background:#f1f4fc !important; color:#0a0a0c !important; }
+.search-modal input[type=text]:focus{ border-color:#2f6bff !important; }
+.search-modal a{ color:#2f6bff; }
+.search-modal .btn-white{ }
+.search-input-row{ border-bottom:1px solid rgba(10,10,12,.1); }
+.sr-item:hover{ background:rgba(10,10,12,.05); }
+.cart-item .ci-img{ background:#f1f4fc; }
+.ci-remove:hover{ color:#2f6bff; }
+.detail-media{ background:#eef2ff; border:0; }
+.detail-eyebrow{ color:#2f6bff; }
+.detail-price .now{ color:#0a0a0c; }
+#offerModal [style*="#d4d4d8"]{ color:#33384a !important; }
+#offerModal [style*="rgba(255,255,255,.04)"]{ background:#f1f4fc !important; }
+#offerModal a{ color:#2f6bff !important; }
+#receiptSentModal [style*="border-radius:50%"]{ background:#e9efff !important; color:#2f6bff !important; }
+.survey-q-title, .survey-opt-btn{ color:#0a0a0c; }
+.survey-opt-btn{ background:#f1f4fc; border-color:rgba(10,10,12,.12); }
+.toast{ background:#0a0a0c; color:#fff; }
+.overlay{ background:rgba(8,10,20,.5); }
+
+/* ---------- калькулятор: пояснение ---------- */
+.rd-disc{ margin:14px 0 0; font:500 12px/1.4 'Montserrat',sans-serif; color:rgba(0,0,0,.55); }
+@media (min-width:861px){
+  .rd-disc{ position:absolute; left:calc(3392 * var(--u)); top:calc(2400 * var(--u)); width:calc(2574 * var(--u)); margin:0; font-size:calc(44 * var(--u)); }
+}

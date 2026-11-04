@@ -9,7 +9,8 @@
     "start": "node server.js",
     "dev": "node server.js",
     "chat-id": "node get-chat-id.js",
-    "lint": "node --check index.js && node --check server.js && node --check telegram.js && node --check get-chat-id.js && node --check api/index.js"
+    "lint": "node --check index.js && node --check server.js && node --check telegram.js && node --check get-chat-id.js && node --check api/index.js && node --check sync-products.js",
+    "prod:check": "npm run lint"
   },
   "dependencies": {
     "@google/genai": "^2.25.0",
@@ -20,5 +21,8 @@
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.4.0"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }
