@@ -4104,6 +4104,8 @@ function updateBadges(){
   if(wc) wc.textContent = wishlist.length;
   if(cc) cc.textContent = totalQty;
   if(mbcc) mbcc.textContent = totalQty;
+  const mnc = document.getElementById('mnCartCount');
+if(mnc){ mnc.textContent = totalQty; mnc.hidden = !totalQty; }
   [wc,cc,mbcc].filter(Boolean).forEach(el=>{ el.classList.add('pop'); setTimeout(()=>el.classList.remove('pop'),350); });
 }
 
