@@ -13,6 +13,8 @@ body.no-scroll{ overflow:hidden; }
 .rd-hero .rd-card-bg{ border-radius:inherit; }
 .rd-hero .rd-card .rd-3d{
   border-radius:0 0 calc(200 * var(--m)) calc(200 * var(--m));
+  -webkit-mask-image:radial-gradient(ellipse 90% 92% at 70% 50%, #000 38%, transparent 100%);
+  mask-image:radial-gradient(ellipse 90% 92% at 70% 50%, #000 38%, transparent 100%);
 }
 
 /* калькулятор */
@@ -144,7 +146,8 @@ html body .rd2-case-big > *:not(.rd2-rot){ position:relative !important; left:au
 .rd2-cell{ height:auto !important; min-height:270px; border-radius:24px !important; padding:22px 18px !important; }
 .rd2-cell .t{ font-size:22px !important; letter-spacing:-.04em !important; white-space:normal !important; }
 .rd2-cell .d{ font-size:13.5px !important; letter-spacing:-.01em !important; max-width:62% !important; width:auto !important; margin-top:10px !important; }
-.rd2-whys .rd2-cell .rd2-img, .rd2-whys .rd2-cell .rd2-rot{ width:380px !important; height:380px !important; top:auto !important; bottom:-10px !important; left:auto !important; right:-10px !important; }
+.rd2-whys .rd2-cell .rd2-img, .rd2-whys .rd2-cell .rd2-rot{ width:190px !important; height:190px !important; top:auto !important; bottom:-10px !important; left:auto !important; right:-10px !important; }
+.rd2-whys .rd2-why-row.r1 .rd2-cell.a .rd2-img{ width:210px !important; height:210px !important; bottom:-30px !important; }
 
 /* ---------- ПРОЦЕСС ---------- */
 .rd2-proc{ margin-top:56px !important; }
