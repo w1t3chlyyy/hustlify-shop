@@ -3,7 +3,7 @@
 
 <section class="rd-hero" id="hero">
   <div class="rd-card">
-    <img class="rd-card-bg" src="/images/design/hero-bg.svg" alt="">
+    <picture><source media="(max-width:860px)" srcset="/images/design/hero-bg-m.svg"><img class="rd-card-bg" src="/images/design/hero-bg.svg" alt=""></picture>
     <img class="rd-3d" src="/images/design/hero-3d.png" alt="">
 
     <div class="rd-nav-row">
@@ -24,7 +24,7 @@
       <a href="#contacts" class="rd-contact-btn">Контакты</a>
     </div>
 
-    <div class="rd-cube"><img src="/images/design/hero-cube.png" alt=""></div>
+    <div class="rd-cube"><picture><source media="(max-width:860px)" srcset="/images/design/hero-cube-m.png"><img src="/images/design/hero-cube.png" alt=""></picture></div>
     <div class="rd-globe"><img src="/images/design/hero-globe.png" alt=""></div>
 
     <h1 class="rd-title"><span>От голой идеи</span><span>до монетизации</span><span class="l3"><u>за 2 недели</u></span></h1>
@@ -308,29 +308,6 @@ function __rd2init() {
   /* если данные уже загрузились до подключения скрипта — перерисуем */
   if (typeof ALL_PRODUCTS !== 'undefined' && ALL_PRODUCTS.length && typeof renderAll === 'function') renderAll();
 
-  /* ---------- HERO: фото слева плавно «парят» вверх-вниз при наведении ---------- */
-  var floaters = [];
-  document.querySelectorAll('.rd-globe, .rd-avatars').forEach(function (el) {
-    var f = { el: el, hover: false, amp: 0, phase: 0 };
-    el.addEventListener('mouseenter', function () { f.hover = true; });
-    el.addEventListener('mouseleave', function () { f.hover = false; });
-    floaters.push(f);
-  });
-  if (floaters.length && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    var last = performance.now();
-    (function loop(now) {
-      var dt = Math.min(0.05, (now - last) / 1000); last = now;
-      floaters.forEach(function (f) {
-        f.amp += ((f.hover ? 1 : 0) - f.amp) * Math.min(1, dt * 5);   // плавный вход/выход
-        if (f.amp > 0.001) {
-          f.phase += dt * 2.6;
-          var h = f.el.offsetHeight || 100;
-          f.el.style.transform = 'translateY(' + (Math.sin(f.phase) * h * 0.09 * f.amp).toFixed(2) + 'px)';
-        } else if (f.el.style.transform) { f.el.style.transform = ''; f.phase = 0; }
-      });
-      requestAnimationFrame(loop);
-    })(last);
-  }
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', __rd2init); else __rd2init();
 </script>

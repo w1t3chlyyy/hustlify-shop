@@ -2880,7 +2880,7 @@ body.page-leaving {
 
 <section class="rd-hero" id="hero">
   <div class="rd-card">
-    <img class="rd-card-bg" src="/images/design/hero-bg.svg" alt="">
+    <picture><source media="(max-width:860px)" srcset="/images/design/hero-bg-m.svg"><img class="rd-card-bg" src="/images/design/hero-bg.svg" alt=""></picture>
     <img class="rd-3d" src="/images/design/hero-3d.png" alt="">
 
     <div class="rd-nav-row">
@@ -2901,7 +2901,7 @@ body.page-leaving {
       <a href="#contacts" class="rd-contact-btn">Контакты</a>
     </div>
 
-    <div class="rd-cube"><img src="/images/design/hero-cube.png" alt=""></div>
+    <div class="rd-cube"><picture><source media="(max-width:860px)" srcset="/images/design/hero-cube-m.png"><img src="/images/design/hero-cube.png" alt=""></picture></div>
     <div class="rd-globe"><img src="/images/design/hero-globe.png" alt=""></div>
 
     <h1 class="rd-title"><span>От голой идеи</span><span>до монетизации</span><span class="l3"><u>за 2 недели</u></span></h1>
@@ -3185,29 +3185,6 @@ function __rd2init() {
   /* если данные уже загрузились до подключения скрипта — перерисуем */
   if (typeof ALL_PRODUCTS !== 'undefined' && ALL_PRODUCTS.length && typeof renderAll === 'function') renderAll();
 
-  /* ---------- HERO: фото слева плавно «парят» вверх-вниз при наведении ---------- */
-  var floaters = [];
-  document.querySelectorAll('.rd-globe, .rd-avatars').forEach(function (el) {
-    var f = { el: el, hover: false, amp: 0, phase: 0 };
-    el.addEventListener('mouseenter', function () { f.hover = true; });
-    el.addEventListener('mouseleave', function () { f.hover = false; });
-    floaters.push(f);
-  });
-  if (floaters.length && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    var last = performance.now();
-    (function loop(now) {
-      var dt = Math.min(0.05, (now - last) / 1000); last = now;
-      floaters.forEach(function (f) {
-        f.amp += ((f.hover ? 1 : 0) - f.amp) * Math.min(1, dt * 5);   // плавный вход/выход
-        if (f.amp > 0.001) {
-          f.phase += dt * 2.6;
-          var h = f.el.offsetHeight || 100;
-          f.el.style.transform = 'translateY(' + (Math.sin(f.phase) * h * 0.09 * f.amp).toFixed(2) + 'px)';
-        } else if (f.el.style.transform) { f.el.style.transform = ''; f.phase = 0; }
-      });
-      requestAnimationFrame(loop);
-    })(last);
-  }
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', __rd2init); else __rd2init();
 </script>
@@ -5841,7 +5818,7 @@ document.querySelectorAll('a[href="/ai-agent"], a[href^="/ai-agent"]').forEach(l
     function frame(now) {
       const dt = (now - last) / 1000;
       last = now;
-      if (!isDragging) {
+      if (!isDragging && window.__revVisible !== false) {
         shift = (shift + SPEED * dt) % totalWidth;
         render(shift);
       }
@@ -6029,20 +6006,24 @@ document.querySelectorAll('a[href="/ai-agent"], a[href^="/ai-agent"]').forEach(l
   drag(document.getElementById("projectsGrid"));
 })();
 </script>
-<script id="rd-fixes3-js">
+<script id="rd-hover-js">
 (function(){
-  if(matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  var el=document.querySelector(".rd-3d"); if(!el) return;
-  var hover=false, amp=0, phase=0, last=performance.now();
-  el.addEventListener("mouseenter", function(){ hover=true; });
-  el.addEventListener("mouseleave", function(){ hover=false; });
-  (function loop(now){
-    var dt=Math.min(0.05,(now-last)/1000); last=now;
-    amp += ((hover?1:0)-amp)*Math.min(1,dt*4);
-    if(amp>0.001){ phase+=dt*1.6; var h=el.offsetHeight||300; el.style.transform="translateY("+(Math.sin(phase)*h*0.035*amp).toFixed(2)+"px)"; }
-    else if(el.style.transform){ el.style.transform=""; phase=0; }
-    requestAnimationFrame(loop);
-  })(last);
+  var hero = document.querySelector('.rd-hero');
+  if(hero && 'IntersectionObserver' in window){
+    new IntersectionObserver(function(en){ hero.classList.toggle('rd-off', !en[0].isIntersecting); }).observe(hero);
+  }
+  var stage = document.getElementById('stage');
+  if(stage && 'IntersectionObserver' in window){
+    new IntersectionObserver(function(en){ window.__revVisible = en[0].isIntersecting; }).observe(stage);
+  }
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if(!matchMedia('(hover:hover) and (pointer:fine)').matches) return;
+  document.querySelectorAll('.rd-globe, .rd-avatars, .rd-3d').forEach(function(el){
+    el.addEventListener('mouseenter', function(){ el.classList.add('rd-bob'); });
+    el.addEventListener('animationiteration', function(e){
+      if(e.animationName === 'rdBob' && !el.matches(':hover')) el.classList.remove('rd-bob');
+    });
+  });
 })();
 </script>
 </body>
