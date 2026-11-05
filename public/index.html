@@ -4255,7 +4255,7 @@ document.getElementById('checkoutContinueBtn').onclick = async ()=>{
     document.getElementById('payHint').textContent = '';
     closeAll();
     openDrawer(payModal);
-    startPayment('rollypay');
+    startPayment('prodamus');
   }catch(e){
     err.textContent = 'Сервер недоступен. Запустите backend (node server.js)';
   }
