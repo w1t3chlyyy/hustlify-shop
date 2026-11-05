@@ -5,6 +5,16 @@ html, body{ overflow-x:clip; }
 body{ padding-bottom:100px !important; }
 body.no-scroll{ overflow:hidden; }
 /* ===== v2: по макету ===== */
+.rd-hero .rd-card{
+  border-radius:calc(200 * var(--m)) !important;
+  overflow:hidden !important;
+  -webkit-clip-path:inset(0 round calc(200 * var(--m)));
+  clip-path:inset(0 round calc(200 * var(--m)));
+}
+.rd-hero .rd-card .rd-3d{
+  border-bottom-left-radius:calc(200 * var(--m));
+  border-bottom-right-radius:calc(200 * var(--m));
+}
 
 /* калькулятор */
 .rd-calc{ background:radial-gradient(ellipse 80% 40% at 80% 60%, rgba(47,107,255,.3), transparent 70%), #fff !important; }

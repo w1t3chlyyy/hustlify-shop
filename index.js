@@ -954,7 +954,8 @@ app.post('/api/webhooks/rollypay', async (req, res) => {
 function getProdamusConfig() {
   return {
     url: String(process.env.PRODAMUS_URL || '').replace(/\/+$/, '') + '/',
-    secret: process.env.PRODAMUS_SECRET_KEY
+    secret: process.env.PRODAMUS_SECRET_KEY,
+    sys: process.env.PRODAMUS_SYS || process.env.PRODAMUS_SYS_CODE
   };
 }
 
@@ -1021,6 +1022,7 @@ function createProdamusLink(order, req) {
   };
   if (/^\+?\d[\d\s\-()]{8,}$/.test(contact)) data.customer_phone = contact.replace(/[^\d+]/g, '');
   if (/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(contact)) data.customer_email = contact;
+  if (cfg.sys) data.sys = cfg.sys;
 
   data.signature = prodamusSign(data, cfg.secret);
   return cfg.url + '?' + prodamusFlatten(data).join('&');
