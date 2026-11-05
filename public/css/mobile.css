@@ -6,6 +6,7 @@ body{ padding-bottom:100px !important; }
 body.no-scroll{ overflow:hidden; }
 /* ===== v2: по макету ===== */
 .rd-hero .rd-card{
+  background:transparent !important;
   border-radius:calc(200 * var(--m)) !important;
   overflow:hidden !important;
   clip-path:inset(0 round calc(200 * var(--m)));
@@ -13,6 +14,7 @@ body.no-scroll{ overflow:hidden; }
 .rd-hero .rd-card-bg{ border-radius:inherit; }
 .rd-hero .rd-card .rd-3d{
   border-radius:0 0 calc(200 * var(--m)) calc(200 * var(--m));
+  background:transparent;
 }
 
 /* калькулятор */
