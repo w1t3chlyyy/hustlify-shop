@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1264" height="842" viewBox="0 0 1264 842">
-  <defs>
-    <filter id="background-key" color-interpolation-filters="sRGB">
-      <feColorMatrix type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0.6378 2.1456 0.2166 0 -0.15" />
-    </filter>
-  </defs>
-  <image href="hero-3d.png" width="1264" height="842" filter="url(#background-key)" />
-</svg>

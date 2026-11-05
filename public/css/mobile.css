@@ -5,9 +5,6 @@ html, body{ overflow-x:clip; }
 body{ padding-bottom:100px !important; }
 body.no-scroll{ overflow:hidden; }
 /* ===== v2: по макету ===== */
-.rd-hero .rd-card{
-  background:transparent !important;
-}
 
 /* калькулятор */
 .rd-calc{ background:radial-gradient(ellipse 80% 40% at 80% 60%, rgba(47,107,255,.3), transparent 70%), #fff !important; }
