@@ -1,6 +1,7 @@
 /* Vercel serverless entrypoint: пробрасывает запросы в Express-приложение.
-   JSON-тело читаем сами, чтобы сохранить ТОЧНЫЕ байты для проверки подписи вебхука RollyPay. */
+  Тело читаем сами, чтобы сохранить исходные байты для проверки подписи вебхука Prodamus. */
 const { app } = require('../index.js');
+const qs = require('qs');
 
 function readRaw(req) {
   return new Promise((resolve, reject) => {
@@ -17,23 +18,25 @@ function setBody(req, value) {
 
 module.exports = async (req, res) => {
   const ct = String(req.headers['content-type'] || '').toLowerCase();
-  if (req.method !== 'GET' && req.method !== 'HEAD' && ct.includes('application/json')) {
+  const isJson = ct.includes('application/json');
+  const isForm = ct.includes('application/x-www-form-urlencoded');
+  if (req.method !== 'GET' && req.method !== 'HEAD' && (isJson || isForm)) {
     try {
       let raw;
       if (req.readableEnded || req.destroyed) {
         const b = req.body;
-        raw = Buffer.from(typeof b === 'string' ? b : JSON.stringify(b || {}), 'utf8');
+        raw = Buffer.from(typeof b === 'string' ? b : (isForm ? qs.stringify(b || {}) : JSON.stringify(b || {})), 'utf8');
       } else {
         raw = await readRaw(req);
       }
       req.rawBody = raw;
       let parsed = {};
-      if (raw.length) parsed = JSON.parse(raw.toString('utf8'));
+      if (raw.length) parsed = isJson ? JSON.parse(raw.toString('utf8')) : qs.parse(raw.toString('utf8'));
       setBody(req, parsed);
     } catch (e) {
       res.statusCode = 400;
       res.setHeader('Content-Type', 'application/json');
-      return res.end(JSON.stringify({ error: 'Некорректный JSON' }));
+      return res.end(JSON.stringify({ error: 'Некорректное тело запроса' }));
     }
   }
   return app(req, res);

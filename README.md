@@ -37,7 +37,7 @@ cp .env.example .env
 3. **CRYPTOBOT_TOKEN** — получите в Telegram-боте `@CryptoBot` → «Crypto Pay» → «Create App».
 4. **TELEGRAM_BOT_TOKEN / TELEGRAM_ADMIN_CHAT_IDS** — см. раздел про бота ниже.
 5. **PUBLIC_URL** — адрес сайта после деплоя (локально подойдёт `http://localhost:3000`, но вебхуки платёжек и Telegram работают только с публичным HTTPS-доменом).
-6. **ROLLYPAY_TERMINAL_ID / ROLLYPAY_API_KEY / ROLLYPAY_SIGNING_SECRET** — выдаются при создании кассы в личном кабинете RollyPay. Не публикуйте эти значения и не добавляйте их в репозиторий.
+6. **PRODAMUS_URL / PRODAMUS_SECRET_KEY** — URL платёжной формы вида `https://вашшоп.payform.ru` и секретный ключ из кабинета Prodamus. **PUBLIC_URL** должен быть публичным HTTPS-адресом сайта.
 
 Оплата ЮKassa удалена. Вместо неё — оплата по реквизитам: клиент видит реквизиты
 (редактируются в админке, вкладка «Реквизиты») и загружает чек, который
@@ -85,7 +85,7 @@ npm start
 
 С этого момента бот присылает сообщение:
 - 🆕 когда создан новый заказ (ещё не оплачен) — состав, сумма, промокод (если был), контакт покупателя;
-- ✅ когда заказ оплачен — автоматически по вебхуку CryptoBot/RollyPay, либо когда вы вручную отмечаете оплату в админке.
+- ✅ когда заказ оплачен — автоматически по вебхуку CryptoBot/Prodamus, либо когда вы вручную отмечаете оплату в админке.
 
 ## Контакты покупателя и промокоды — как это работает
 - При оформлении заказа покупатель видит окно с полем **«Как с вами связаться»** и полем **«Промокод»** — это попадает и в заказ, и в Telegram-уведомление.
@@ -94,21 +94,19 @@ npm start
 - При оформлении заказа сервер сам проверяет код: не использован ли, не истёк ли — и применяет скидку к сумме. Код одноразовый, сгорает сразу после применения.
 - В админке во вкладке «Заказы» видно, какой промокод и с какой скидкой был применён, плюс контакт покупателя.
 
-## RollyPay — оплата СБП/картой/криптой с автоконвертацией в USDT
-Текущий (единственный видимый в чекауте) способ оплаты — RollyPay (`rollypay.io`). Клиент
-переходит по `pay_url` и сам выбирает удобный метод (СБП, карта, USDT) прямо на странице оплаты.
+## Prodamus — оплата по защищённой платёжной ссылке
+При создании платежа сервер формирует подписанную ссылку на платёжную форму Prodamus. Статус заказа обновляется по вебхуку.
 
 Настройка:
-1. Заполните переменные в `.env`:
-  - `ROLLYPAY_TERMINAL_ID` — ID кассы из личного кабинета
-  - `ROLLYPAY_API_KEY` — API-ключ кассы
-  - `ROLLYPAY_SIGNING_SECRET` — секрет подписи кассы
-2. В настройках кассы RollyPay укажите:
-   - **Адрес для вебхуков:** `https://ВАШ-ДОМЕН/api/webhooks/rollypay`
-   - **После успешной оплаты:** `https://ВАШ-ДОМЕН/payment-success.html`
-   - **После неуспешной оплаты:** `https://ВАШ-ДОМЕН/payment-fail.html`
-   - **Поддержка для покупателя:** `https://t.me/HustlifyHelp`
-3. Перезапустите сервер (`npm start` или `node server.js`).
+1. Задайте переменные окружения:
+  - `PRODAMUS_URL` — адрес вида `https://вашшоп.payform.ru`, без пути и параметров
+  - `PRODAMUS_SECRET_KEY` — секретный ключ из кабинета Prodamus, скопированный без пробелов
+  - `PUBLIC_URL=https://www.hustlify.site` — публичный адрес сайта для ссылок возврата и вебхука
+  - `PRODAMUS_SYS` — только если этот код выдан Prodamus
+2. В кабинете Prodamus укажите URL уведомлений: `https://www.hustlify.site/api/webhooks/prodamus`.
+3. На Vercel проверьте, что переменные заданы для Production, затем выполните Redeploy, чтобы функция получила актуальное окружение.
+
+Маршруты создания платежа: `POST /api/payments/prodamus/create`, а также совместимые алиасы `POST /api/payments/create` и `POST /api/payments/rollypay/create`. Вебхук: `POST /api/webhooks/prodamus`.
 
 CryptoBot и оплата по реквизитам остаются на бэкенде, но скрыты на фронте.
 
@@ -288,8 +286,9 @@ ADMIN_PASSWORD_HASH=...
 JWT_SECRET=...
 CRYPTOBOT_TOKEN=...
 CRYPTOBOT_ASSET=USDT
-ROLLYPAY_API_KEY=...
-ROLLYPAY_SIGNING_SECRET=...
+PRODAMUS_URL=https://вашшоп.payform.ru
+PRODAMUS_SECRET_KEY=...
+PRODAMUS_SYS=...  (только если выдан Prodamus)
 TELEGRAM_BOT_TOKEN=...
 TELEGRAM_ADMIN_CHAT_IDS=...
 ```
@@ -300,7 +299,7 @@ TELEGRAM_ADMIN_CHAT_IDS=...
 2. Скопируйте выданный адрес вида `https://hustlify-shop.onrender.com`.
 3. Обновите переменную `PUBLIC_URL` этим адресом (или вашим кастомным доменом, см. ниже) → Render передеплоит сервис автоматически.
 4. В кабинете CryptoBot укажите webhook-адрес: `https://ВАШ-АДРЕС/api/webhooks/cryptobot`
-5. В кабинете RollyPay укажите адреса из раздела «RollyPay» выше.
+5. В кабинете Prodamus укажите URL уведомлений из раздела «Prodamus» выше.
 6. Реквизиты для оплаты внесите в админке (вкладка «Реквизиты»): `https://ВАШ-АДРЕС/admin.html`
 
 ### Свой домен вместо onrender.com
@@ -316,7 +315,7 @@ TELEGRAM_ADMIN_CHAT_IDS=...
 Если предпочитаете VPS (Timeweb, Selectel, Hetzner) вместо Render:
 1. Разместите проект на сервере, укажите `PUBLIC_URL=https://ваш-домен.ru` в `.env`. `DATA_DIR` можно не задавать — на VPS диск обычный, не эфемерный, подойдёт папка `./data` по умолчанию.
 2. Настройте HTTPS (Let's Encrypt / Certbot, если Nginx стоит перед Node).
-3. Вебхуки — те же пути: `/api/webhooks/cryptobot`, `/api/webhooks/rollypay`.
+3. Вебхуки — те же пути: `/api/webhooks/cryptobot`, `/api/webhooks/prodamus`.
 4. Запустите процесс через `pm2`, чтобы сервер работал постоянно и перезапускался при сбое:
    ```bash
    npm install -g pm2

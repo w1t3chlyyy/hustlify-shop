@@ -772,184 +772,6 @@ app.post('/api/orders', async (req, res) => {
   }
 });
 
-function getRollyPayConfig() {
-  return {
-    apiKey: process.env.ROLLYPAY_API_KEY,
-    signingSecret: process.env.ROLLYPAY_SIGNING_SECRET,
-    terminalId: process.env.ROLLYPAY_TERMINAL_ID
-  };
-}
-
-async function createRollyPayInvoice(order, req) {
-  const config = getRollyPayConfig();
-  if (!config.apiKey || !config.terminalId) {
-    throw new Error('RollyPay не настроен: проверьте переменные окружения');
-  }
-
-  const amount = Number(order.total != null ? order.total : order.amount);
-  if (!Number.isFinite(amount) || amount <= 0) throw new Error('Некорректная сумма заказа');
-  const baseUrl = String(process.env.PUBLIC_URL || `${req.protocol}://${req.get('host')}`).replace(/\/+$/, '');
-  const redirectBase = `${baseUrl}/payment-success.html?order=${encodeURIComponent(order.id)}`;
-  const payload = {
-    amount: amount.toFixed(2),
-    order_id: String(order.id),
-    payment_currency: 'RUB',
-    description: `Заказ ${order.id} Hustlify`,
-    terminal_id: config.terminalId,
-    redirect_url: redirectBase,
-    success_redirect_url: redirectBase,
-    fail_redirect_url: `${baseUrl}/payment-fail.html?order=${encodeURIComponent(order.id)}`,
-    metadata: { order_id: String(order.id) }
-  };
-  if (order.contact) payload.customer_id = String(order.contact).slice(0, 100);
-
-  const response = await fetch('https://rollypay.io/api/v1/payments', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-API-Key': config.apiKey,
-      'X-Nonce': crypto.randomUUID()
-    },
-    body: JSON.stringify(payload)
-  });
-  const responseBody = await response.text();
-  let result = {};
-  try { result = JSON.parse(responseBody); } catch (e) {}
-  const payUrl = result.pay_url || result.url;
-  if (!response.ok || !payUrl) {
-    const detail = result.error || result.message || responseBody.slice(0, 300) || 'empty response';
-    console.error('RollyPay invoice request failed:', response.status, detail);
-    throw new Error(result.error || result.message || `RollyPay вернул HTTP ${response.status}`);
-  }
-  return Object.assign({}, result, { pay_url: payUrl });
-}
-
-app.post(['/api/payments/rollypay/create', '/api/payments/create'], async (req, res) => {
-  const { orderId } = req.body || {};
-  if (!orderId) return res.status(400).json({ error: 'Не указан orderId' });
-
-  try {
-    const config = getRollyPayConfig();
-    if (!config.apiKey || !config.terminalId) {
-      return res.status(503).json({ error: 'Платёжный шлюз временно не настроен' });
-    }
-
-    let order = null;
-    if (supabase) {
-      const { data, error } = await supabase.from('orders').select('*').eq('id', orderId).maybeSingle();
-      if (error) console.error('RollyPay order lookup failed:', error.message);
-      else order = data;
-    }
-    if (!order) order = readJsonFile('orders.json').find(item => String(item.id) === String(orderId));
-    if (!order) return res.status(404).json({ error: 'Заказ не найден' });
-    if (order.status === 'paid' || order.status === 'canceled') {
-      return res.status(409).json({ error: 'Заказ уже завершён' });
-    }
-
-    const payment = await createRollyPayInvoice(order, req);
-    const paymentInfo = {
-      provider: 'rollypay',
-      paymentId: payment.payment_id || payment.id || null,
-      payUrl: payment.pay_url,
-      amount: payment.amount || order.total || order.amount,
-      status: payment.status || 'created'
-    };
-    if (supabase) {
-      const { error } = await supabase.from('orders').update({ payment: paymentInfo }).eq('id', orderId);
-      if (error) console.error('RollyPay payment state sync failed:', error.message);
-    }
-    const orders = readJsonFile('orders.json');
-    const orderIndex = orders.findIndex(item => String(item.id) === String(orderId));
-    if (orderIndex !== -1) {
-      orders[orderIndex].payment = paymentInfo;
-      writeJsonFile('orders.json', orders);
-    }
-    res.json({ success: true, payUrl: payment.pay_url, paymentId: paymentInfo.paymentId });
-  } catch (e) {
-    console.error('RollyPay invoice creation failed:', e.message);
-    res.status(502).json({ error: e.message || 'Не удалось создать платёж' });
-  }
-});
-
-app.post('/api/webhooks/rollypay', async (req, res) => {
-  const config = getRollyPayConfig();
-  const signature = String(req.get('x-signature') || req.get('signature') || '').replace(/^sha256=/i, '').trim();
-  const timestamp = String(req.get('x-timestamp') || req.get('timestamp') || '').trim();
-  if (!config.signingSecret || !signature || !timestamp || !req.rawBody) {
-    return res.status(401).json({ error: 'Webhook signature is required' });
-  }
-  const expected = crypto.createHmac('sha256', config.signingSecret)
-    .update(`${timestamp}.${req.rawBody.toString('utf8')}`)
-    .digest();
-  const supplied = /^[a-f\d]{64}$/i.test(signature) ? Buffer.from(signature, 'hex') : Buffer.from(signature, 'base64');
-  if (supplied.length !== expected.length || !crypto.timingSafeEqual(expected, supplied)) {
-    return res.status(403).json({ error: 'Invalid signature' });
-  }
-
-  try {
-    const payload = req.body && typeof req.body === 'object' ? req.body : JSON.parse(req.rawBody.toString('utf8'));
-    const data = payload.data || payload.payment || {};
-    const status = String(payload.status || data.status || '').toLowerCase();
-    const event = String(payload.event_type || payload.event || payload.type || '').toLowerCase();
-    const orderId = payload.order_id || payload.orderId || data.order_id || data.orderId || (payload.metadata && payload.metadata.order_id);
-    if (!orderId) return res.status(400).json({ error: 'Webhook order_id is required' });
-
-    let order;
-    try {
-      order = await getOrderById(orderId);
-    } catch (e) {
-      console.error('RollyPay webhook order lookup failed:', e.message);
-      return res.status(503).json({ error: 'Заказ временно недоступен' });
-    }
-    const orders = supabase ? [] : readJsonFile('orders.json');
-    const orderIndex = orders.findIndex(item => String(item.id) === String(orderId));
-    if (!order && orderIndex !== -1) order = orders[orderIndex];
-    if (!order) return res.status(404).json({ error: 'Заказ не найден' });
-
-    const paid = status === 'paid' || event === 'payment.paid' || event === 'paid';
-    const canceled = ['canceled', 'cancelled', 'expired'].includes(status) || ['payment.canceled', 'payment.cancelled', 'payment.expired'].includes(event);
-    if (paid || canceled) {
-      const nextStatus = paid ? 'paid' : 'canceled';
-      const amount = payload.amount == null ? data.amount : payload.amount;
-      const expectedAmount = Number(order.total != null ? order.total : order.amount);
-      if (paid && amount != null && Math.round(Number(amount) * 100) !== Math.round(expectedAmount * 100)) {
-        return res.status(400).json({ error: 'Payment amount does not match order' });
-      }
-      const wasPaid = order.status === 'paid';
-      const paymentInfo = {
-        provider: 'rollypay',
-        paymentId: payload.payment_id || data.payment_id || payload.id || data.id || null,
-        amount: amount == null ? expectedAmount : amount,
-        currency: payload.currency || data.currency || 'RUB',
-        status: nextStatus
-      };
-      if (supabase) {
-        const { error } = await supabase.from('orders').update({
-          status: nextStatus,
-          payment: paymentInfo,
-          ...(paid ? { paid_at: new Date().toISOString() } : {})
-        }).eq('id', orderId);
-        if (error) throw error;
-      }
-      if (orderIndex !== -1) {
-        orders[orderIndex].status = nextStatus;
-        orders[orderIndex].payment = paymentInfo;
-        if (paid) orders[orderIndex].paid_at = new Date().toISOString();
-        writeJsonFile('orders.json', orders);
-        order = orders[orderIndex];
-      } else {
-        order.status = nextStatus;
-        order.payment = paymentInfo;
-      }
-      if (paid && !wasPaid) notifyOrderPaidSafe(order);
-    }
-    res.status(200).send('OK');
-  } catch (e) {
-    console.error('RollyPay webhook processing failed:', e.message);
-    res.status(503).json({ error: 'Webhook processing error' });
-  }
-});
-
 /* ================= PRODAMUS ================= */
 function getProdamusConfig() {
   return {
@@ -973,7 +795,7 @@ function prodamusNormalize(v) {
 function prodamusSign(data, secret) {
   const json = JSON.stringify(prodamusNormalize(data))
     .replace(/\//g, '\\/')                                   // как json_encode в PHP
-    .replace(/[\u007f-\uffff]/g, c => '\\u' + ('0000' + c.charCodeAt(0).toString(16)).slice(-4)); // кириллица -> \uXXXX
+    .replace(/[\u0080-\uffff]/g, c => '\\u' + ('0000' + c.charCodeAt(0).toString(16)).slice(-4)); // кириллица -> \uXXXX
   return crypto.createHmac('sha256', secret).update(json).digest('hex');
 }
 
@@ -1028,7 +850,7 @@ function createProdamusLink(order, req) {
   return cfg.url + '?' + prodamusFlatten(data).join('&');
 }
 
-app.post('/api/payments/prodamus/create', async (req, res) => {
+app.post(['/api/payments/prodamus/create', '/api/payments/create', '/api/payments/rollypay/create'], async (req, res) => {
   const { orderId } = req.body || {};
   if (!orderId) return res.status(400).json({ error: 'Не указан orderId' });
   try {
@@ -1078,7 +900,8 @@ app.post('/api/webhooks/prodamus', async (req, res) => {
 
     if (paid || canceled) {
       const expectedAmount = Number(order.total != null ? order.total : order.amount);
-      if (paid && body.sum != null && Math.round(Number(body.sum) * 100) !== Math.round(expectedAmount * 100)) {
+      if (paid && body.sum != null && Math.abs(Number(body.sum) - expectedAmount) > 2) {
+        console.error('Prodamus amount mismatch:', body.sum, expectedAmount);
         return res.status(400).send('amount mismatch');
       }
       const nextStatus = paid ? 'paid' : 'canceled';
