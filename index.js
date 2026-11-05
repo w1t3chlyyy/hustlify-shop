@@ -878,6 +878,78 @@ app.post('/api/webhooks/rollypay', async (req, res) => {
   if (!config.signingSecret || !signature || !timestamp || !req.rawBody) {
     return res.status(401).json({ error: 'Webhook signature is required' });
   }
+  const expected = crypto.createHmac('sha256', config.signingSecret)
+    .update(`${timestamp}.${req.rawBody.toString('utf8')}`)
+    .digest();
+  const supplied = /^[a-f\d]{64}$/i.test(signature) ? Buffer.from(signature, 'hex') : Buffer.from(signature, 'base64');
+  if (supplied.length !== expected.length || !crypto.timingSafeEqual(expected, supplied)) {
+    return res.status(403).json({ error: 'Invalid signature' });
+  }
+
+  try {
+    const payload = req.body && typeof req.body === 'object' ? req.body : JSON.parse(req.rawBody.toString('utf8'));
+    const data = payload.data || payload.payment || {};
+    const status = String(payload.status || data.status || '').toLowerCase();
+    const event = String(payload.event_type || payload.event || payload.type || '').toLowerCase();
+    const orderId = payload.order_id || payload.orderId || data.order_id || data.orderId || (payload.metadata && payload.metadata.order_id);
+    if (!orderId) return res.status(400).json({ error: 'Webhook order_id is required' });
+
+    let order;
+    try {
+      order = await getOrderById(orderId);
+    } catch (e) {
+      console.error('RollyPay webhook order lookup failed:', e.message);
+      return res.status(503).json({ error: 'Заказ временно недоступен' });
+    }
+    const orders = supabase ? [] : readJsonFile('orders.json');
+    const orderIndex = orders.findIndex(item => String(item.id) === String(orderId));
+    if (!order && orderIndex !== -1) order = orders[orderIndex];
+    if (!order) return res.status(404).json({ error: 'Заказ не найден' });
+
+    const paid = status === 'paid' || event === 'payment.paid' || event === 'paid';
+    const canceled = ['canceled', 'cancelled', 'expired'].includes(status) || ['payment.canceled', 'payment.cancelled', 'payment.expired'].includes(event);
+    if (paid || canceled) {
+      const nextStatus = paid ? 'paid' : 'canceled';
+      const amount = payload.amount == null ? data.amount : payload.amount;
+      const expectedAmount = Number(order.total != null ? order.total : order.amount);
+      if (paid && amount != null && Math.round(Number(amount) * 100) !== Math.round(expectedAmount * 100)) {
+        return res.status(400).json({ error: 'Payment amount does not match order' });
+      }
+      const wasPaid = order.status === 'paid';
+      const paymentInfo = {
+        provider: 'rollypay',
+        paymentId: payload.payment_id || data.payment_id || payload.id || data.id || null,
+        amount: amount == null ? expectedAmount : amount,
+        currency: payload.currency || data.currency || 'RUB',
+        status: nextStatus
+      };
+      if (supabase) {
+        const { error } = await supabase.from('orders').update({
+          status: nextStatus,
+          payment: paymentInfo,
+          ...(paid ? { paid_at: new Date().toISOString() } : {})
+        }).eq('id', orderId);
+        if (error) throw error;
+      }
+      if (orderIndex !== -1) {
+        orders[orderIndex].status = nextStatus;
+        orders[orderIndex].payment = paymentInfo;
+        if (paid) orders[orderIndex].paid_at = new Date().toISOString();
+        writeJsonFile('orders.json', orders);
+        order = orders[orderIndex];
+      } else {
+        order.status = nextStatus;
+        order.payment = paymentInfo;
+      }
+      if (paid && !wasPaid) notifyOrderPaidSafe(order);
+    }
+    res.status(200).send('OK');
+  } catch (e) {
+    console.error('RollyPay webhook processing failed:', e.message);
+    res.status(503).json({ error: 'Webhook processing error' });
+  }
+});
+
 /* ================= PRODAMUS ================= */
 function getProdamusConfig() {
   return {
@@ -1036,77 +1108,6 @@ app.post('/api/webhooks/prodamus', async (req, res) => {
   } catch (e) {
     console.error('Prodamus webhook failed:', e.message);
     res.status(503).send('error');
-  }
-});
-  const expected = crypto.createHmac('sha256', config.signingSecret)
-    .update(`${timestamp}.${req.rawBody.toString('utf8')}`)
-    .digest();
-  const supplied = /^[a-f\d]{64}$/i.test(signature) ? Buffer.from(signature, 'hex') : Buffer.from(signature, 'base64');
-  if (supplied.length !== expected.length || !crypto.timingSafeEqual(expected, supplied)) {
-    return res.status(403).json({ error: 'Invalid signature' });
-  }
-
-  try {
-    const payload = req.body && typeof req.body === 'object' ? req.body : JSON.parse(req.rawBody.toString('utf8'));
-    const data = payload.data || payload.payment || {};
-    const status = String(payload.status || data.status || '').toLowerCase();
-    const event = String(payload.event_type || payload.event || payload.type || '').toLowerCase();
-    const orderId = payload.order_id || payload.orderId || data.order_id || data.orderId || (payload.metadata && payload.metadata.order_id);
-    if (!orderId) return res.status(400).json({ error: 'Webhook order_id is required' });
-
-    let order;
-    try {
-      order = await getOrderById(orderId);
-    } catch (e) {
-      console.error('RollyPay webhook order lookup failed:', e.message);
-      return res.status(503).json({ error: 'Заказ временно недоступен' });
-    }
-    const orders = supabase ? [] : readJsonFile('orders.json');
-    const orderIndex = orders.findIndex(item => String(item.id) === String(orderId));
-    if (!order && orderIndex !== -1) order = orders[orderIndex];
-    if (!order) return res.status(404).json({ error: 'Заказ не найден' });
-
-    const paid = status === 'paid' || event === 'payment.paid' || event === 'paid';
-    const canceled = ['canceled', 'cancelled', 'expired'].includes(status) || ['payment.canceled', 'payment.cancelled', 'payment.expired'].includes(event);
-    if (paid || canceled) {
-      const nextStatus = paid ? 'paid' : 'canceled';
-      const amount = payload.amount == null ? data.amount : payload.amount;
-      const expectedAmount = Number(order.total != null ? order.total : order.amount);
-      if (paid && amount != null && Math.round(Number(amount) * 100) !== Math.round(expectedAmount * 100)) {
-        return res.status(400).json({ error: 'Payment amount does not match order' });
-      }
-      const wasPaid = order.status === 'paid';
-      const paymentInfo = {
-        provider: 'rollypay',
-        paymentId: payload.payment_id || data.payment_id || payload.id || data.id || null,
-        amount: amount == null ? expectedAmount : amount,
-        currency: payload.currency || data.currency || 'RUB',
-        status: nextStatus
-      };
-      if (supabase) {
-        const { error } = await supabase.from('orders').update({
-          status: nextStatus,
-          payment: paymentInfo,
-          ...(paid ? { paid_at: new Date().toISOString() } : {})
-        }).eq('id', orderId);
-        if (error) throw error;
-      }
-      if (orderIndex !== -1) {
-        orders[orderIndex].status = nextStatus;
-        orders[orderIndex].payment = paymentInfo;
-        if (paid) orders[orderIndex].paid_at = new Date().toISOString();
-        writeJsonFile('orders.json', orders);
-        order = orders[orderIndex];
-      } else {
-        order.status = nextStatus;
-        order.payment = paymentInfo;
-      }
-      if (paid && !wasPaid) notifyOrderPaidSafe(order);
-    }
-    res.status(200).send('OK');
-  } catch (e) {
-    console.error('RollyPay webhook processing failed:', e.message);
-    res.status(503).json({ error: 'Webhook processing error' });
   }
 });
 
