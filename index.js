@@ -878,7 +878,166 @@ app.post('/api/webhooks/rollypay', async (req, res) => {
   if (!config.signingSecret || !signature || !timestamp || !req.rawBody) {
     return res.status(401).json({ error: 'Webhook signature is required' });
   }
+/* ================= PRODAMUS ================= */
+function getProdamusConfig() {
+  return {
+    url: String(process.env.PRODAMUS_URL || '').replace(/\/+$/, '') + '/',
+    secret: process.env.PRODAMUS_SECRET_KEY
+  };
+}
 
+// Все значения -> строки, ключи отсортированы рекурсивно (как требует Prodamus)
+function prodamusNormalize(v) {
+  if (Array.isArray(v)) return v.map(prodamusNormalize);
+  if (v && typeof v === 'object') {
+    const out = {};
+    Object.keys(v).sort().forEach(k => { out[k] = prodamusNormalize(v[k]); });
+    return out;
+  }
+  return v == null ? '' : String(v);
+}
+
+function prodamusSign(data, secret) {
+  const json = JSON.stringify(prodamusNormalize(data))
+    .replace(/\//g, '\\/')                                   // как json_encode в PHP
+    .replace(/[\u007f-\uffff]/g, c => '\\u' + ('0000' + c.charCodeAt(0).toString(16)).slice(-4)); // кириллица -> \uXXXX
+  return crypto.createHmac('sha256', secret).update(json).digest('hex');
+}
+
+// {a:{b:1}} -> a[b]=1
+function prodamusFlatten(obj, prefix, out) {
+  out = out || [];
+  Object.keys(obj).forEach(k => {
+    const key = prefix ? `${prefix}[${k}]` : k;
+    const val = obj[k];
+    if (val && typeof val === 'object') prodamusFlatten(val, key, out);
+    else out.push(encodeURIComponent(key) + '=' + encodeURIComponent(val));
+  });
+  return out;
+}
+
+function createProdamusLink(order, req) {
+  const cfg = getProdamusConfig();
+  if (!process.env.PRODAMUS_URL || !cfg.secret) throw new Error('Prodamus не настроен: проверьте переменные окружения');
+
+  const baseUrl = String(process.env.PUBLIC_URL || `${req.protocol}://${req.get('host')}`).replace(/\/+$/, '');
+  const items = Array.isArray(order.items) ? order.items : [];
+  const itemsTotal = items.reduce((s, i) => s + Number(i.price) * (i.stars ? 1 : Number(i.qty || 1)), 0);
+  const total = Number(order.total != null ? order.total : order.amount);
+
+  // Скидку по промокоду распределяем коэффициентом, чтобы сумма позиций = сумме заказа
+  const k = itemsTotal > 0 ? total / itemsTotal : 1;
+  const products = items.map(i => {
+    const qty = i.stars ? 1 : Number(i.qty || 1);
+    return {
+      name: String(i.name || i.id).slice(0, 200),
+      price: (Number(i.price) * k).toFixed(2),
+      quantity: String(qty),
+      sku: String(i.id)
+    };
+  });
+
+  const contact = String(order.contact || '');
+  const data = {
+    order_id: String(order.id),
+    do: 'pay',
+    products,
+    customer_extra: `Контакт: ${contact}`.slice(0, 250),
+    urlReturn: `${baseUrl}/payment-fail.html?order=${encodeURIComponent(order.id)}`,
+    urlSuccess: `${baseUrl}/payment-success.html?order=${encodeURIComponent(order.id)}`,
+    urlNotification: `${baseUrl}/api/webhooks/prodamus`
+  };
+  if (/^\+?\d[\d\s\-()]{8,}$/.test(contact)) data.customer_phone = contact.replace(/[^\d+]/g, '');
+  if (/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(contact)) data.customer_email = contact;
+
+  data.signature = prodamusSign(data, cfg.secret);
+  return cfg.url + '?' + prodamusFlatten(data).join('&');
+}
+
+app.post('/api/payments/prodamus/create', async (req, res) => {
+  const { orderId } = req.body || {};
+  if (!orderId) return res.status(400).json({ error: 'Не указан orderId' });
+  try {
+    const order = await getOrderById(orderId);
+    if (!order) return res.status(404).json({ error: 'Заказ не найден' });
+    if (order.status === 'paid' || order.status === 'canceled') {
+      return res.status(409).json({ error: 'Заказ уже завершён' });
+    }
+    const payUrl = createProdamusLink(order, req);
+    const paymentInfo = { provider: 'prodamus', payUrl, amount: order.total, status: 'created' };
+
+    if (supabase) {
+      const { error } = await supabase.from('orders').update({ payment: paymentInfo }).eq('id', orderId);
+      if (error) console.error('Prodamus payment sync failed:', error.message);
+    }
+    const orders = readJsonFile('orders.json');
+    const idx = orders.findIndex(o => String(o.id) === String(orderId));
+    if (idx !== -1) { orders[idx].payment = paymentInfo; writeJsonFile('orders.json', orders); }
+
+    res.json({ success: true, payUrl });
+  } catch (e) {
+    console.error('Prodamus create failed:', e.message);
+    res.status(502).json({ error: e.message || 'Не удалось создать платёж' });
+  }
+});
+
+app.post('/api/webhooks/prodamus', async (req, res) => {
+  const cfg = getProdamusConfig();
+  const sign = String(req.get('sign') || req.get('Sign') || '').trim().toLowerCase();
+  if (!cfg.secret || !sign) return res.status(401).send('signature required');
+
+  const body = req.body || {};
+  const expected = prodamusSign(body, cfg.secret);
+  const a = Buffer.from(expected), b = Buffer.from(sign);
+  if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return res.status(403).send('invalid signature');
+
+  try {
+    const orderId = body.order_num;            // ваш order_id (order_id у Prodamus — их внутренний)
+    if (!orderId) return res.status(400).send('order_num required');
+
+    let order = await getOrderById(orderId);
+    if (!order) return res.status(404).send('order not found');
+
+    const status = String(body.payment_status || '').toLowerCase();
+    const paid = status === 'success';
+    const canceled = ['order_canceled', 'canceled', 'cancelled', 'refund'].includes(status);
+
+    if (paid || canceled) {
+      const expectedAmount = Number(order.total != null ? order.total : order.amount);
+      if (paid && body.sum != null && Math.round(Number(body.sum) * 100) !== Math.round(expectedAmount * 100)) {
+        return res.status(400).send('amount mismatch');
+      }
+      const nextStatus = paid ? 'paid' : 'canceled';
+      const wasPaid = order.status === 'paid';
+      const paymentInfo = {
+        provider: 'prodamus',
+        paymentId: body.order_id || null,
+        amount: body.sum != null ? body.sum : expectedAmount,
+        currency: 'RUB',
+        status: nextStatus
+      };
+      if (supabase) {
+        const { error } = await supabase.from('orders').update({
+          status: nextStatus, payment: paymentInfo, ...(paid ? { paid_at: new Date().toISOString() } : {})
+        }).eq('id', orderId);
+        if (error) throw error;
+      }
+      const orders = readJsonFile('orders.json');
+      const idx = orders.findIndex(o => String(o.id) === String(orderId));
+      if (idx !== -1) {
+        orders[idx].status = nextStatus; orders[idx].payment = paymentInfo;
+        if (paid) orders[idx].paid_at = new Date().toISOString();
+        writeJsonFile('orders.json', orders);
+        order = orders[idx];
+      } else { order.status = nextStatus; order.payment = paymentInfo; }
+      if (paid && !wasPaid) notifyOrderPaidSafe(order);
+    }
+    res.status(200).send('OK');
+  } catch (e) {
+    console.error('Prodamus webhook failed:', e.message);
+    res.status(503).send('error');
+  }
+});
   const expected = crypto.createHmac('sha256', config.signingSecret)
     .update(`${timestamp}.${req.rawBody.toString('utf8')}`)
     .digest();
