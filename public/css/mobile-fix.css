@@ -45,8 +45,8 @@ html, body{ overflow-x:clip; }
 
 @media (max-width:860px){
   .rd-hero .rd-card .rd-3d{
-    mix-blend-mode:screen;
-    -webkit-mask-image:radial-gradient(ellipse 60% 56% at 50% 52%, #000 55%, transparent 100%);
-    mask-image:radial-gradient(ellipse 60% 56% at 50% 52%, #000 55%, transparent 100%);
+    mix-blend-mode:normal;
+    -webkit-mask-image:radial-gradient(ellipse 60% 56% at 50% 52%, #000 55%, transparent 82%);
+    mask-image:radial-gradient(ellipse 60% 56% at 50% 52%, #000 55%, transparent 82%);
   }
 }

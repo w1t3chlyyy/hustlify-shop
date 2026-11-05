@@ -774,9 +774,18 @@ app.post('/api/orders', async (req, res) => {
 
 /* ================= PRODAMUS ================= */
 function getProdamusConfig() {
+  const rawUrl = String(process.env.PRODAMUS_URL || '').trim();
+  const secret = String(process.env.PRODAMUS_SECRET_KEY || '').trim();
+  let url;
+  try { url = new URL(rawUrl); } catch (e) {
+    throw new Error('PRODAMUS_URL должен быть адресом вида https://вашшоп.payform.ru');
+  }
+  if (url.protocol !== 'https:' || url.pathname !== '/' || url.search || url.hash) {
+    throw new Error('PRODAMUS_URL должен содержать только HTTPS-домен без пути и параметров');
+  }
   return {
-    url: String(process.env.PRODAMUS_URL || '').replace(/\/+$/, '') + '/',
-    secret: process.env.PRODAMUS_SECRET_KEY,
+    url: url.origin + '/',
+    secret,
     sys: process.env.PRODAMUS_SYS || process.env.PRODAMUS_SYS_CODE
   };
 }
