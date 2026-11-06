@@ -801,10 +801,14 @@ function prodamusNormalize(v) {
   return v == null ? '' : String(v);
 }
 
-function prodamusSign(data, secret) {
-  const json = JSON.stringify(prodamusNormalize(data))
-    .replace(/\//g, '\\/')                                   // как json_encode в PHP
-    .replace(/[\u0080-\uffff]/g, c => '\\u' + ('0000' + c.charCodeAt(0).toString(16)).slice(-4)); // кириллица -> \uXXXX
+const PRODAMUS_MODES = ['raw', 'escaped'];
+let prodamusMode = PRODAMUS_MODES.includes(process.env.PRODAMUS_SIGN_MODE) ? process.env.PRODAMUS_SIGN_MODE : null;
+
+function prodamusSign(data, secret, mode) {
+  let json = JSON.stringify(prodamusNormalize(data)).replace(/\//g, '\\/');
+  if (mode === 'escaped') {
+    json = json.replace(/[\u0080-\uffff]/g, c => '\\u' + ('0000' + c.charCodeAt(0).toString(16)).slice(-4));
+  }
   return crypto.createHmac('sha256', secret).update(json).digest('hex');
 }
 
@@ -820,43 +824,70 @@ function prodamusFlatten(obj, prefix, out) {
   return out;
 }
 
-function createProdamusLink(order, req) {
-  const cfg = getProdamusConfig();
-  if (!process.env.PRODAMUS_URL || !cfg.secret) throw new Error('Prodamus не настроен: проверьте переменные окружения');
-
+function buildProdamusData(order, req, cfg) {
   const baseUrl = String(process.env.PUBLIC_URL || `${req.protocol}://${req.get('host')}`).replace(/\/+$/, '');
   const items = Array.isArray(order.items) ? order.items : [];
   const itemsTotal = items.reduce((s, i) => s + Number(i.price) * (i.stars ? 1 : Number(i.qty || 1)), 0);
   const total = Number(order.total != null ? order.total : order.amount);
-
-  // Скидку по промокоду распределяем коэффициентом, чтобы сумма позиций = сумме заказа
   const k = itemsTotal > 0 ? total / itemsTotal : 1;
-  const products = items.map(i => {
-    const qty = i.stars ? 1 : Number(i.qty || 1);
-    return {
-      name: String(i.name || i.id).slice(0, 200),
-      price: (Number(i.price) * k).toFixed(2),
-      quantity: String(qty),
-      sku: String(i.id)
-    };
-  });
+  const products = items.map(i => ({
+    name: String(i.name || i.id).replace(/\s+/g, ' ').trim().slice(0, 200) || 'Услуга',
+    price: (Number(i.price) * k).toFixed(2),
+    quantity: String(i.stars ? 1 : Number(i.qty || 1))
+  }));
 
-  const contact = String(order.contact || '');
+  const contact = String(order.contact || '').trim();
   const data = {
     order_id: String(order.id),
     do: 'pay',
     products,
-    customer_extra: `Контакт: ${contact}`.slice(0, 250),
     urlReturn: `${baseUrl}/payment-fail.html?order=${encodeURIComponent(order.id)}`,
     urlSuccess: `${baseUrl}/payment-success.html?order=${encodeURIComponent(order.id)}`,
     urlNotification: `${baseUrl}/api/webhooks/prodamus`
   };
+  if (contact) data.customer_extra = `Контакт: ${contact}`.slice(0, 250);
   if (/^\+?\d[\d\s\-()]{8,}$/.test(contact)) data.customer_phone = contact.replace(/[^\d+]/g, '');
   if (/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(contact)) data.customer_email = contact;
   if (cfg.sys) data.sys = cfg.sys;
+  return data;
+}
 
-  data.signature = prodamusSign(data, cfg.secret);
-  return cfg.url + '?' + prodamusFlatten(data).join('&');
+function prodamusBuildUrl(cfg, data, mode) {
+  const d = Object.assign({}, data);
+  d.signature = prodamusSign(data, cfg.secret, mode);
+  return cfg.url + '?' + prodamusFlatten(d).join('&');
+}
+
+async function prodamusProbe(cfg, data, mode) {
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), 8000);
+  try {
+    const url = prodamusBuildUrl(cfg, Object.assign({}, data, { do: 'link' }), mode);
+    const r = await fetch(url, { signal: ctl.signal, redirect: 'manual' });
+    const text = (await r.text()).trim();
+    return { status: r.status, text: text.slice(0, 300), link: /^https?:\/\/\S+$/.test(text) ? text : null };
+  } catch (e) {
+    return { status: 0, text: e.message, link: null };
+  } finally { clearTimeout(timer); }
+}
+
+async function prodamusResolvePayUrl(cfg, data) {
+  const modes = prodamusMode ? [prodamusMode].concat(PRODAMUS_MODES.filter(m => m !== prodamusMode)) : PRODAMUS_MODES.slice();
+  const log = [];
+  let allNetworkFailed = true;
+  for (const mode of modes) {
+    const p = await prodamusProbe(cfg, data, mode);
+    log.push(`${mode}: ${p.status} ${p.text}`);
+    if (p.status === 0) continue;
+    allNetworkFailed = false;
+    if (p.status >= 200 && p.status < 400) {
+      prodamusMode = mode;
+      return p.link || prodamusBuildUrl(cfg, data, mode);
+    }
+  }
+  console.error('Prodamus: ни один вариант подписи не принят ->', log.join(' | '));
+  if (allNetworkFailed) return prodamusBuildUrl(cfg, data, modes[0]);
+  throw new Error('Prodamus отклонил запрос. Проверьте PRODAMUS_URL и PRODAMUS_SECRET_KEY (подробности в логах сервера)');
 }
 
 app.post(['/api/payments/prodamus/create', '/api/payments/create', '/api/payments/rollypay/create'], async (req, res) => {
@@ -868,7 +899,10 @@ app.post(['/api/payments/prodamus/create', '/api/payments/create', '/api/payment
     if (order.status === 'paid' || order.status === 'canceled') {
       return res.status(409).json({ error: 'Заказ уже завершён' });
     }
-    const payUrl = createProdamusLink(order, req);
+    const cfg = getProdamusConfig();
+    if (!cfg.secret) throw new Error('Prodamus не настроен: не задан PRODAMUS_SECRET_KEY');
+    const data = buildProdamusData(order, req, cfg);
+    const payUrl = await prodamusResolvePayUrl(cfg, data);
     const paymentInfo = { provider: 'prodamus', payUrl, amount: order.total, status: 'created' };
 
     if (supabase) {
@@ -887,14 +921,18 @@ app.post(['/api/payments/prodamus/create', '/api/payments/create', '/api/payment
 });
 
 app.post('/api/webhooks/prodamus', async (req, res) => {
-  const cfg = getProdamusConfig();
+  let cfg;
+  try { cfg = getProdamusConfig(); } catch (e) { return res.status(503).send('not configured'); }
   const sign = String(req.get('sign') || req.get('Sign') || '').trim().toLowerCase();
   if (!cfg.secret || !sign) return res.status(401).send('signature required');
 
   const body = req.body || {};
-  const expected = prodamusSign(body, cfg.secret);
-  const a = Buffer.from(expected), b = Buffer.from(sign);
-  if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return res.status(403).send('invalid signature');
+  const sb = Buffer.from(sign);
+  const valid = PRODAMUS_MODES.some(m => {
+    const a = Buffer.from(prodamusSign(body, cfg.secret, m));
+    return a.length === sb.length && crypto.timingSafeEqual(a, sb);
+  });
+  if (!valid) return res.status(403).send('invalid signature');
 
   try {
     const orderId = body.order_num;            // ваш order_id (order_id у Prodamus — их внутренний)
