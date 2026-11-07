@@ -10,6 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Unbounded:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/roulette.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
 <style>
@@ -2832,6 +2833,10 @@ body.page-leaving {
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="18"/><path d="M16 10h.01M12 10h.01M8 10h.01M12 14h.01M8 14h.01M12 18h.01M8 18h.01"/></svg>
         <span>Калькулятор окупаемости</span>
       </a>
+      <a href="#roulette" class="mobile-nav-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="2"/><path d="m12 2 2 5M22 12l-5 2M12 22l-2-5M2 12l5-2"/></svg>
+        <span>Колесо бонусов</span>
+      </a>
       <a href="#cases" class="mobile-nav-link">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
         <span>Кейсы клиентов</span>
@@ -2899,6 +2904,7 @@ body.page-leaving {
     <a href="/" class="rdh-logo" aria-label="Hustlify"><img src="/images/design/logo.svg" alt="Hustlify"></a>
     <nav class="rdh-links" aria-label="Основная навигация">
       <a href="#calculator">Калькулятор</a>
+      <a href="#roulette">Рулетка</a>
       <a href="#catalog">Каталог</a>
       <a href="#about">О нас</a>
       <a href="#faq">FAQ</a>
@@ -3017,6 +3023,30 @@ body.page-leaving {
     <div class="news-track" id="newsTrack"></div>
     <button class="news-nav prev" id="newsPrev" aria-label="Назад"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 6l6 6-6 6"/></svg></button>
     <button class="news-nav next" id="newsNext" aria-label="Вперёд"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 6l6 6-6 6"/></svg></button>
+  </div>
+</section>
+
+<section class="rw-section" id="roulette" aria-labelledby="rw-title">
+  <div class="rw-card">
+    <div class="rw-content">
+      <h2 class="rw-title" id="rw-title">Испытай удачу</h2>
+      <p class="rw-sub">Крутите колесо раз в 24 часа и получайте промокод на скидку до 30%.</p>
+      <button class="rw-spin" id="spinBtn" type="button">Мне повезёт</button>
+      <p class="rw-timer" id="timerBox" role="status" aria-live="polite" hidden></p>
+      <div class="rw-result" id="rouletteResult" role="status" aria-live="polite" hidden>
+        <span class="rw-result-label">Ваша скидка: <b id="rouletteDiscount"></b></span>
+        <span class="rw-code-wrap">Промокод <code class="rw-code" id="promoCode"></code></span>
+        <button class="rw-copy" id="activateBtn" type="button">Скопировать</button>
+      </div>
+    </div>
+    <div class="rw-wheel-stage" aria-hidden="true">
+      <div class="rw-wheel-rotor" id="rouletteRotor">
+        <img src="/images/roulette-wheel.svg" alt="">
+      </div>
+      <span class="rw-pointer">
+        <img src="/images/roulette-pointer.png" alt="">
+      </span>
+    </div>
   </div>
 </section>
 
@@ -4434,152 +4464,7 @@ function showToast(msg){
   toastTimer = setTimeout(()=> t.classList.remove('show'), 2400);
 }
 
-/* === РУЛЕТКА (СКРЫТА - См. ROULETTE_RESTORE_GUIDE.md) ===
-   Код рулетки изолирован и защищён от ошибок при скрытом блоке.
-   При раскомментировании секции в HTML рулетка автоматически оживает. */
-function initRoulette(){
-  const wheelTrack = document.getElementById('wheelTrack');
-  if(!wheelTrack) return;
-
-  const WHEEL_PATTERN = [5,10,15,25];
-  const wheelValues = Array.from({length:120}, (_,i)=> WHEEL_PATTERN[i % WHEEL_PATTERN.length]);
-  const WIN_MIN = 76, WIN_MAX = 95;   // длинный прокрут через ~80 сегментов: от очень быстрого старта к плавной остановке
-  const SPIN_DURATION_MS = 11500;
-  const REST_INDEX = 6;               // сегмент под указателем в покое
-  let restIndex = REST_INDEX;
-  const wheelMask  = wheelTrack.parentElement;
-
-  function buildWheel(){
-    wheelTrack.innerHTML = wheelValues.map(v=>`<div class="wheel-seg">${v}%</div>`).join('');
-  }
-  function wheelSegW(){
-    const s = wheelTrack.firstElementChild;
-    return (s && s.offsetWidth) || 120;
-  }
-  function wheelOffsetFor(i){
-    const w = wheelSegW();
-    return Math.max(0, w*i + w/2 - wheelMask.clientWidth/2);
-  }
-  function placeWheel(i){
-    wheelTrack.style.transition = 'none';
-    wheelTrack.style.transform = `translateX(-${wheelOffsetFor(i)}px)`;
-    void wheelTrack.offsetWidth;
-  }
-  function resetWheel(){
-    document.querySelectorAll('.wheel-seg.win').forEach(s=> s.classList.remove('win'));
-    restIndex = REST_INDEX;
-    placeWheel(restIndex);
-  }
-  buildWheel();
-  placeWheel(restIndex);
-
-  function refitWheel(){
-    if(typeof spinning !== 'undefined' && spinning) return;
-    placeWheel(restIndex);
-  }
-  if('ResizeObserver' in window && wheelMask){ new ResizeObserver(refitWheel).observe(wheelMask); }
-  window.addEventListener('resize', refitWheel);
-  window.addEventListener('load', refitWheel);
-
-  let spinning = false;
-  const spinBtn = document.getElementById('spinBtn');
-  if(spinBtn){
-    spinBtn.addEventListener('click', async ()=>{
-      if(spinning) return;
-      if(getSpinRemainingMs() > 0){ showToast('Рулетка доступна раз в 24 часа. Загляните позже.'); return; }
-      spinning = true;
-      spinBtn.disabled = true;
-      spinBtn.textContent = 'Крутим...';
-
-      let discount, code;
-      try{
-        const res = await fetch('/api/promo/generate', { method:'POST' });
-        const data = await res.json();
-        if(!res.ok){
-          if(data.remainingMs){ setSpinLock(Date.now() - (SPIN_COOLDOWN_MS - data.remainingMs)); }
-          showToast(data.error || 'Не удалось получить промокод');
-          spinning = false; refreshSpinLock();
-          return;
-        }
-        discount = data.discount; code = data.code;
-      }catch(e){
-        showToast('Сервер недоступен — рулетка работает только с запущенным backend');
-        spinning = false; refreshSpinLock();
-        return;
-      }
-
-      resetWheel();
-      const candidates = wheelValues.map((v,i)=>i).filter(i => wheelValues[i]===discount && i>=WIN_MIN && i<=WIN_MAX);
-      const winnerIndex = candidates.length ? candidates[Math.floor(Math.random()*candidates.length)] : WIN_MIN;
-      restIndex = winnerIndex;
-      wheelTrack.style.transition = `transform ${SPIN_DURATION_MS / 1000}s cubic-bezier(0.05, 0.88, 0.08, 1)`;
-      wheelTrack.style.transform = `translateX(-${wheelOffsetFor(winnerIndex)}px)`;
-
-      setTimeout(()=>{
-        document.querySelectorAll('.wheel-seg').forEach((s,i)=> s.classList.toggle('win', i===winnerIndex));
-        const promoInput = document.getElementById('promoCode');
-        if(promoInput) promoInput.value = code;
-        lastPromoCode = code;
-        showToast(`Ваша скидка: ${discount}%! Промокод ${code} действует 24 часа`);
-        spinning = false;
-        setSpinLock(Date.now());
-        refreshSpinLock();
-      }, SPIN_DURATION_MS + 100);
-    });
-  }
-
-  const SPIN_KEY = 'hs_last_spin_ts';
-  const SPIN_COOLDOWN_MS = 24 * 60 * 60 * 1000;
-  function getSpinRemainingMs(){
-    const last = parseInt(localStorage.getItem(SPIN_KEY) || '0', 10);
-    const remain = SPIN_COOLDOWN_MS - (Date.now() - last);
-    return remain > 0 ? remain : 0;
-  }
-  function setSpinLock(ts){
-    try{ localStorage.setItem(SPIN_KEY, String(ts)); }catch(e){}
-  }
-  function msToHMS(ms){
-    const total = Math.max(0, Math.ceil(ms/1000));
-    const h = Math.floor(total/3600), m = Math.floor((total%3600)/60), s = total%60;
-    return `${pad(h)}:${pad(m)}:${pad(s)}`;
-  }
-  let spinLockInterval = null;
-  function refreshSpinLock(){
-    const btn = document.getElementById('spinBtn');
-    const timerBox = document.getElementById('timerBox');
-    if(!btn || !timerBox) return;
-    const remain = getSpinRemainingMs();
-    if(remain > 0){
-      btn.disabled = true;
-      btn.textContent = 'Уже крутили сегодня';
-      timerBox.textContent = 'Следующий прокрут через ' + msToHMS(remain);
-      if(!spinLockInterval) spinLockInterval = setInterval(refreshSpinLock, 1000);
-    } else {
-      btn.disabled = false;
-      btn.textContent = 'Крутить рулетку';
-      timerBox.textContent = 'Один прокрут доступен раз в 24 часа';
-      if(spinLockInterval){ clearInterval(spinLockInterval); spinLockInterval = null; }
-    }
-  }
-
-  const actBtn = document.getElementById('activateBtn');
-  if(actBtn){
-    actBtn.addEventListener('click', ()=>{
-      const input = document.getElementById('promoCode');
-      if(!input || input.value === '——————'){ showToast('Сначала крутните рулетку!'); return; }
-      navigator.clipboard?.writeText(input.value).catch(()=>{});
-      actBtn.classList.add('copied');
-      const orig = actBtn.textContent;
-      actBtn.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" style="display:inline-block;vertical-align:-2px;margin-right:4px;"><polyline points="20 6 9 17 4 12"/></svg> Скопировано';
-      showToast('Промокод скопирован — вставьте его при оформлении заказа');
-      setTimeout(()=>{ actBtn.classList.remove('copied'); actBtn.textContent = orig; }, 1800);
-    });
-  }
-
-  function pad(n){ return String(n).padStart(2,'0'); }
-  refreshSpinLock();
-}
-initRoulette();
+/* Roulette spin behavior is loaded from /js/roulette.js. */
 
 /* Скрытие рулетки по настройке из админки (вкладка «Настройки») */
 (async function applyRouletteVisibility(){
@@ -6081,5 +5966,6 @@ document.querySelectorAll('a[href="/ai-agent"], a[href^="/ai-agent"]').forEach(l
 <script id="rd-scrolllock">
 (function(){var o=document.getElementById("overlay");if(!o)return;new MutationObserver(function(){document.body.classList.toggle("no-scroll",o.classList.contains("open"));}).observe(o,{attributes:true,attributeFilter:["class"]});})();
 </script>
+<script src="/js/roulette.js"></script>
 </body>
 </html>

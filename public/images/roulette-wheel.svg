@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 432 432" fill="none">
+  <defs>
+    <radialGradient id="rim" cx="38%" cy="28%" r="78%">
+      <stop offset="0" stop-color="#46515d"/>
+      <stop offset=".28" stop-color="#111923"/>
+      <stop offset=".72" stop-color="#02060a"/>
+      <stop offset="1" stop-color="#202a35"/>
+    </radialGradient>
+    <linearGradient id="rimEdge" x1="53" y1="49" x2="382" y2="385" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#b9c5d0" stop-opacity=".8"/>
+      <stop offset=".22" stop-color="#222d37"/>
+      <stop offset=".52" stop-color="#05090d"/>
+      <stop offset=".8" stop-color="#66727e" stop-opacity=".75"/>
+      <stop offset="1" stop-color="#080d12"/>
+    </linearGradient>
+    <radialGradient id="blue" cx="36%" cy="24%" r="82%">
+      <stop stop-color="#56a4ff"/>
+      <stop offset=".55" stop-color="#2674e9"/>
+      <stop offset="1" stop-color="#1455c5"/>
+    </radialGradient>
+    <radialGradient id="white" cx="36%" cy="27%" r="84%">
+      <stop stop-color="#fff"/>
+      <stop offset=".68" stop-color="#eff4f9"/>
+      <stop offset="1" stop-color="#cbd8e8"/>
+    </radialGradient>
+    <radialGradient id="faceGloss" cx="35%" cy="20%" r="88%">
+      <stop stop-color="#fff" stop-opacity=".22"/>
+      <stop offset=".5" stop-color="#fff" stop-opacity=".02"/>
+      <stop offset="1" stop-color="#081c3b" stop-opacity=".18"/>
+    </radialGradient>
+    <radialGradient id="hub" cx="35%" cy="27%" r="80%">
+      <stop stop-color="#141b23"/>
+      <stop offset=".65" stop-color="#020407"/>
+      <stop offset="1" stop-color="#000"/>
+    </radialGradient>
+    <filter id="shadow" x="-12%" y="-12%" width="124%" height="132%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="4"/>
+      <feOffset dy="4"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope=".34"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <clipPath id="faceClip">
+      <circle cx="216" cy="216" r="181"/>
+    </clipPath>
+  </defs>
+
+  <g filter="url(#shadow)">
+    <circle cx="216" cy="216" r="207" fill="url(#rim)" stroke="#020509" stroke-width="4"/>
+    <circle cx="216" cy="216" r="198" stroke="url(#rimEdge)" stroke-width="5"/>
+    <circle cx="216" cy="216" r="190" fill="#080d13" stroke="#293541" stroke-width="3"/>
+    <circle cx="216" cy="216" r="183" fill="#dfe8f2"/>
+
+    <g clip-path="url(#faceClip)" stroke="#d9e3ee" stroke-width="3" stroke-linejoin="round">
+      <path d="M216 216 L146.8 48.8 A181 181 0 0 1 285.2 48.8 Z" fill="url(#blue)"/>
+      <path d="M216 216 L285.2 48.8 A181 181 0 0 1 383.2 146.8 Z" fill="url(#white)"/>
+      <path d="M216 216 L383.2 146.8 A181 181 0 0 1 383.2 285.2 Z" fill="url(#blue)"/>
+      <path d="M216 216 L383.2 285.2 A181 181 0 0 1 285.2 383.2 Z" fill="url(#white)"/>
+      <path d="M216 216 L285.2 383.2 A181 181 0 0 1 146.8 383.2 Z" fill="url(#blue)"/>
+      <path d="M216 216 L146.8 383.2 A181 181 0 0 1 48.8 285.2 Z" fill="url(#white)"/>
+      <path d="M216 216 L48.8 285.2 A181 181 0 0 1 48.8 146.8 Z" fill="url(#blue)"/>
+      <path d="M216 216 L48.8 146.8 A181 181 0 0 1 146.8 48.8 Z" fill="url(#white)"/>
+      <circle cx="216" cy="216" r="181" fill="url(#faceGloss)" stroke="none"/>
+    </g>
+
+    <g font-family="Arial, Helvetica, sans-serif" font-size="29" font-weight="700" text-anchor="middle" dominant-baseline="central">
+      <text x="216" y="80" fill="#f2f7ff">25%</text>
+      <text x="312" y="120" fill="#1557bd" transform="rotate(45 312 120)">30%</text>
+      <text x="352" y="216" fill="#f2f7ff" transform="rotate(90 352 216)">5%</text>
+      <text x="312" y="312" fill="#1557bd" transform="rotate(135 312 312)">10%</text>
+      <text x="216" y="352" fill="#f2f7ff" transform="rotate(180 216 352)">25%</text>
+      <text x="120" y="312" fill="#1557bd" transform="rotate(225 120 312)">10%</text>
+      <text x="80" y="216" fill="#f2f7ff" transform="rotate(270 80 216)">15%</text>
+      <text x="120" y="120" fill="#1557bd" transform="rotate(315 120 120)">10%</text>
+    </g>
+
+    <circle cx="216" cy="216" r="31" fill="#101820" stroke="#27333e" stroke-width="4"/>
+    <circle cx="216" cy="216" r="26" fill="url(#hub)"/>
+  </g>
+</svg>

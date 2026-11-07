@@ -1138,10 +1138,11 @@ app.put('/api/admin/settings', requireAdmin, async (req, res) => {
 
 /* ================= ПРОМОКОДЫ (рулетка) ================= */
 const PROMO_WEIGHTS = [
-  { discount: 5, weight: 40 },
-  { discount: 10, weight: 32 },
-  { discount: 15, weight: 20 },
-  { discount: 25, weight: 8 }
+  { discount: 5, weight: 38 },
+  { discount: 10, weight: 30.4 },
+  { discount: 15, weight: 19 },
+  { discount: 25, weight: 7.6 },
+  { discount: 30, weight: 5 }
 ];
 
 function pickWeightedDiscount() {

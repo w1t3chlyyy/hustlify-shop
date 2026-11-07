@@ -1,0 +1,286 @@
+/* Figma roulette section */
+.rw-section {
+  padding: clamp(64px, 10vw, 160px) 0 clamp(64px, 7.45vw, 120px);
+  background: #fff;
+  color: #fff;
+}
+
+.rw-card {
+  position: relative;
+  isolation: isolate;
+  width: min(94.25%, 1508px);
+  min-height: clamp(410px, 32.2vw, 515px);
+  margin: 0 auto;
+  padding: 52px clamp(28px, 3vw, 48px);
+  overflow: visible;
+  border-radius: clamp(28px, 3.25vw, 52px);
+  background: #2f6bff;
+}
+
+.rw-content {
+  position: relative;
+  z-index: 2;
+  width: min(58%, 720px);
+}
+
+.rw-title {
+  margin: 0 0 12px;
+  padding: 0 !important;
+  color: #fff;
+  font-family: 'Unbounded', 'Montserrat', sans-serif;
+  font-size: clamp(36px, 3.65vw, 58px);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -.055em;
+}
+
+.rw-sub {
+  max-width: 700px;
+  margin: 0 0 32px;
+  color: rgba(255, 255, 255, .96);
+  font-family: 'Montserrat', sans-serif;
+  font-size: clamp(17px, 1.55vw, 25px);
+  font-weight: 400;
+  line-height: 1.12;
+  letter-spacing: -.035em;
+}
+
+.rw-spin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 252px;
+  min-height: 66px;
+  padding: 16px 28px;
+  border: 0;
+  border-radius: 999px;
+  background: #fff;
+  color: #2f6bff;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -.035em;
+  transition: transform .2s ease, box-shadow .2s ease, opacity .2s ease;
+}
+
+.rw-spin:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(13, 41, 114, .2);
+}
+
+.rw-spin:focus-visible,
+.rw-copy:focus-visible {
+  outline: 3px solid #132f72;
+  outline-offset: 4px;
+}
+
+.rw-spin:disabled {
+  cursor: default;
+  opacity: .78;
+}
+
+.rw-wheel-stage {
+  position: absolute;
+  z-index: 1;
+  top: 42.7%;
+  right: -21px;
+  width: clamp(380px, 40vw, 640px);
+  aspect-ratio: 1;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.rw-wheel-rotor {
+  width: 100%;
+  height: 100%;
+  transform: rotate(0deg);
+  transform-origin: 50% 50%;
+  transition: transform 5.4s cubic-bezier(.08, .78, .12, 1);
+  will-change: transform;
+}
+
+.rw-wheel-rotor img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.rw-pointer {
+  position: absolute;
+  z-index: 2;
+  top: -2.3%;
+  left: 50%;
+  width: 14%;
+  transform: translateX(-50%);
+}
+
+.rw-pointer img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: none;
+}
+
+.rw-timer {
+  width: fit-content;
+  max-width: 100%;
+  margin: 14px 0 0;
+  color: #fff;
+  font: 600 13px/1.4 'Montserrat', sans-serif;
+}
+
+.rw-result {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  width: fit-content;
+  max-width: 100%;
+  margin-top: 18px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, .42);
+  border-radius: 18px;
+  background: rgba(12, 46, 135, .22);
+  color: #fff;
+  font: 600 13px/1.35 'Montserrat', sans-serif;
+}
+
+.rw-result-label {
+  flex-basis: 100%;
+  font-size: 14px;
+}
+
+.rw-code-wrap {
+  overflow-wrap: anywhere;
+}
+
+.rw-code {
+  color: #fff;
+  font: 700 14px/1.3 'Montserrat', sans-serif;
+  letter-spacing: .04em;
+}
+
+.rw-copy {
+  flex: 0 0 auto;
+  padding: 8px 13px;
+  border: 1px solid rgba(255, 255, 255, .74);
+  border-radius: 999px;
+  background: #fff;
+  color: #2f6bff;
+  font: 700 12px/1.2 'Montserrat', sans-serif;
+  cursor: pointer;
+}
+
+.rw-section [hidden] {
+  display: none !important;
+}
+
+@media (max-width: 860px) {
+  .rw-section {
+    padding: 24px 0;
+  }
+
+  .rw-card {
+    width: calc(100% - 28px);
+    min-height: 640px;
+    padding: 32px 24px 0;
+    overflow: hidden;
+    border-radius: 30px;
+  }
+
+  .rw-content {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .rw-title {
+    margin-bottom: 10px;
+    font-size: clamp(32px, 7vw, 48px);
+  }
+
+  .rw-sub {
+    max-width: 540px;
+    margin: 0 auto 22px;
+    font-size: clamp(16px, 3.4vw, 20px);
+    line-height: 1.24;
+  }
+
+  .rw-spin {
+    min-width: 220px;
+    min-height: 58px;
+    font-size: 16px;
+  }
+
+  .rw-timer,
+  .rw-result {
+    margin-right: auto;
+    margin-left: auto;
+    text-align: center;
+  }
+
+  .rw-wheel-stage {
+    top: auto;
+    right: 50%;
+    bottom: -30px;
+    width: min(82vw, 390px);
+    transform: translateX(50%);
+  }
+
+  .rw-pointer {
+    width: 12%;
+  }
+}
+
+@media (max-width: 480px) {
+  .rw-card {
+    min-height: 590px;
+    padding: 28px 18px 0;
+    border-radius: 24px;
+  }
+
+  .rw-title {
+    font-size: clamp(28px, 8vw, 36px);
+    letter-spacing: -.06em;
+  }
+
+  .rw-sub {
+    margin-bottom: 18px;
+    font-size: 15px;
+  }
+
+  .rw-spin {
+    min-width: 205px;
+    min-height: 54px;
+    font-size: 15px;
+  }
+
+  .rw-wheel-stage {
+    bottom: -24px;
+    width: min(91vw, 350px);
+  }
+
+  .rw-pointer {
+    width: 12%;
+  }
+
+  .rw-result {
+    gap: 8px 10px;
+    padding: 10px 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rw-wheel-rotor {
+    transition-duration: .01ms !important;
+  }
+
+  .rw-spin {
+    transition: none;
+  }
+}
