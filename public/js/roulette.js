@@ -15,11 +15,13 @@
   const COOLDOWN_MS = 24 * 60 * 60 * 1000;
   const STOP_TIMES_BY_DISCOUNT = {
     5: [3.00, 3.25],
-    10: [0.50, 0.75, 2.50],
+    10: [2.50],
     15: [1.50],
-    25: [0.25, 1.00, 2.00],
-    30: [3.50]
+    25: [4.50, 4.75],
+    30: [3.75, 4.00]
   };
+  const START_PLAYBACK_RATE = 1.8;
+  const END_PLAYBACK_RATE = 0.5;
   const STILL_IMAGES_BY_DISCOUNT = {
     5: '/images/roulette-still-5.png',
     10: '/images/roulette-still-10.png',
@@ -108,10 +110,8 @@
 
     const targetTime = candidates[Math.floor(Math.random() * candidates.length)];
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const minimumSpinMs = 3800 + Math.random() * 1200;
-    const playbackRate = 1.12 + Math.random() * 0.28;
-    const startedAt = performance.now();
     let previousTime = wheelVideo.currentTime;
+    let firstCycleComplete = false;
     let animationFrame = 0;
     let finished = false;
     let finishTimeout = 0;
@@ -171,12 +171,22 @@
       finishTimeout = window.setTimeout(finish, 350);
     };
 
-    const watchVideo = now => {
+    const watchVideo = () => {
       if (finished) return;
       const currentTime = wheelVideo.currentTime;
       const looped = currentTime < previousTime - 1;
-      const reachedTarget = !looped && previousTime <= targetTime && currentTime >= targetTime;
-      if (now - startedAt >= minimumSpinMs && reachedTarget) {
+      if (looped) firstCycleComplete = true;
+
+      if (firstCycleComplete) {
+        const progress = Math.min(1, Math.max(0, currentTime / targetTime));
+        const remainingProgress = 1 - progress;
+        wheelVideo.playbackRate = END_PLAYBACK_RATE
+          + (START_PLAYBACK_RATE - END_PLAYBACK_RATE) * remainingProgress * remainingProgress;
+      } else {
+        wheelVideo.playbackRate = START_PLAYBACK_RATE;
+      }
+
+      if (firstCycleComplete && !looped && previousTime <= targetTime && currentTime >= targetTime) {
         finishAtTarget();
         return;
       }
@@ -193,7 +203,8 @@
     wheelStill.hidden = true;
     wheelVideo.hidden = false;
     wheelVideo.loop = true;
-    wheelVideo.playbackRate = playbackRate;
+    wheelVideo.playbackRate = START_PLAYBACK_RATE;
+    wheelVideo.currentTime = 0;
     previousTime = wheelVideo.currentTime;
     wheelVideo.play().then(() => {
       animationFrame = window.requestAnimationFrame(watchVideo);
@@ -204,7 +215,7 @@
     // A slow device or a suspended tab must not leave the spin button locked.
     finishTimeout = window.setTimeout(() => {
       if (!showStillPrize()) finishAtTarget();
-    }, 10000);
+    }, 15000);
   }
 
   spinButton.addEventListener('click', async () => {
