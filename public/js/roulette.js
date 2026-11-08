@@ -20,8 +20,10 @@
     25: [4.50, 4.75],
     30: [3.75, 4.00]
   };
-  const START_PLAYBACK_RATE = 1.8;
-  const END_PLAYBACK_RATE = 0.5;
+  const PLAYBACK_RATES_BY_CYCLE = [3, 2, 1];
+  const DECELERATION_WINDOW_SECONDS = 1;
+  const MIN_FINAL_PLAYBACK_RATE = 0.15;
+  const RATE_UPDATE_INTERVAL_MS = 50;
   const STILL_IMAGES_BY_DISCOUNT = {
     5: '/images/roulette-still-5.png',
     10: '/images/roulette-still-10.png',
@@ -111,7 +113,8 @@
     const targetTime = candidates[Math.floor(Math.random() * candidates.length)];
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     let previousTime = wheelVideo.currentTime;
-    let firstCycleComplete = false;
+    let completedCycles = 0;
+    let lastRateUpdateMs = 0;
     let animationFrame = 0;
     let finished = false;
     let finishTimeout = 0;
@@ -175,20 +178,31 @@
       if (finished) return;
       const currentTime = wheelVideo.currentTime;
       const looped = currentTime < previousTime - 1;
-      if (looped) firstCycleComplete = true;
-
-      if (firstCycleComplete) {
-        const progress = Math.min(1, Math.max(0, currentTime / targetTime));
-        const remainingProgress = 1 - progress;
-        wheelVideo.playbackRate = END_PLAYBACK_RATE
-          + (START_PLAYBACK_RATE - END_PLAYBACK_RATE) * remainingProgress * remainingProgress;
-      } else {
-        wheelVideo.playbackRate = START_PLAYBACK_RATE;
+      if (looped) {
+        completedCycles += 1;
+        const cycleIndex = Math.min(completedCycles, PLAYBACK_RATES_BY_CYCLE.length - 1);
+        wheelVideo.playbackRate = PLAYBACK_RATES_BY_CYCLE[cycleIndex];
       }
 
-      if (firstCycleComplete && !looped && previousTime <= targetTime && currentTime >= targetTime) {
+      if (completedCycles >= 2 && !looped && currentTime >= targetTime) {
         finishAtTarget();
         return;
+      }
+
+      if (completedCycles >= 2 && currentTime < targetTime) {
+        const remaining = targetTime - currentTime;
+        const now = performance.now();
+        if (remaining < DECELERATION_WINDOW_SECONDS
+          && now - lastRateUpdateMs >= RATE_UPDATE_INTERVAL_MS) {
+          const progress = Math.min(
+            1,
+            Math.max(0, 1 - remaining / DECELERATION_WINDOW_SECONDS)
+          );
+          const easedProgress = progress * progress * (3 - 2 * progress);
+          wheelVideo.playbackRate = 1
+            - (1 - MIN_FINAL_PLAYBACK_RATE) * easedProgress;
+          lastRateUpdateMs = now;
+        }
       }
 
       previousTime = currentTime;
@@ -203,7 +217,7 @@
     wheelStill.hidden = true;
     wheelVideo.hidden = false;
     wheelVideo.loop = true;
-    wheelVideo.playbackRate = START_PLAYBACK_RATE;
+    wheelVideo.playbackRate = PLAYBACK_RATES_BY_CYCLE[0];
     wheelVideo.currentTime = 0;
     previousTime = wheelVideo.currentTime;
     wheelVideo.play().then(() => {
