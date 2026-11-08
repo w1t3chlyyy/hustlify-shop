@@ -96,6 +96,14 @@
   height: 100%;
   object-fit: contain;
   background: transparent;
+  -webkit-mask-image: url('/images/roulette-video-mask.png');
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-image: url('/images/roulette-video-mask.png');
+  mask-position: center;
+  mask-repeat: no-repeat;
+  mask-size: 100% 100%;
   pointer-events: none;
   user-select: none;
   -webkit-user-drag: none;
