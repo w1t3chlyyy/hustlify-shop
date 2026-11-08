@@ -3040,12 +3040,17 @@ body.page-leaving {
       </div>
     </div>
     <div class="rw-wheel-stage" aria-hidden="true">
-      <div class="rw-wheel-rotor" id="rouletteRotor">
-        <img src="/images/roulette-wheel.svg" alt="">
-      </div>
-      <span class="rw-pointer">
-        <img src="/images/roulette-pointer.png" alt="">
-      </span>
+      <video
+        class="rw-wheel-video"
+        id="rouletteVideo"
+        src="/videos/roulette-wheel.webm"
+        poster="/images/roulette-video-poster.png"
+        muted
+        playsinline
+        preload="auto"
+        loop
+      ></video>
+      <img class="rw-wheel-still" id="rouletteStill" alt="" hidden>
     </div>
   </div>
 </section>

@@ -1,6 +1,7 @@
 (() => {
   const root = document.getElementById('roulette');
-  const rotor = document.getElementById('rouletteRotor');
+  const wheelVideo = document.getElementById('rouletteVideo');
+  const wheelStill = document.getElementById('rouletteStill');
   const spinButton = document.getElementById('spinBtn');
   const timer = document.getElementById('timerBox');
   const result = document.getElementById('rouletteResult');
@@ -8,15 +9,26 @@
   const promoOutput = document.getElementById('promoCode');
   const copyButton = document.getElementById('activateBtn');
 
-  if (!root || !rotor || !spinButton || !timer || !result || !promoOutput || !copyButton) return;
+  if (!root || !wheelVideo || !spinButton || !timer || !result || !promoOutput || !copyButton) return;
 
   const STORAGE_KEY = 'hs_last_spin_ts';
   const COOLDOWN_MS = 24 * 60 * 60 * 1000;
-  const SPIN_MS = 5400;
-  const SECTORS = [25, 30, 5, 10, 25, 10, 15, 10];
+  const STOP_TIMES_BY_DISCOUNT = {
+    5: [3.00, 3.25],
+    10: [0.50, 0.75, 2.50],
+    15: [1.50],
+    25: [0.25, 1.00, 2.00],
+    30: [3.50]
+  };
+  const STILL_IMAGES_BY_DISCOUNT = {
+    5: '/images/roulette-still-5.png',
+    10: '/images/roulette-still-10.png',
+    15: '/images/roulette-still-15.png',
+    25: '/images/roulette-still-25.png',
+    30: '/images/roulette-still-30.png'
+  };
   const DEFAULT_BUTTON_TEXT = 'Мне повезёт';
 
-  let rotation = 0;
   let spinning = false;
   let timerInterval = null;
   let activePromoCode = '';
@@ -84,55 +96,115 @@
     timer.hidden = false;
   }
 
-  function getTargetRotation(discount) {
-    const candidates = SECTORS
-      .map((value, index) => ({ value, index }))
-      .filter(sector => sector.value === discount);
-    if (!candidates.length) return null;
-
-    const selected = candidates[Math.floor(Math.random() * candidates.length)];
-    const sectorRotation = (360 - selected.index * (360 / SECTORS.length)) % 360;
-    const fullTurns = 6 + Math.floor(Math.random() * 2);
-    return rotation + fullTurns * 360 + sectorRotation;
-  }
-
   function animateToPrize(discount, code) {
-    const targetRotation = getTargetRotation(discount);
-    if (targetRotation === null) {
-      showResult(discount, code);
-      setLastSpin(Date.now());
+    const candidates = STOP_TIMES_BY_DISCOUNT[discount];
+    if (!candidates || !candidates.length) {
       spinning = false;
-      refreshCooldown();
+      spinButton.disabled = false;
+      spinButton.textContent = DEFAULT_BUTTON_TEXT;
+      setError('Не удалось определить сектор выигрыша. Попробуйте ещё раз.');
       return;
     }
 
+    const targetTime = candidates[Math.floor(Math.random() * candidates.length)];
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const duration = reducedMotion ? 1 : SPIN_MS;
-    rotor.style.transitionDuration = `${duration}ms`;
-    rotor.style.transform = `rotate(${targetRotation}deg)`;
-
+    const minimumSpinMs = 3800 + Math.random() * 1200;
+    const playbackRate = 1.12 + Math.random() * 0.28;
+    const startedAt = performance.now();
+    let previousTime = wheelVideo.currentTime;
+    let animationFrame = 0;
     let finished = false;
-    const finish = () => {
-      if (finished) return;
-      finished = true;
-      rotor.removeEventListener('transitionend', onTransitionEnd);
-      rotation = ((targetRotation % 360) + 360) % 360;
-      rotor.style.transition = 'none';
-      rotor.style.transform = `rotate(${rotation}deg)`;
-      void rotor.offsetWidth;
-      rotor.style.removeProperty('transition');
-      rotor.style.removeProperty('transition-duration');
+    let finishTimeout = 0;
 
+    const showStillPrize = () => {
+      const image = STILL_IMAGES_BY_DISCOUNT[discount];
+      if (!wheelStill || !image) return false;
+      if (animationFrame) window.cancelAnimationFrame(animationFrame);
+      if (finishTimeout) window.clearTimeout(finishTimeout);
+      finished = true;
+      wheelVideo.pause();
+      wheelVideo.loop = false;
+      wheelVideo.playbackRate = 1;
+      wheelStill.src = image;
+      wheelStill.hidden = false;
+      wheelVideo.hidden = true;
       showResult(discount, code);
       spinning = false;
       refreshCooldown();
-    };
-    const onTransitionEnd = event => {
-      if (event.target === rotor && event.propertyName === 'transform') finish();
+      return true;
     };
 
-    rotor.addEventListener('transitionend', onTransitionEnd);
-    window.setTimeout(finish, duration + 250);
+    const finishAtTarget = () => {
+      if (finished) return;
+      finished = true;
+      if (animationFrame) window.cancelAnimationFrame(animationFrame);
+      if (finishTimeout) window.clearTimeout(finishTimeout);
+
+      wheelVideo.pause();
+      wheelVideo.loop = false;
+      wheelVideo.playbackRate = 1;
+
+      let resultShown = false;
+      const finish = () => {
+        if (resultShown) return;
+        if (Math.abs(wheelVideo.currentTime - targetTime) > 0.12) {
+          resultShown = true;
+          showStillPrize();
+          return;
+        }
+        resultShown = true;
+        if (finishTimeout) window.clearTimeout(finishTimeout);
+        wheelVideo.removeEventListener('seeked', finish);
+        showResult(discount, code);
+        spinning = false;
+        refreshCooldown();
+      };
+
+      if (Math.abs(wheelVideo.currentTime - targetTime) <= 0.12) {
+        animationFrame = window.requestAnimationFrame(finish);
+        finishTimeout = window.setTimeout(finish, 350);
+        return;
+      }
+
+      wheelVideo.addEventListener('seeked', finish);
+      wheelVideo.currentTime = targetTime;
+      finishTimeout = window.setTimeout(finish, 350);
+    };
+
+    const watchVideo = now => {
+      if (finished) return;
+      const currentTime = wheelVideo.currentTime;
+      const looped = currentTime < previousTime - 1;
+      const reachedTarget = !looped && previousTime <= targetTime && currentTime >= targetTime;
+      if (now - startedAt >= minimumSpinMs && reachedTarget) {
+        finishAtTarget();
+        return;
+      }
+
+      previousTime = currentTime;
+      animationFrame = window.requestAnimationFrame(watchVideo);
+    };
+
+    if (reducedMotion) {
+      showStillPrize();
+      return;
+    }
+
+    wheelStill.hidden = true;
+    wheelVideo.hidden = false;
+    wheelVideo.loop = true;
+    wheelVideo.playbackRate = playbackRate;
+    previousTime = wheelVideo.currentTime;
+    wheelVideo.play().then(() => {
+      animationFrame = window.requestAnimationFrame(watchVideo);
+    }).catch(() => {
+      if (!showStillPrize()) finishAtTarget();
+    });
+
+    // A slow device or a suspended tab must not leave the spin button locked.
+    finishTimeout = window.setTimeout(() => {
+      if (!showStillPrize()) finishAtTarget();
+    }, 10000);
   }
 
   spinButton.addEventListener('click', async () => {
