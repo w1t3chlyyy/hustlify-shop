@@ -21,9 +21,12 @@
     30: [3.75, 4.00]
   };
   const PLAYBACK_RATES_BY_CYCLE = [3, 2, 1];
-  const DECELERATION_WINDOW_SECONDS = 1;
-  const MIN_FINAL_PLAYBACK_RATE = 0.15;
-  const RATE_UPDATE_INTERVAL_MS = 50;
+  const LOOP_CYCLE_SECONDS = 2;
+  const FINAL_CYCLE_START_SECONDS = LOOP_CYCLE_SECONDS * 2;
+  const CYCLE_RATE_TRANSITION_WINDOW_SECONDS = 0.4;
+  const DECELERATION_WINDOW_SECONDS = 1.35;
+  const MIN_FINAL_PLAYBACK_RATE = 0.5;
+  const RATE_UPDATE_INTERVAL_MS = 32;
   const STILL_IMAGES_BY_DISCOUNT = {
     5: '/images/roulette-still-5.png',
     10: '/images/roulette-still-10.png',
@@ -111,9 +114,8 @@
     }
 
     const targetTime = candidates[Math.floor(Math.random() * candidates.length)];
+    const finalTargetTime = FINAL_CYCLE_START_SECONDS + targetTime;
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    let previousTime = wheelVideo.currentTime;
-    let completedCycles = 0;
     let lastRateUpdateMs = 0;
     let animationFrame = 0;
     let finished = false;
@@ -144,13 +146,12 @@
       if (finishTimeout) window.clearTimeout(finishTimeout);
 
       wheelVideo.pause();
-      wheelVideo.loop = false;
       wheelVideo.playbackRate = 1;
 
       let resultShown = false;
       const finish = () => {
         if (resultShown) return;
-        if (Math.abs(wheelVideo.currentTime - targetTime) > 0.12) {
+        if (Math.abs(wheelVideo.currentTime - finalTargetTime) > 0.12) {
           resultShown = true;
           showStillPrize();
           return;
@@ -163,49 +164,67 @@
         refreshCooldown();
       };
 
-      if (Math.abs(wheelVideo.currentTime - targetTime) <= 0.12) {
+      if (Math.abs(wheelVideo.currentTime - finalTargetTime) <= 0.025) {
         animationFrame = window.requestAnimationFrame(finish);
         finishTimeout = window.setTimeout(finish, 350);
         return;
       }
 
       wheelVideo.addEventListener('seeked', finish);
-      wheelVideo.currentTime = targetTime;
+      wheelVideo.currentTime = finalTargetTime;
       finishTimeout = window.setTimeout(finish, 350);
     };
 
     const watchVideo = () => {
       if (finished) return;
       const currentTime = wheelVideo.currentTime;
-      const looped = currentTime < previousTime - 1;
-      if (looped) {
-        completedCycles += 1;
-        const cycleIndex = Math.min(completedCycles, PLAYBACK_RATES_BY_CYCLE.length - 1);
-        wheelVideo.playbackRate = PLAYBACK_RATES_BY_CYCLE[cycleIndex];
-      }
-
-      if (completedCycles >= 2 && !looped && currentTime >= targetTime) {
+      if (currentTime >= finalTargetTime) {
         finishAtTarget();
         return;
       }
 
-      if (completedCycles >= 2 && currentTime < targetTime) {
-        const remaining = targetTime - currentTime;
-        const now = performance.now();
-        if (remaining < DECELERATION_WINDOW_SECONDS
-          && now - lastRateUpdateMs >= RATE_UPDATE_INTERVAL_MS) {
-          const progress = Math.min(
-            1,
-            Math.max(0, 1 - remaining / DECELERATION_WINDOW_SECONDS)
-          );
+      const now = performance.now();
+      if (now - lastRateUpdateMs >= RATE_UPDATE_INTERVAL_MS) {
+        const firstTransitionStart = LOOP_CYCLE_SECONDS
+          - CYCLE_RATE_TRANSITION_WINDOW_SECONDS;
+        const secondTransitionStart = FINAL_CYCLE_START_SECONDS
+          - CYCLE_RATE_TRANSITION_WINDOW_SECONDS;
+        let playbackRate;
+
+        if (currentTime < firstTransitionStart) {
+          playbackRate = PLAYBACK_RATES_BY_CYCLE[0];
+        } else if (currentTime < LOOP_CYCLE_SECONDS) {
+          const progress = (currentTime - firstTransitionStart)
+            / CYCLE_RATE_TRANSITION_WINDOW_SECONDS;
           const easedProgress = progress * progress * (3 - 2 * progress);
-          wheelVideo.playbackRate = 1
-            - (1 - MIN_FINAL_PLAYBACK_RATE) * easedProgress;
-          lastRateUpdateMs = now;
+          playbackRate = PLAYBACK_RATES_BY_CYCLE[0]
+            + (PLAYBACK_RATES_BY_CYCLE[1] - PLAYBACK_RATES_BY_CYCLE[0]) * easedProgress;
+        } else if (currentTime < secondTransitionStart) {
+          playbackRate = PLAYBACK_RATES_BY_CYCLE[1];
+        } else if (currentTime < FINAL_CYCLE_START_SECONDS) {
+          const progress = (currentTime - secondTransitionStart)
+            / CYCLE_RATE_TRANSITION_WINDOW_SECONDS;
+          const easedProgress = progress * progress * (3 - 2 * progress);
+          playbackRate = PLAYBACK_RATES_BY_CYCLE[1]
+            + (PLAYBACK_RATES_BY_CYCLE[2] - PLAYBACK_RATES_BY_CYCLE[1]) * easedProgress;
+        } else {
+          playbackRate = PLAYBACK_RATES_BY_CYCLE[2];
+          const remaining = finalTargetTime - currentTime;
+          if (remaining < DECELERATION_WINDOW_SECONDS) {
+            const progress = Math.min(
+              1,
+              Math.max(0, 1 - remaining / DECELERATION_WINDOW_SECONDS)
+            );
+            const easedProgress = progress * progress * (3 - 2 * progress);
+            playbackRate *= 1 - (1 - MIN_FINAL_PLAYBACK_RATE) * easedProgress;
+            playbackRate = Math.max(MIN_FINAL_PLAYBACK_RATE, playbackRate);
+          }
         }
+
+        wheelVideo.playbackRate = playbackRate;
+        lastRateUpdateMs = now;
       }
 
-      previousTime = currentTime;
       animationFrame = window.requestAnimationFrame(watchVideo);
     };
 
@@ -216,13 +235,11 @@
 
     wheelStill.hidden = true;
     wheelVideo.hidden = false;
-    wheelVideo.loop = true;
+    wheelVideo.loop = false;
     wheelVideo.playbackRate = PLAYBACK_RATES_BY_CYCLE[0];
     wheelVideo.currentTime = 0;
-    previousTime = wheelVideo.currentTime;
-    wheelVideo.play().then(() => {
-      animationFrame = window.requestAnimationFrame(watchVideo);
-    }).catch(() => {
+    animationFrame = window.requestAnimationFrame(watchVideo);
+    wheelVideo.play().catch(() => {
       if (!showStillPrize()) finishAtTarget();
     });
 

@@ -8,7 +8,7 @@
 .rw-card {
   position: relative;
   isolation: isolate;
-  width: min(94.25%, 1508px);
+  width: min(89%, 1280px);
   min-height: clamp(410px, 32.2vw, 515px);
   margin: 0 auto;
   padding: 52px clamp(28px, 3vw, 48px);
@@ -179,7 +179,6 @@
   }
 
   .rw-card {
-    width: calc(100% - 28px);
     min-height: 640px;
     padding: 32px 24px 0;
     overflow: hidden;
