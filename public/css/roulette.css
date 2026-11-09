@@ -1,5 +1,6 @@
 /* Figma roulette section */
 .rw-section {
+  --rw-title-u: calc(100vw / 6085);
   padding: clamp(64px, 10vw, 160px) 0 clamp(64px, 7.45vw, 120px);
   background: #fff;
   color: #fff;
@@ -27,11 +28,8 @@
   margin: 0 0 12px;
   padding: 0 !important;
   color: #fff;
-  font-family: 'Unbounded', 'Montserrat', sans-serif;
-  font-size: clamp(36px, 3.65vw, 58px);
-  font-weight: 800;
-  line-height: 1.08;
-  letter-spacing: -.055em;
+  font: 600 calc(200 * var(--rw-title-u))/.92 'Unbounded', sans-serif;
+  letter-spacing: calc(-10 * var(--rw-title-u));
 }
 
 .rw-sub {
@@ -175,6 +173,7 @@
 
 @media (max-width: 860px) {
   .rw-section {
+    --rw-title-u: calc(100vw / 1800);
     padding: 24px 0;
   }
 
@@ -194,7 +193,9 @@
 
   .rw-title {
     margin-bottom: 10px;
-    font-size: clamp(32px, 7vw, 48px);
+    font-size: clamp(25px, 7.2vw, 34px);
+    line-height: 1.04;
+    letter-spacing: -.045em;
   }
 
   .rw-sub {
@@ -235,8 +236,7 @@
   }
 
   .rw-title {
-    font-size: clamp(28px, 8vw, 36px);
-    letter-spacing: -.06em;
+    margin-bottom: 10px;
   }
 
   .rw-sub {
